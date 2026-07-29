@@ -1365,8 +1365,9 @@ export function TripDetailView() {
           )}
           <div className="info-metric">
             <span className="info-lbl">Out → In</span>
-            <strong className="tnum">
-              {trip.dateOut} → {trip.dateIn}
+            <strong className="tnum info-range">
+              <span>{trip.dateOut}</span>
+              <span>{trip.dateIn}</span>
             </strong>
           </div>
         </div>
