@@ -200,3 +200,29 @@ export interface PayrollSchedule {
   methods: ScheduleMethodLine[];
   drivers: ScheduleDriver[];
 }
+
+export type PayrollRunStatus = 'closed' | 'open' | 'processing';
+export type DriverClassification = 'Company Driver' | 'Owner Operator' | 'Temporary Drivers';
+
+export interface ExchangeRates {
+  usdToCad: number;
+  usdToPeso: number;
+  cadToPeso: number;
+}
+
+export interface PayrollRun {
+  id: string;
+  payrollDate: string;
+  coverFrom: string;
+  coverTo: string;
+  status: PayrollRunStatus;
+  region: string;
+  classifications: DriverClassification[];
+  coveragePeriod: CoveragePeriod;
+  exchange: ExchangeRates;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+}
+

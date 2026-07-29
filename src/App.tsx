@@ -5,6 +5,7 @@ import { AddPaymentModal, ExceptionModal } from './components/modals/Modals';
 import { TripBoardView } from './views/TripBoardView';
 import { TripDetailView } from './views/TripDetailView';
 import { PayrollConfigView } from './views/PayrollConfigView';
+import { PayrollManagementView } from './views/PayrollManagementView';
 import { PlaceholderView } from './views/PlaceholderView';
 import './styles/global.css';
 import './components/ui/ui.css';
@@ -23,6 +24,7 @@ function Shell() {
   const showBoard = view === 'trip-board' && !selectedTripId;
   const showDetail = view === 'trip-board' && !!selectedTripId;
   const showConfig = view === 'config';
+  const showPayroll = view === 'payroll';
 
   return (
     <>
@@ -33,8 +35,11 @@ function Shell() {
           <div className="view-area">
             {showBoard && <TripBoardView />}
             {showDetail && <TripDetailView />}
+            {showPayroll && <PayrollManagementView />}
             {showConfig && <PayrollConfigView />}
-            {!showBoard && !showDetail && !showConfig && <PlaceholderView id={view} />}
+            {!showBoard && !showDetail && !showPayroll && !showConfig && (
+              <PlaceholderView id={view} />
+            )}
           </div>
         </div>
       </div>

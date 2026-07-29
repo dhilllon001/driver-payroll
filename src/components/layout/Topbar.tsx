@@ -1,6 +1,5 @@
 import {
   Bell,
-  CalendarRange,
   Download,
   FileBarChart,
   Filter,
@@ -53,12 +52,10 @@ const HEADERS: Record<ViewId, HeaderProfile> = {
     ],
   },
   payroll: {
-    placeholder: 'Search payroll runs, drivers, periods…',
+    placeholder: 'Search payroll dates, regions, creators…',
     showSearch: true,
-    actions: [
-      { id: 'period', label: 'Pay Period', icon: CalendarRange, variant: 'secondary', toast: 'Pay period picker coming soon' },
-      { id: 'run', label: 'Run Payroll', icon: Plus, variant: 'primary', toast: 'Run Payroll started' },
-    ],
+    centerSearch: true,
+    actions: [],
   },
   settlement: {
     placeholder: 'Search settlements, drivers, batches…',
