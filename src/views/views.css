@@ -223,7 +223,7 @@
 .board-table thead th {
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 5;
   background: #0f1a2a;
   color: #ffffff;
   font-size: 10px;
@@ -258,19 +258,115 @@
   background: #e4eefb !important;
 }
 
-.board-table tbody tr.is-flagged td:first-child {
+.board-table tbody tr.is-flagged td.col-check {
   box-shadow: inset 3px 0 0 var(--amber);
 }
 
-.board-table .col-check {
-  width: 40px;
+.board-table .col-check,
+.board-table .col-menu,
+.board-table .col-status,
+.board-table .col-flag {
   text-align: center;
 }
 
-.board-table .col-menu {
+.board-table .col-check {
   width: 44px;
-  text-align: center;
-  position: relative;
+  min-width: 44px;
+  left: 0;
+}
+
+.board-table .col-menu {
+  width: 72px;
+  min-width: 72px;
+  left: 44px;
+}
+
+.board-table .col-status {
+  width: 108px;
+  min-width: 108px;
+  left: 116px;
+}
+
+.board-table .col-flag {
+  width: 56px;
+  min-width: 56px;
+  left: 224px;
+}
+
+/* Keep leading columns fixed while scrolling so Action never covers Trip No */
+.board-table th.col-check,
+.board-table td.col-check,
+.board-table th.col-menu,
+.board-table td.col-menu,
+.board-table th.col-status,
+.board-table td.col-status,
+.board-table th.col-flag,
+.board-table td.col-flag {
+  position: sticky;
+  z-index: 3;
+}
+
+.board-table thead th.col-check,
+.board-table thead th.col-menu,
+.board-table thead th.col-status,
+.board-table thead th.col-flag {
+  z-index: 8;
+  background: #0f1a2a;
+}
+
+.board-table tbody td.col-check,
+.board-table tbody td.col-menu,
+.board-table tbody td.col-status,
+.board-table tbody td.col-flag {
+  background: #fff;
+  box-shadow: 1px 0 0 #e8ebf0;
+}
+
+.board-table tbody tr:nth-child(even) td.col-check,
+.board-table tbody tr:nth-child(even) td.col-menu,
+.board-table tbody tr:nth-child(even) td.col-status,
+.board-table tbody tr:nth-child(even) td.col-flag {
+  background: #f5f7fa;
+}
+
+.board-table tbody tr:hover td.col-check,
+.board-table tbody tr:hover td.col-menu,
+.board-table tbody tr:hover td.col-status,
+.board-table tbody tr:hover td.col-flag {
+  background: #eaf1fb !important;
+}
+
+.board-table tbody tr.selected td.col-check,
+.board-table tbody tr.selected td.col-menu,
+.board-table tbody tr.selected td.col-status,
+.board-table tbody tr.selected td.col-flag {
+  background: #e4eefb !important;
+}
+
+.board-table td.col-flag {
+  box-shadow: 4px 0 8px rgba(15, 26, 42, 0.06);
+}
+
+.flag-icon-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--fg-4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.flag-icon-btn:hover {
+  color: var(--amber);
+  background: var(--amber-bg);
+  border-color: #e2c989;
+}
+.flag-icon-btn.on {
+  color: var(--amber);
+  background: var(--amber-bg);
+  border-color: #e2c989;
 }
 
 .board-table .trip-link {
@@ -387,6 +483,7 @@
 .row-menu {
   position: relative;
   display: inline-flex;
+  z-index: 1;
 }
 
 .row-menu-trigger.open {
@@ -399,7 +496,7 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  z-index: 30;
+  z-index: 20;
   min-width: 168px;
   padding: 6px;
   background: var(--bg-surface-1);

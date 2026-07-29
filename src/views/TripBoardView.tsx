@@ -145,6 +145,7 @@ export function TripBoardView() {
     setSelectedIds,
     setSelectedTripId,
     setDetailTab,
+    setTrips,
     page,
     setPage,
     perPage,
@@ -379,7 +380,9 @@ export function TripBoardView() {
               <th className="col-check">
                 <input type="checkbox" checked={pageSelected} onChange={toggleAll} aria-label="Select page" />
               </th>
-              <th className="col-menu" aria-label="Actions" />
+              <th className="col-menu">Action</th>
+              <th className="col-status">Status</th>
+              <th className="col-flag">Flag</th>
               <th>Trip No</th>
               <th>Sub</th>
               <th>Lead Driver</th>
@@ -391,8 +394,6 @@ export function TripBoardView() {
               <th>Pay Date</th>
               <th>Date Out</th>
               <th>Date In</th>
-              <th>Flag</th>
-              <th>Pay Status</th>
             </tr>
           </thead>
           <tbody>
@@ -422,6 +423,27 @@ export function TripBoardView() {
                       onToggle={() => setMenuId((id) => (id === t.id ? null : t.id))}
                       onClose={() => setMenuId(null)}
                     />
+                  </td>
+                  <td className="col-status">
+                    <PaymentIcon status={t.paymentStatus} />
+                  </td>
+                  <td className="col-flag" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      className={`flag-icon-btn ${t.flagged ? 'on' : ''}`}
+                      title={t.flagged ? 'Clear flag' : 'Flag trip'}
+                      aria-label={t.flagged ? 'Clear flag' : 'Flag trip'}
+                      onClick={() => {
+                        setTrips((prev) =>
+                          prev.map((row) =>
+                            row.id === t.id ? { ...row, flagged: !row.flagged } : row,
+                          ),
+                        );
+                        toast(t.flagged ? 'Flag cleared' : 'Trip flagged');
+                      }}
+                    >
+                      <Flag size={14} fill={t.flagged ? 'currentColor' : 'none'} />
+                    </button>
                   </td>
                   <td>
                     <button
@@ -463,17 +485,6 @@ export function TripBoardView() {
                   <td>{t.payDate || <span className="muted">—</span>}</td>
                   <td className="tnum nowrap">{t.dateOut}</td>
                   <td className="tnum nowrap">{t.dateIn}</td>
-                  <td>
-                    <span
-                      className={`status-dot flag ${t.flagged ? 'on' : ''}`}
-                      title={t.flagged ? 'Flagged' : 'Clear'}
-                    >
-                      <Flag size={12} fill={t.flagged ? 'currentColor' : 'none'} />
-                    </span>
-                  </td>
-                  <td>
-                    <PaymentIcon status={t.paymentStatus} />
-                  </td>
                 </tr>
               ))
             )}
