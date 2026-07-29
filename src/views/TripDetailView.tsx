@@ -1304,72 +1304,67 @@ export function TripDetailView() {
           </div>
         </div>
 
-        {(trip.origin || trip.destination || trip.commodity || trip.drivesFor) && (
-          <div className="info-highlights">
-            {(trip.origin || trip.destination) && (
-              <div className="info-highlight">
-                <span className="eyebrow">Route</span>
-                <strong>
-                  {trip.origin || '—'}
-                  <span className="info-arrow">→</span>
-                  {trip.destination || '—'}
-                </strong>
-              </div>
-            )}
-            {trip.commodity && (
-              <div className="info-highlight">
-                <span className="eyebrow">Commodity</span>
-                <strong>{trip.commodity}</strong>
-              </div>
-            )}
-            {trip.drivesFor && (
-              <div className="info-highlight">
-                <span className="eyebrow">Drives for</span>
-                <strong>{trip.drivesFor}</strong>
-              </div>
-            )}
-            {trip.payDate && (
-              <div className="info-highlight">
-                <span className="eyebrow">Pay date</span>
-                <strong>{trip.payDate}</strong>
-              </div>
-            )}
-          </div>
-        )}
-
         <div className="info-metrics">
+          {(trip.origin || trip.destination) && (
+            <div className="info-metric">
+              <span className="info-lbl">Route</span>
+              <strong>
+                {trip.origin || '—'}
+                <span className="info-arrow">→</span>
+                {trip.destination || '—'}
+              </strong>
+            </div>
+          )}
+          {trip.commodity && (
+            <div className="info-metric">
+              <span className="info-lbl">Commodity</span>
+              <strong>{trip.commodity}</strong>
+            </div>
+          )}
+          {trip.drivesFor && (
+            <div className="info-metric">
+              <span className="info-lbl">Drives for</span>
+              <strong>{trip.drivesFor}</strong>
+            </div>
+          )}
+          {trip.payDate && (
+            <div className="info-metric">
+              <span className="info-lbl">Pay date</span>
+              <strong>{trip.payDate}</strong>
+            </div>
+          )}
           <div className="info-metric">
-            <span className="eyebrow">Driver ID</span>
+            <span className="info-lbl">Driver ID</span>
             <strong>{trip.leadDriverId}</strong>
           </div>
           <div className="info-metric">
-            <span className="eyebrow">Terminal</span>
+            <span className="info-lbl">Terminal</span>
             <strong>{trip.terminal}</strong>
           </div>
           <div className="info-metric">
-            <span className="eyebrow">Dispatcher</span>
+            <span className="info-lbl">Dispatcher</span>
             <strong>{trip.dispatcher}</strong>
           </div>
           <div className="info-metric">
-            <span className="eyebrow">Pay mi</span>
+            <span className="info-lbl">Pay mi</span>
             <strong className="tnum">{trip.payMiles.toFixed(1)}</strong>
           </div>
           <div className="info-metric">
-            <span className="eyebrow">Event mi</span>
+            <span className="info-lbl">Event mi</span>
             <strong className="tnum">{eventMiles.toFixed(1)}</strong>
           </div>
           <div className="info-metric">
-            <span className="eyebrow">Docs</span>
+            <span className="info-lbl">Docs</span>
             <strong className="tnum">{trip.documents.length}</strong>
           </div>
           {(trip.tractor || trip.trailer) && (
             <div className="info-metric">
-              <span className="eyebrow">Equipment</span>
+              <span className="info-lbl">Equipment</span>
               <strong>{[trip.tractor, trip.trailer].filter(Boolean).join(' / ')}</strong>
             </div>
           )}
-          <div className="info-metric info-metric-wide">
-            <span className="eyebrow">Out → In</span>
+          <div className="info-metric">
+            <span className="info-lbl">Out → In</span>
             <strong className="tnum">
               {trip.dateOut} → {trip.dateIn}
             </strong>

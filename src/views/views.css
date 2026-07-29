@@ -867,64 +867,43 @@
   color: var(--fg-4);
 }
 
-.info-highlights {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
-  padding: 12px 14px;
-  background: var(--bg-surface-2);
-  border: 1px solid var(--border-1);
-  border-radius: var(--radius-md);
-}
-
-.info-highlight {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.info-highlight .eyebrow {
-  margin: 0;
-}
-
-.info-highlight strong {
-  font-size: var(--fs-body);
-  font-weight: 650;
-  color: var(--fg-1);
-  line-height: 1.3;
-}
-
-.info-arrow {
-  display: inline-block;
-  margin: 0 6px;
-  color: var(--fg-4);
-  font-weight: 500;
-}
-
 .info-metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 0;
+  overflow-x: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-1);
 }
 
 .info-metric {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
-  padding: 10px 12px;
-  background: var(--bg-surface-2);
-  border: 1px solid var(--border-1);
-  border-radius: var(--radius-md);
+  flex: 1 1 0;
+  padding: 0 14px;
+  border-right: 1px solid var(--border-1);
 }
 
-.info-metric-wide {
-  grid-column: span 2;
+.info-metric:first-child {
+  padding-left: 0;
 }
 
-.info-metric .eyebrow {
-  margin: 0;
+.info-metric:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.info-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b5a2b;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .info-metric strong {
@@ -932,7 +911,14 @@
   font-weight: 650;
   color: var(--fg-1);
   line-height: 1.35;
-  word-break: break-word;
+  white-space: nowrap;
+}
+
+.info-arrow {
+  display: inline-block;
+  margin: 0 5px;
+  color: var(--fg-4);
+  font-weight: 500;
 }
 
 .info-actions {
@@ -2581,8 +2567,17 @@ body.is-resizing * {
   .info-actions {
     width: 100%;
   }
-  .info-metric-wide {
-    grid-column: span 1;
+  .info-metrics {
+    flex-wrap: wrap;
+    gap: 12px 0;
+  }
+  .info-metric {
+    flex: 1 1 140px;
+    border-right: none;
+    padding: 0 16px 0 0;
+  }
+  .info-metric:last-child {
+    padding-right: 0;
   }
   .meta-strip,
   .ifta-stats,
