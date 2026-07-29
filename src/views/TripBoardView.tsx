@@ -5,15 +5,11 @@ import {
   ChevronRight,
   Download,
   Flag,
-  Info,
   MessageCircle,
   MoreVertical,
-  FilePlus2,
-  Plus,
   Search,
-  Tag,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TOTAL_FILTERED } from '../data/seed';
 import type { Trip } from '../types';
@@ -33,6 +29,111 @@ function PaymentIcon({ status }: { status: Trip['paymentStatus'] }) {
   );
 }
 
+function RowMenu({
+  trip,
+  open,
+  onToggle,
+  onClose,
+}: {
+  trip: Trip;
+  open: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}) {
+  const {
+    setSelectedTripId,
+    setShowPaymentModal,
+    setShowExceptionModal,
+    setTrips,
+    setDetailTab,
+    toast,
+  } = useApp();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open, onClose]);
+
+  const openTrip = () => {
+    setSelectedTripId(trip.id);
+    setDetailTab('locations');
+    onClose();
+  };
+
+  return (
+    <div className="row-menu" ref={ref} onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        className={`btn-icon row-menu-trigger ${open ? 'open' : ''}`}
+        aria-label={`Actions for ${trip.tripNo}`}
+        aria-expanded={open}
+        onClick={onToggle}
+      >
+        <MoreVertical size={16} />
+      </button>
+      {open && (
+        <div className="row-menu-pop" role="menu">
+          <button type="button" role="menuitem" onClick={openTrip}>
+            Open trip
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setSelectedTripId(trip.id);
+              setShowPaymentModal(true);
+              onClose();
+            }}
+          >
+            Add payment
+          </button>
+          {trip.exceptions.length > 0 && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setSelectedTripId(trip.id);
+                setShowExceptionModal(true);
+                onClose();
+              }}
+            >
+              View exception
+            </button>
+          )}
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setTrips((prev) =>
+                prev.map((t) => (t.id === trip.id ? { ...t, flagged: !t.flagged } : t)),
+              );
+              toast(trip.flagged ? 'Flag cleared' : 'Trip flagged');
+              onClose();
+            }}
+          >
+            {trip.flagged ? 'Clear flag' : 'Flag trip'}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              toast(`Exported ${trip.tripNo}`);
+              onClose();
+            }}
+          >
+            Export trip
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TripBoardView() {
   const {
     trips,
@@ -48,14 +149,15 @@ export function TripBoardView() {
     selectedIds,
     setSelectedIds,
     setSelectedTripId,
-    setShowExceptionModal,
-    setShowPaymentModal,
+    setDetailTab,
     page,
     setPage,
     perPage,
     setPerPage,
     toast,
   } = useApp();
+
+  const [menuId, setMenuId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -79,11 +181,8 @@ export function TripBoardView() {
   const allSelected = filtered.length > 0 && filtered.every((t) => selectedIds.has(t.id));
 
   const toggleAll = () => {
-    if (allSelected) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filtered.map((t) => t.id)));
-    }
+    if (allSelected) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filtered.map((t) => t.id)));
   };
 
   const toggleOne = (id: string) => {
@@ -95,7 +194,10 @@ export function TripBoardView() {
     });
   };
 
-  const openTrip = (id: string) => setSelectedTripId(id);
+  const openTrip = (id: string) => {
+    setSelectedTripId(id);
+    setDetailTab('locations');
+  };
 
   const totalPages = Math.max(1, Math.ceil(TOTAL_FILTERED / perPage));
 
@@ -168,24 +270,22 @@ export function TripBoardView() {
         <table className="data-table board-table">
           <thead>
             <tr>
-              <th style={{ width: 36 }}>
+              <th className="col-check">
                 <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all" />
               </th>
-              <th style={{ width: 36 }} />
-              <th style={{ width: 36 }} />
+              <th className="col-menu" aria-label="Actions" />
               <th>Trip No</th>
-              <th>Sub Trip</th>
-              <th>Lead Driver Name</th>
-              <th>Team Driver Name</th>
+              <th>Sub</th>
+              <th>Lead Driver</th>
+              <th>Team Driver</th>
               <th>Drives For</th>
-              <th>Trip Category</th>
-              <th>Pay Miles</th>
+              <th>Category</th>
+              <th>Miles</th>
               <th>Pay Date</th>
               <th>Date Out</th>
               <th>Date In</th>
-              <th>Flagged</th>
-              <th>Payment Status</th>
-              <th>Action</th>
+              <th>Flag</th>
+              <th>Pay</th>
             </tr>
           </thead>
           <tbody>
@@ -193,9 +293,9 @@ export function TripBoardView() {
               <tr
                 key={t.id}
                 className={`clickable ${selectedIds.has(t.id) ? 'selected' : ''}`}
-                onDoubleClick={() => openTrip(t.id)}
+                onClick={() => openTrip(t.id)}
               >
-                <td onClick={(e) => e.stopPropagation()}>
+                <td className="col-check" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={selectedIds.has(t.id)}
@@ -203,21 +303,23 @@ export function TripBoardView() {
                     aria-label={`Select ${t.tripNo}`}
                   />
                 </td>
+                <td className="col-menu">
+                  <RowMenu
+                    trip={t}
+                    open={menuId === t.id}
+                    onToggle={() => setMenuId((id) => (id === t.id ? null : t.id))}
+                    onClose={() => setMenuId(null)}
+                  />
+                </td>
                 <td>
                   <button
                     type="button"
-                    className="btn-icon"
-                    aria-label="Expand"
-                    onClick={() => openTrip(t.id)}
+                    className="trip-link"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openTrip(t.id);
+                    }}
                   >
-                    <Plus size={14} />
-                  </button>
-                </td>
-                <td>
-                  <Tag size={14} color={t.tags.length ? 'var(--action)' : 'var(--fg-4)'} />
-                </td>
-                <td>
-                  <button type="button" className="trip-link" onClick={() => openTrip(t.id)}>
                     {t.tripNo}
                   </button>
                 </td>
@@ -235,57 +337,25 @@ export function TripBoardView() {
                       <span className="uid">({t.teamDriverId})</span>
                     </div>
                   ) : (
-                    <span style={{ color: 'var(--fg-4)' }}>—</span>
+                    <span className="muted">—</span>
                   )}
                 </td>
-                <td>{t.drivesFor || <span style={{ color: 'var(--fg-4)' }}>—</span>}</td>
+                <td>{t.drivesFor || <span className="muted">—</span>}</td>
                 <td>{t.tripCategory}</td>
                 <td className="tnum">{t.payMiles.toFixed(1)}</td>
-                <td>{t.payDate || <span style={{ color: 'var(--fg-4)' }}>—</span>}</td>
-                <td className="tnum" style={{ whiteSpace: 'nowrap' }}>
-                  {t.dateOut}
-                </td>
-                <td className="tnum" style={{ whiteSpace: 'nowrap' }}>
-                  {t.dateIn}
-                </td>
+                <td>{t.payDate || <span className="muted">—</span>}</td>
+                <td className="tnum nowrap">{t.dateOut}</td>
+                <td className="tnum nowrap">{t.dateIn}</td>
                 <td>
-                  <span className={`status-dot flag ${t.flagged ? 'on' : ''}`} title={t.flagged ? 'Flagged' : 'Clear'}>
+                  <span
+                    className={`status-dot flag ${t.flagged ? 'on' : ''}`}
+                    title={t.flagged ? 'Flagged' : 'Clear'}
+                  >
                     <Flag size={12} fill={t.flagged ? 'currentColor' : 'none'} />
                   </span>
                 </td>
                 <td>
                   <PaymentIcon status={t.paymentStatus} />
-                </td>
-                <td onClick={(e) => e.stopPropagation()}>
-                  <div className="actions">
-                    <button
-                      type="button"
-                      className="btn-icon"
-                      title="Add payment"
-                      onClick={() => {
-                        setSelectedTripId(t.id);
-                        setShowPaymentModal(true);
-                      }}
-                    >
-                      <FilePlus2 size={15} />
-                    </button>
-                    <button type="button" className="btn-icon" title="More">
-                      <MoreVertical size={15} />
-                    </button>
-                    {t.exceptions.length > 0 && (
-                      <button
-                        type="button"
-                        className="btn-icon danger"
-                        title="Trip exception"
-                        onClick={() => {
-                          setSelectedTripId(t.id);
-                          setShowExceptionModal(true);
-                        }}
-                      >
-                        <Info size={15} />
-                      </button>
-                    )}
-                  </div>
                 </td>
               </tr>
             ))}
@@ -296,15 +366,12 @@ export function TripBoardView() {
       <div className="board-footer">
         <span className="meta">
           Total Filtered Records: <strong className="tnum">{TOTAL_FILTERED.toLocaleString()}</strong>
-          <span style={{ marginLeft: 12, color: 'var(--fg-4)' }}>
-            (showing {filtered.length} demo rows)
-          </span>
+          <span className="muted-inline">(showing {filtered.length} demo rows)</span>
         </span>
-        <label className="meta" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <label className="meta per-page">
           Per page
           <select
             className="filter-select"
-            style={{ minWidth: 72 }}
             value={perPage}
             onChange={(e) => {
               setPerPage(Number(e.target.value));

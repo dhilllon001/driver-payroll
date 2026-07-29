@@ -1,26 +1,32 @@
 import {
   ArrowLeft,
+  FileText,
   Flag,
-  FilePlus2,
-  Maximize2,
+  MapPin,
+  NotebookPen,
+  Package,
   Pencil,
   Plus,
+  Receipt,
+  Settings2,
   Trash2,
+  Wallet,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import type { DetailTab, EventType, Trip } from '../types';
+import type { DetailTab, EventType, Trip, TripEvent } from '../types';
 import './views.css';
 
-const TABS: { id: DetailTab; label: string }[] = [
-  { id: 'payment', label: 'Trip Payment Record' },
-  { id: 'extras', label: 'Extras' },
-  { id: 'properties', label: 'Trip Properties' },
-  { id: 'documents', label: 'Documents' },
-  { id: 'notes', label: 'Notes' },
-  { id: 'ifta', label: 'IFTA' },
+const HTABS: { id: DetailTab; label: string; icon: typeof MapPin }[] = [
+  { id: 'locations', label: 'Location History', icon: MapPin },
+  { id: 'payment', label: 'Trip Payment', icon: Wallet },
+  { id: 'extras', label: 'Extras', icon: Package },
+  { id: 'properties', label: 'Trip Properties', icon: Settings2 },
+  { id: 'documents', label: 'Documents', icon: FileText },
+  { id: 'notes', label: 'Notes', icon: NotebookPen },
+  { id: 'ifta', label: 'IFTA', icon: Receipt },
 ];
 
-function eventClass(event: EventType) {
+function eventBadge(event: EventType): string {
   const map: Record<EventType, string> = {
     ACQUIRE: 'ev-acquire',
     HOOK: 'ev-hook',
@@ -30,60 +36,107 @@ function eventClass(event: EventType) {
     DETENTION: 'ev-detention',
     LAYOVER: 'ev-layover',
   };
-  return `badge badge-event ${map[event]}`;
+  return map[event];
 }
 
-function EventsTable({ trip }: { trip: Trip }) {
+function eventStatusLabel(e: TripEvent, index: number, total: number) {
+  if (e.paid) return { label: 'Paid', cls: 'st-paid' };
+  if (index === 0) return { label: 'In progress', cls: 'st-active' };
+  if (index === total - 1) return { label: 'Pending', cls: 'st-pending' };
+  return { label: 'Pending', cls: 'st-pending' };
+}
+
+function EventRouteCards({ trip }: { trip: Trip }) {
+  const first = trip.events[0];
+  const last = trip.events[trip.events.length - 1];
+
   return (
-    <div className="events-scroll">
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Event</th>
-            <th>Status</th>
-            <th>Equipment</th>
-            <th>Location</th>
-            <th>City / State</th>
-            <th>POD Required</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Miles</th>
-          </tr>
-        </thead>
-        <tbody>
-          {trip.events.map((e) => (
-            <tr key={e.id}>
-              <td>
-                <span className={eventClass(e.event)}>{e.event}</span>
-              </td>
-              <td>
-                <span className={`status-dot ${e.paid ? 'paid' : ''}`}>
-                  <span style={{ fontSize: 11, fontWeight: 700 }}>$</span>
-                </span>
-              </td>
-              <td style={{ whiteSpace: 'nowrap' }}>{e.equipment}</td>
-              <td style={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {e.location}
-              </td>
-              <td>{e.cityState}</td>
-              <td>{e.podRequired ? 'Yes' : ''}</td>
-              <td className="tnum" style={{ whiteSpace: 'nowrap' }}>
-                {e.startTime}
-              </td>
-              <td className="tnum" style={{ whiteSpace: 'nowrap' }}>
-                {e.endTime}
-              </td>
-              <td className="tnum">{e.miles || ''}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="route-col">
+      <div className="route-col-head">
+        <h3>Trip Events</h3>
+        <span className="panel-count">{trip.events.length} events</span>
+      </div>
+
+      <div className="route-summary-chips">
+        <div className="route-chip">
+          <span className="eyebrow">First event</span>
+          <strong>{first?.event ?? '—'}</strong>
+          <span className="chip-sub">{first?.cityState}</span>
+        </div>
+        <div className="route-chip">
+          <span className="eyebrow">Last event</span>
+          <strong>{last?.event ?? '—'}</strong>
+          <span className="chip-sub">{last?.cityState}</span>
+        </div>
+      </div>
+
+      <div className="route-cards">
+        {trip.events.map((e, i) => {
+          const status = eventStatusLabel(e, i, trip.events.length);
+          return (
+            <div key={e.id} className="route-card">
+              <div className="route-rail">
+                <span className="route-num">{i + 1}</span>
+                {i < trip.events.length - 1 && <span className="route-line" />}
+              </div>
+              <div className={`route-card-body ${eventBadge(e.event)}`}>
+                <div className="route-card-top">
+                  <span className={`badge badge-event ${eventBadge(e.event)}`}>
+                    {e.event}
+                  </span>
+                  <span className={`status-pill ${status.cls}`}>{status.label}</span>
+                </div>
+                <div className="route-card-title">{e.location}</div>
+                <div className="route-card-city">{e.cityState}</div>
+                <div className="route-card-meta">
+                  <div>
+                    <span className="eyebrow">Equipment</span>
+                    <strong>{e.equipment}</strong>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Window</span>
+                    <strong className="tnum">
+                      {e.startTime}
+                      {e.endTime !== e.startTime ? ` → ${e.endTime}` : ''}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="eyebrow">Miles</span>
+                    <strong className="tnum">{e.miles || 0}</strong>
+                  </div>
+                  <div>
+                    <span className="eyebrow">POD</span>
+                    <strong>{e.podRequired ? 'Required' : 'No'}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function LocationsTab({ trip }: { trip: Trip }) {
+  return (
+    <div className="loc-list airy">
+      {trip.locations.map((loc) => (
+        <div key={loc.id} className="loc-item">
+          <div className={`loc-dot ${loc.isCurrent ? 'current' : ''}`} />
+          <div className="loc-meta">
+            <div className="loc-name">{loc.name}</div>
+            <div className="loc-time">{loc.timestamp}</div>
+            {loc.duration && <div className="loc-dur">{loc.duration}</div>}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
 function PaymentTab({ trip }: { trip: Trip }) {
-  const { setShowPaymentModal, setTrips, toast } = useApp();
+  const { setShowPaymentModal, setTrips } = useApp();
 
   const toggleFlag = () => {
     setTrips((prev) =>
@@ -115,7 +168,7 @@ function PaymentTab({ trip }: { trip: Trip }) {
         </label>
         <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowPaymentModal(true)}>
           <Plus size={13} />
-          Add Payment Record
+          Add Payment
         </button>
       </div>
 
@@ -143,24 +196,12 @@ function PaymentTab({ trip }: { trip: Trip }) {
           </tbody>
         </table>
       )}
-      {trip.payments.length === 0 && (
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          style={{ marginTop: 8 }}
-          onClick={() => toast('No records found.')}
-        >
-          Refresh
-        </button>
-      )}
     </>
   );
 }
 
 function ExtrasTab({ trip }: { trip: Trip }) {
-  if (trip.extras.length === 0) {
-    return <div className="empty-state">No extras for this trip</div>;
-  }
+  if (trip.extras.length === 0) return <div className="empty-state">No extras for this trip</div>;
   return (
     <table className="data-table">
       <thead>
@@ -189,52 +230,45 @@ function ExtrasTab({ trip }: { trip: Trip }) {
 
 function PropertiesTab({ trip }: { trip: Trip }) {
   return (
-    <>
-      <div className="alert-banner" style={{ marginBottom: 16 }}>
-        Last Updated by {trip.lastUpdatedBy} at {trip.lastUpdatedAt}
+    <div className="insight-grid">
+      <div className="insight-card">
+        <span className="eyebrow">Terminal</span>
+        <strong>{trip.terminal}</strong>
       </div>
-      <div className="props-grid">
-        <div className="prop-item">
-          <span className="lbl">Terminal</span>
-          <span className="val">{trip.terminal}</span>
-        </div>
-        <div className="prop-item">
-          <span className="lbl">Category</span>
-          <span className="val">{trip.tripCategory}</span>
-        </div>
-        <div className="prop-item">
-          <span className="lbl">Dispatcher</span>
-          <span className="val">{trip.dispatcher}</span>
-        </div>
-        <div className="prop-item">
-          <span className="lbl">Trip Role</span>
-          <span className="val">{trip.tripRole}</span>
-        </div>
-        <div className="prop-item">
-          <span className="lbl">Closure Date</span>
-          <span className="val">{trip.closureDate}</span>
-        </div>
-        <div className="prop-item">
-          <span className="lbl">Drives For</span>
-          <span className="val">{trip.drivesFor || '—'}</span>
-        </div>
-        <div className="prop-item">
-          <span className="lbl">Pay Miles</span>
-          <span className="val tnum">{trip.payMiles.toFixed(1)}</span>
-        </div>
-        <div className="prop-item">
-          <span className="lbl">Sub Trip</span>
-          <span className="val">{trip.subTrip}</span>
-        </div>
+      <div className="insight-card">
+        <span className="eyebrow">Category</span>
+        <strong>{trip.tripCategory}</strong>
       </div>
-    </>
+      <div className="insight-card">
+        <span className="eyebrow">Dispatcher</span>
+        <strong>{trip.dispatcher}</strong>
+      </div>
+      <div className="insight-card">
+        <span className="eyebrow">Trip Role</span>
+        <strong>{trip.tripRole}</strong>
+      </div>
+      <div className="insight-card">
+        <span className="eyebrow">Closure Date</span>
+        <strong>{trip.closureDate}</strong>
+      </div>
+      <div className="insight-card">
+        <span className="eyebrow">Drives For</span>
+        <strong>{trip.drivesFor || '—'}</strong>
+      </div>
+      <div className="insight-card">
+        <span className="eyebrow">Pay Miles</span>
+        <strong className="tnum">{trip.payMiles.toFixed(1)}</strong>
+      </div>
+      <div className="insight-card">
+        <span className="eyebrow">Sub Trip</span>
+        <strong>{trip.subTrip}</strong>
+      </div>
+    </div>
   );
 }
 
 function DocumentsTab({ trip }: { trip: Trip }) {
-  if (trip.documents.length === 0) {
-    return <div className="empty-state">No documents attached</div>;
-  }
+  if (trip.documents.length === 0) return <div className="empty-state">No documents attached</div>;
   return (
     <table className="data-table">
       <thead>
@@ -278,18 +312,10 @@ function NotesTab({ trip }: { trip: Trip }) {
       {notes.length === 0 ? (
         <div className="empty-state">No records found.</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="notes-list">
           {notes.map((n) => (
-            <div
-              key={n.id}
-              style={{
-                padding: 12,
-                background: 'var(--bg-surface-2)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-1)',
-              }}
-            >
-              <div style={{ fontSize: 'var(--fs-small)', color: 'var(--fg-3)', marginBottom: 4 }}>
+            <div key={n.id} className="note-card">
+              <div className="note-meta">
                 {n.author} · {n.at}
               </div>
               <div>{n.body}</div>
@@ -310,10 +336,7 @@ function IftaTab({ trip }: { trip: Trip }) {
         t.id === trip.id
           ? {
               ...t,
-              ifta: [
-                ...t.ifta,
-                { id: `i${Date.now()}`, state: '', totalMiles: 0, tollMiles: 0 },
-              ],
+              ifta: [...t.ifta, { id: `i${Date.now()}`, state: '', totalMiles: 0, tollMiles: 0 }],
             }
           : t,
       ),
@@ -323,15 +346,13 @@ function IftaTab({ trip }: { trip: Trip }) {
 
   const removeRow = (id: string) => {
     setTrips((prev) =>
-      prev.map((t) =>
-        t.id === trip.id ? { ...t, ifta: t.ifta.filter((r) => r.id !== id) } : t,
-      ),
+      prev.map((t) => (t.id === trip.id ? { ...t, ifta: t.ifta.filter((r) => r.id !== id) } : t)),
     );
   };
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
+      <div className="panel-toolbar">
         <button type="button" className="btn btn-secondary btn-sm" onClick={addRow}>
           <Plus size={13} />
           Add Row
@@ -343,7 +364,7 @@ function IftaTab({ trip }: { trip: Trip }) {
             <th>State</th>
             <th>Total miles</th>
             <th>Toll miles</th>
-            <th>Action</th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -353,7 +374,7 @@ function IftaTab({ trip }: { trip: Trip }) {
               <td className="tnum">{r.totalMiles}</td>
               <td className="tnum">{r.tollMiles}</td>
               <td>
-                <div style={{ display: 'flex', gap: 2 }}>
+                <div className="inline-actions">
                   <button type="button" className="btn-icon" title="Edit" onClick={() => toast('Edit IFTA row')}>
                     <Pencil size={14} />
                   </button>
@@ -375,6 +396,15 @@ function IftaTab({ trip }: { trip: Trip }) {
   );
 }
 
+function driverInitials(name: string) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join('');
+}
+
 export function TripDetailView() {
   const {
     trips,
@@ -390,6 +420,9 @@ export function TripDetailView() {
   const trip = trips.find((t) => t.id === selectedTripId);
   if (!trip) return null;
 
+  const first = trip.events[0];
+  const last = trip.events[trip.events.length - 1];
+
   const toggleFlag = () => {
     setTrips((prev) =>
       prev.map((t) => (t.id === trip.id ? { ...t, flagged: !t.flagged } : t)),
@@ -398,98 +431,140 @@ export function TripDetailView() {
 
   return (
     <div className="detail">
-      <div className="detail-head">
-        <button type="button" className="btn btn-ghost btn-sm back" onClick={() => setSelectedTripId(null)}>
+      {/* Chrome strip */}
+      <div className="detail-chrome">
+        <button type="button" className="chrome-back" onClick={() => setSelectedTripId(null)}>
           <ArrowLeft size={14} />
-          Board
+          Back to board
         </button>
-        <div className="detail-trip-id">
-          <Flag size={14} color="var(--action)" />
-          {trip.tripNo}
-          <span className="sub">{trip.subTrip}</span>
+        <span className={`chrome-status status-${trip.paymentStatus}`}>{trip.paymentStatus}</span>
+      </div>
+
+      {/* High-level info card */}
+      <section className="detail-info-bar">
+        <div className="info-identity">
+          <div className="info-avatar">{driverInitials(trip.leadDriver)}</div>
+          <div className="info-copy">
+            <div className="info-title">{trip.leadDriver}</div>
+            <div className="info-ids">
+              <span>
+                Trip <strong>{trip.tripNo}</strong>
+              </span>
+              <span className="sep">·</span>
+              <span>
+                Sub <strong>{trip.subTrip}</strong>
+              </span>
+              <span className="sep">·</span>
+              <span>{trip.tripCategory}</span>
+              <span className="sep">·</span>
+              <span>{trip.tripRole}</span>
+            </div>
+            <div className="info-sub">
+              <span>ID {trip.leadDriverId}</span>
+              {first && (
+                <>
+                  <span className="sep">·</span>
+                  <span>{first.equipment}</span>
+                </>
+              )}
+              <span className="sep">·</span>
+              <span>{trip.terminal}</span>
+              <span className="sep">·</span>
+              <span>Disp. {trip.dispatcher}</span>
+            </div>
+          </div>
         </div>
-        <div className="detail-driver">{trip.leadDriver}</div>
-        <div className="detail-cat">{trip.tripCategory}</div>
-        <div className="detail-times">
-          <span>{trip.dateOut}</span>
-          <span>→</span>
-          <span>{trip.dateIn}</span>
+
+        <div className="info-alerts">
+          {trip.flagged && <span className="alert-pill warn">Flagged</span>}
+          {trip.paymentStatus === 'exception' && <span className="alert-pill danger">Pay exception</span>}
+          {trip.paymentStatus === 'unpaid' && <span className="alert-pill muted">Unpaid</span>}
+          {trip.paymentStatus === 'pending' && <span className="alert-pill warn">Pay pending</span>}
+          {trip.paymentStatus === 'paid' && <span className="alert-pill ok">Paid</span>}
+          {trip.exceptions.length > 0 && (
+            <span className="alert-pill danger">{trip.exceptions[0].customNote}</span>
+          )}
         </div>
-        <div className="detail-head-actions">
+
+        <div className="info-actions">
           <button
             type="button"
-            className={`btn-icon warn ${trip.flagged ? 'on' : ''}`}
-            title="Flag"
+            className={`btn btn-secondary btn-sm ${trip.flagged ? 'is-on' : ''}`}
             onClick={toggleFlag}
           >
-            <Flag size={15} fill={trip.flagged ? 'currentColor' : 'none'} />
+            <Flag size={13} fill={trip.flagged ? 'currentColor' : 'none'} />
+            {trip.flagged ? 'Flagged' : 'Flag'}
           </button>
-          <button
-            type="button"
-            className={`btn-icon pay ${trip.paymentStatus !== 'unpaid' ? 'on' : ''}`}
-            title="Payment"
-            onClick={() => setShowPaymentModal(true)}
-          >
-            <span style={{ fontWeight: 700, fontSize: 13 }}>$</span>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setShowPaymentModal(true)}>
+            <Plus size={13} />
+            Add Payment
           </button>
           {trip.exceptions.length > 0 && (
             <button
               type="button"
-              className="btn-icon danger"
-              title="Exceptions"
+              className="btn btn-ghost btn-sm danger-text"
               onClick={() => setShowExceptionModal(true)}
             >
-              <FilePlus2 size={15} />
+              Exception
             </button>
           )}
-          <button type="button" className="btn-icon" title="Expand">
-            <Maximize2 size={15} />
-          </button>
         </div>
-      </div>
-
-      <aside className="loc-panel">
-        <div className="loc-panel-head">Location History</div>
-        <div className="loc-list">
-          {trip.locations.map((loc) => (
-            <div key={loc.id} className="loc-item">
-              <div className={`loc-dot ${loc.isCurrent ? 'current' : ''}`} />
-              <div className="loc-meta">
-                <div className="loc-name">{loc.name}</div>
-                <div className="loc-time">{loc.timestamp}</div>
-                {loc.duration && <div className="loc-dur">{loc.duration}</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </aside>
-
-      <section className="events-panel">
-        <EventsTable trip={trip} />
       </section>
 
-      <aside className="pay-panel">
-        <div className="tabs">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`tab ${detailTab === t.id ? 'active' : ''}`}
-              onClick={() => setDetailTab(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
+      {/* Route strip */}
+      <section className="detail-route-strip">
+        <div className="strip-end">
+          <span className="eyebrow">Date Out</span>
+          <strong className="tnum">{trip.dateOut}</strong>
+          <span className="strip-place">{first?.cityState ?? trip.terminal}</span>
         </div>
-        <div className="pay-panel-body">
-          {detailTab === 'payment' && <PaymentTab trip={trip} />}
-          {detailTab === 'extras' && <ExtrasTab trip={trip} />}
-          {detailTab === 'properties' && <PropertiesTab trip={trip} />}
-          {detailTab === 'documents' && <DocumentsTab trip={trip} />}
-          {detailTab === 'notes' && <NotesTab trip={trip} />}
-          {detailTab === 'ifta' && <IftaTab trip={trip} />}
+        <div className="strip-mid">
+          <div className="strip-track">
+            <span className="strip-dot" />
+            <span className="strip-bar" />
+            <span className="strip-miles tnum">{trip.payMiles.toFixed(1)} mi</span>
+            <span className="strip-bar" />
+            <span className="strip-dot end" />
+          </div>
         </div>
-      </aside>
+        <div className="strip-end right">
+          <span className="eyebrow">Date In</span>
+          <strong className="tnum">{trip.dateIn}</strong>
+          <span className="strip-place">{last?.cityState ?? '—'}</span>
+        </div>
+      </section>
+
+      {/* Body: left route cards · right horizontal tabs */}
+      <div className="detail-split">
+        <aside className="detail-left">
+          <EventRouteCards trip={trip} />
+        </aside>
+
+        <section className="detail-right">
+          <div className="htabs">
+            {HTABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                className={`htab ${detailTab === id ? 'active' : ''}`}
+                onClick={() => setDetailTab(id)}
+              >
+                <Icon size={14} strokeWidth={2} />
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="htab-body">
+            {detailTab === 'locations' && <LocationsTab trip={trip} />}
+            {detailTab === 'payment' && <PaymentTab trip={trip} />}
+            {detailTab === 'extras' && <ExtrasTab trip={trip} />}
+            {detailTab === 'properties' && <PropertiesTab trip={trip} />}
+            {detailTab === 'documents' && <DocumentsTab trip={trip} />}
+            {detailTab === 'notes' && <NotesTab trip={trip} />}
+            {detailTab === 'ifta' && <IftaTab trip={trip} />}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

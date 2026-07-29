@@ -115,6 +115,7 @@ export interface Trip {
 }
 
 export type DetailTab =
+  | 'locations'
   | 'payment'
   | 'extras'
   | 'properties'

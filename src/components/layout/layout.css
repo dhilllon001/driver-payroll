@@ -21,6 +21,11 @@
   flex-direction: column;
 }
 
+.app-shell.is-detail .sidebar {
+  display: none;
+}
+
+
 /* Sidebar — dark chrome */
 .sidebar {
   width: 240px;

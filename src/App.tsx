@@ -24,10 +24,10 @@ function Shell() {
 
   return (
     <>
-      <div className="app-shell">
+      <div className={`app-shell ${showDetail ? 'is-detail' : ''}`}>
         <Sidebar />
         <div className="main-col">
-          <Topbar />
+          {!showDetail && <Topbar />}
           <div className="view-area">
             {showBoard && <TripBoardView />}
             {showDetail && <TripDetailView />}
