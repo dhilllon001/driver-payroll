@@ -545,7 +545,7 @@ export function TripBoardView() {
                         toast(t.flagged ? 'Flag cleared' : 'Trip flagged');
                       }}
                     >
-                      <Flag size={16} fill={t.flagged ? 'currentColor' : 'none'} strokeWidth={2} />
+                      <Flag size={14} fill={t.flagged ? 'currentColor' : 'none'} strokeWidth={2} />
                     </button>
                   </td>
                   <td>
