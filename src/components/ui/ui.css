@@ -207,6 +207,14 @@
   background: var(--cat-storage-bg);
   color: var(--cat-storage);
 }
+.cat-Tip {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+.cat-FuelAdvance {
+  background: var(--teal-bg);
+  color: var(--teal);
+}
 
 .status-dot {
   width: 22px;

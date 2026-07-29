@@ -61,6 +61,7 @@ export function AddPaymentModal() {
       payAdjustment,
       lines,
       notes,
+      status: 'open',
     };
     setTrips((prev) =>
       prev.map((t) =>

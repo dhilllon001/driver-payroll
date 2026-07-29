@@ -41,8 +41,11 @@ export interface TripEvent {
 export interface LocationStop {
   id: string;
   name: string;
-  timestamp: string;
+  eventName: EventType;
+  timeIn: string;
+  timeOut: string;
   duration: string;
+  cityState?: string;
   isCurrent?: boolean;
 }
 
@@ -64,6 +67,7 @@ export interface PaymentRecord {
   payAdjustment: string;
   lines: PayLine[];
   notes: string;
+  status: 'open' | 'paid' | 'pending';
 }
 
 export interface IftaRow {
@@ -73,12 +77,32 @@ export interface IftaRow {
   tollMiles: number;
 }
 
+export type NotesSubTab = 'Driver' | 'Dispatch' | 'User';
+
 export interface TripNote {
   id: string;
-  section: 'Payroll' | 'Driver' | 'Dispatch';
+  section: NotesSubTab;
   body: string;
   author: string;
   at: string;
+}
+
+export interface TripDocument {
+  id: string;
+  name: string;
+  type: string;
+  uploadedAt: string;
+  size: string;
+  previewUrl?: string;
+}
+
+export interface TripExtra {
+  id: string;
+  type: string;
+  amount: number;
+  status: string;
+  note?: string;
+  quantity?: number;
 }
 
 export interface Trip {
@@ -104,14 +128,20 @@ export interface Trip {
   closureDate: string;
   lastUpdatedBy: string;
   lastUpdatedAt: string;
+  tractor?: string;
+  trailer?: string;
+  commodity?: string;
+  origin?: string;
+  destination?: string;
+  customer?: string;
   exceptions: TripException[];
   events: TripEvent[];
   locations: LocationStop[];
   payments: PaymentRecord[];
   ifta: IftaRow[];
   notes: TripNote[];
-  documents: { id: string; name: string; type: string }[];
-  extras: { id: string; type: string; amount: number; status: string }[];
+  documents: TripDocument[];
+  extras: TripExtra[];
 }
 
 export type DetailTab =
@@ -121,6 +151,5 @@ export type DetailTab =
   | 'properties'
   | 'documents'
   | 'notes'
-  | 'ifta';
-
-export type NotesSubTab = 'Payroll' | 'Driver' | 'Dispatch';
+  | 'ifta'
+  | 'ai';

@@ -1,6 +1,6 @@
 import type { Trip } from '../types';
 
-export const TRIPS: Trip[] = [
+const BASE_TRIPS: Trip[] = [
   {
     id: '1',
     tripNo: 'T10659673',
@@ -24,6 +24,12 @@ export const TRIPS: Trip[] = [
     closureDate: 'Jul 29, 2026 03:25 AM',
     lastUpdatedBy: 'Yoshua',
     lastUpdatedAt: 'Jul 29, 2026 06:41 AM',
+    tractor: 'FT123C25',
+    trailer: '12368MSM',
+    commodity: 'Auto parts',
+    origin: 'Nuevo Laredo, TM',
+    destination: 'Monterrey, NX',
+    customer: 'CARGOMEX',
     exceptions: [
       {
         customNote: 'No satellite and gate check data found',
@@ -156,61 +162,306 @@ export const TRIPS: Trip[] = [
     locations: [
       {
         id: 'l1',
-        name: 'Via de Galicia, Nueva C...',
-        timestamp: 'Jul 29, 12:15 AM',
+        name: 'TS TRANSPORTES NLD TERMINAL',
+        eventName: 'ACQUIRE',
+        timeIn: 'Jul 29, 12:15 AM',
+        timeOut: 'Jul 29, 12:19 AM',
         duration: '04 m',
+        cityState: 'Nuevo Laredo, TM',
       },
       {
         id: 'l2',
-        name: 'CARGOMEX MONTERRE...',
-        timestamp: 'Jul 29, 01:15 AM',
+        name: 'CARGOMEX MONTERREY',
+        eventName: 'HOOK',
+        timeIn: 'Jul 29, 01:15 AM',
+        timeOut: 'Jul 29, 01:35 AM',
         duration: '20 m',
+        cityState: 'Monterrey, NX',
       },
       {
         id: 'l3',
-        name: 'Apodaca Industrial',
-        timestamp: 'Jul 29, 01:45 AM',
-        duration: '10 m',
+        name: 'Via de Galicia Gate',
+        eventName: 'GATE PASS',
+        timeIn: 'Jul 29, 01:35 AM',
+        timeOut: 'Jul 29, 01:40 AM',
+        duration: '05 m',
+        cityState: 'Nuevo Laredo, TM',
       },
       {
         id: 'l4',
-        name: 'Ciénega de Flores, NX',
-        timestamp: 'Jul 29, 02:00 AM',
+        name: 'Customer Dock 7 — Apodaca',
+        eventName: 'DETENTION',
+        timeIn: 'Jul 29, 01:45 AM',
+        timeOut: 'Jul 29, 01:55 AM',
         duration: '10 m',
+        cityState: 'Apodaca, NX',
       },
       {
         id: 'l5',
-        name: 'Santa Catarina Crossdock',
-        timestamp: 'Jul 29, 02:20 AM',
-        duration: '08 m',
+        name: 'Ciénega de Flores Terminal Norte',
+        eventName: 'DROP',
+        timeIn: 'Jul 29, 02:00 AM',
+        timeOut: 'Jul 29, 02:10 AM',
+        duration: '10 m',
+        cityState: 'Ciénega de Flores, NX',
       },
       {
         id: 'l6',
-        name: 'San Nicolás DC',
-        timestamp: 'Jul 29, 03:05 AM',
-        duration: '13 m',
+        name: 'Santa Catarina Crossdock',
+        eventName: 'HOOK',
+        timeIn: 'Jul 29, 02:20 AM',
+        timeOut: 'Jul 29, 02:28 AM',
+        duration: '08 m',
+        cityState: 'Santa Catarina, NX',
       },
       {
         id: 'l7',
-        name: 'CURRENT POSITION',
-        timestamp: 'Jul 29, 03:25 AM',
-        duration: '',
+        name: 'Escobedo Rest Yard',
+        eventName: 'LAYOVER',
+        timeIn: 'Jul 29, 02:35 AM',
+        timeOut: 'Jul 29, 02:50 AM',
+        duration: '15 m',
+        cityState: 'Escobedo, NX',
+      },
+      {
+        id: 'l8',
+        name: 'Garcia Logistics Gate B',
+        eventName: 'GATE PASS',
+        timeIn: 'Jul 29, 02:55 AM',
+        timeOut: 'Jul 29, 02:58 AM',
+        duration: '03 m',
+        cityState: 'García, NX',
+      },
+      {
+        id: 'l9',
+        name: 'San Nicolás DC Ramp 12',
+        eventName: 'DROP',
+        timeIn: 'Jul 29, 03:05 AM',
+        timeOut: 'Jul 29, 03:18 AM',
+        duration: '13 m',
+        cityState: 'San Nicolás, NX',
+      },
+      {
+        id: 'l10',
+        name: 'CARGOMEX MONTERREY',
+        eventName: 'RELEASE',
+        timeIn: 'Jul 29, 03:25 AM',
+        timeOut: 'Jul 29, 03:25 AM',
+        duration: '0 m',
+        cityState: 'Monterrey, NX',
         isCurrent: true,
       },
     ],
-    payments: [],
+    payments: [
+      {
+        id: 'p1',
+        assets: 'FT123C25',
+        compensated: 'ERNESTO MARTIN SANTIAGO MORALES',
+        payDate: 'Aug 20, 2026',
+        amount: 286.4,
+        taxCode: 'EXEMPT',
+        payAdjustment: 'Regular Pay',
+        status: 'open',
+        notes: 'Mileage for loaded legs',
+        lines: [
+          {
+            method: 'Mileage',
+            basedOn: 'Loaded Miles',
+            quantity: 136.6,
+            payRate: 1.85,
+            amount: 252.71,
+          },
+          {
+            method: 'Hourly',
+            basedOn: 'Regular Hours',
+            quantity: 1.5,
+            payRate: 22.46,
+            amount: 33.69,
+          },
+        ],
+      },
+      {
+        id: 'p2',
+        assets: '12368MSM',
+        compensated: 'ERNESTO MARTIN SANTIAGO MORALES',
+        payDate: 'Aug 20, 2026',
+        amount: 150.0,
+        taxCode: 'EXEMPT',
+        payAdjustment: 'Detention',
+        status: 'pending',
+        notes: 'Dock 7 wait — Apodaca',
+        lines: [
+          {
+            method: 'Misc Flat',
+            basedOn: 'Flat Rate',
+            quantity: 1,
+            payRate: 150.0,
+            amount: 150.0,
+          },
+        ],
+      },
+      {
+        id: 'p3',
+        assets: 'FT123C25',
+        compensated: 'ERNESTO MARTIN SANTIAGO MORALES',
+        payDate: 'Jul 15, 2026',
+        amount: 85.0,
+        taxCode: 'EXEMPT',
+        payAdjustment: 'Lumper',
+        status: 'paid',
+        notes: 'Unload assist — paid prior cycle',
+        lines: [
+          {
+            method: 'Misc Flat',
+            basedOn: 'Flat Rate',
+            quantity: 1,
+            payRate: 85.0,
+            amount: 85.0,
+          },
+        ],
+      },
+      {
+        id: 'p4',
+        assets: 'FT99102',
+        compensated: 'ERNESTO MARTIN SANTIAGO MORALES',
+        payDate: 'Aug 20, 2026',
+        amount: 25.0,
+        taxCode: 'EXEMPT',
+        payAdjustment: 'Tip',
+        status: 'open',
+        notes: 'Yard crew tip',
+        lines: [
+          {
+            method: 'Misc Flat',
+            basedOn: 'Flat Rate',
+            quantity: 1,
+            payRate: 25.0,
+            amount: 25.0,
+          },
+        ],
+      },
+    ],
     ifta: [
       { id: 'i1', state: 'NX', totalMiles: 99.11, tollMiles: 22.46 },
       { id: 'i2', state: 'TM', totalMiles: 36.05, tollMiles: 0 },
     ],
-    notes: [],
+    notes: [
+      {
+        id: 'n1',
+        section: 'Driver',
+        body: 'Waited 10 minutes at Dock 7 for forklift. Customer signed POD after seal check.',
+        author: 'ERNESTO1',
+        at: 'Jul 29, 02:12 AM',
+      },
+      {
+        id: 'n2',
+        section: 'Driver',
+        body: 'Fuel stop skipped — tank at 62%. Heading straight to release.',
+        author: 'ERNESTO1',
+        at: 'Jul 29, 03:05 AM',
+      },
+      {
+        id: 'n3',
+        section: 'Dispatch',
+        body: 'Hold release until gate pass photo is uploaded. Exception open for satellite gap.',
+        author: 'Yoshua',
+        at: 'Jul 29, 03:40 AM',
+      },
+      {
+        id: 'n4',
+        section: 'Dispatch',
+        body: 'Confirmed detention with customer ops — add Accessorial if dwell exceeds 2h.',
+        author: 'Yoshua',
+        at: 'Jul 29, 04:10 AM',
+      },
+      {
+        id: 'n5',
+        section: 'User',
+        body: 'Flagged for payroll review — pay miles vs event miles delta needs verification.',
+        author: 'Payroll Admin',
+        at: 'Jul 29, 06:41 AM',
+      },
+    ],
     documents: [
-      { id: 'd1', name: 'BOL_T10659673.pdf', type: 'BOL' },
-      { id: 'd2', name: 'POD_gate_pass.jpg', type: 'POD' },
+      {
+        id: 'd1',
+        name: 'BOL_T10659673.pdf',
+        type: 'BOL',
+        uploadedAt: 'Jul 29, 12:40 AM',
+        size: '842 KB',
+      },
+      {
+        id: 'd2',
+        name: 'POD_gate_pass.jpg',
+        type: 'POD',
+        uploadedAt: 'Jul 29, 01:42 AM',
+        size: '1.2 MB',
+        previewUrl: '/docs/pod.svg',
+      },
+      {
+        id: 'd3',
+        name: 'Seal_photo_dock7.jpg',
+        type: 'Photo',
+        uploadedAt: 'Jul 29, 02:05 AM',
+        size: '980 KB',
+        previewUrl: '/docs/seal.svg',
+      },
+      {
+        id: 'd4',
+        name: 'Lumper_receipt.pdf',
+        type: 'Receipt',
+        uploadedAt: 'Jul 29, 02:18 AM',
+        size: '214 KB',
+      },
+      {
+        id: 'd5',
+        name: 'Rate_confirmation.pdf',
+        type: 'Rate Con',
+        uploadedAt: 'Jul 28, 09:15 PM',
+        size: '156 KB',
+      },
+      {
+        id: 'd6',
+        name: 'Yard_inbound.jpg',
+        type: 'Photo',
+        uploadedAt: 'Jul 29, 12:20 AM',
+        size: '1.1 MB',
+        previewUrl: '/docs/yard.svg',
+      },
     ],
     extras: [
-      { id: 'x1', type: 'Detention', amount: 150, status: 'pending' },
-      { id: 'x2', type: 'Lumper', amount: 85, status: 'approved' },
+      {
+        id: 'x1',
+        type: 'Detention',
+        amount: 150,
+        status: 'pending',
+        note: 'Dock 7 wait — Apodaca',
+        quantity: 1,
+      },
+      {
+        id: 'x2',
+        type: 'Lumper',
+        amount: 85,
+        status: 'approved',
+        note: 'Unload assist',
+        quantity: 1,
+      },
+      {
+        id: 'x3',
+        type: 'Tip',
+        amount: 25,
+        status: 'pending',
+        note: 'Yard crew tip',
+        quantity: 1,
+      },
+      {
+        id: 'x4',
+        type: 'Fuel Advance',
+        amount: 120,
+        status: 'approved',
+        note: 'Pre-trip advance',
+        quantity: 1,
+      },
     ],
   },
   {
@@ -267,14 +518,20 @@ export const TRIPS: Trip[] = [
       {
         id: 'l1',
         name: 'Saskatoon Terminal',
-        timestamp: 'Jul 28, 06:00 PM',
+        eventName: 'ACQUIRE',
+        timeIn: 'Jul 28, 06:00 PM',
+        timeOut: 'Jul 28, 06:15 PM',
         duration: '15 m',
+        cityState: 'Saskatoon, SK',
       },
       {
         id: 'l2',
-        name: 'CURRENT POSITION',
-        timestamp: 'Jul 29, 08:30 AM',
-        duration: '',
+        name: 'Regina DC',
+        eventName: 'DROP',
+        timeIn: 'Jul 29, 08:00 AM',
+        timeOut: 'Jul 29, 08:30 AM',
+        duration: '30 m',
+        cityState: 'Regina, SK',
         isCurrent: true,
       },
     ],
@@ -287,6 +544,7 @@ export const TRIPS: Trip[] = [
         amount: 420.5,
         taxCode: 'EXEMPT',
         payAdjustment: 'Regular Pay',
+        status: 'paid',
         lines: [
           {
             method: 'Mileage',
@@ -310,14 +568,31 @@ export const TRIPS: Trip[] = [
     notes: [
       {
         id: 'n1',
-        section: 'Payroll',
+        section: 'User',
         body: 'Paid on regular cycle.',
         author: 'Aman',
         at: 'Jul 29, 2026 09:00 AM',
       },
     ],
-    documents: [],
-    extras: [],
+    documents: [
+      {
+        id: 'd1',
+        name: 'Settlement_T10659680.pdf',
+        type: 'Settlement',
+        uploadedAt: 'Jul 29, 09:05 AM',
+        size: '320 KB',
+      },
+    ],
+    extras: [
+      {
+        id: 'x1',
+        type: 'Tip',
+        amount: 40,
+        status: 'approved',
+        note: 'Customer tip',
+        quantity: 1,
+      },
+    ],
   },
   {
     id: '3',
@@ -385,20 +660,47 @@ export const TRIPS: Trip[] = [
       {
         id: 'l1',
         name: 'Romulus Crossdock',
-        timestamp: 'Jul 27, 10:00 AM',
+        eventName: 'HOOK',
+        timeIn: 'Jul 27, 10:00 AM',
+        timeOut: 'Jul 27, 10:30 AM',
         duration: '30 m',
+        cityState: 'Romulus, MI',
       },
       {
         id: 'l2',
-        name: 'Toledo Rest Area',
-        timestamp: 'Jul 27, 10:00 PM',
-        duration: '8 h',
+        name: 'I-75 Weigh Station',
+        eventName: 'GATE PASS',
+        timeIn: 'Jul 27, 12:40 PM',
+        timeOut: 'Jul 27, 12:48 PM',
+        duration: '08 m',
+        cityState: 'Monroe, MI',
       },
       {
         id: 'l3',
-        name: 'CURRENT POSITION',
-        timestamp: 'Jul 28, 06:45 PM',
-        duration: '',
+        name: 'Toledo Rest Area',
+        eventName: 'LAYOVER',
+        timeIn: 'Jul 27, 10:00 PM',
+        timeOut: 'Jul 28, 06:00 AM',
+        duration: '8 h',
+        cityState: 'Toledo, OH',
+      },
+      {
+        id: 'l4',
+        name: 'Gary Intermodal Gate',
+        eventName: 'GATE PASS',
+        timeIn: 'Jul 28, 02:10 PM',
+        timeOut: 'Jul 28, 02:18 PM',
+        duration: '08 m',
+        cityState: 'Gary, IN',
+      },
+      {
+        id: 'l5',
+        name: 'Chicago Intermodal',
+        eventName: 'DROP',
+        timeIn: 'Jul 28, 06:00 PM',
+        timeOut: 'Jul 28, 06:45 PM',
+        duration: '45 m',
+        cityState: 'Chicago, IL',
         isCurrent: true,
       },
     ],
@@ -410,8 +712,40 @@ export const TRIPS: Trip[] = [
       { id: 'i4', state: 'IL', totalMiles: 90.2, tollMiles: 8.0 },
     ],
     notes: [],
-    documents: [{ id: 'd1', name: 'seal_photo.jpg', type: 'Photo' }],
-    extras: [{ id: 'x1', type: 'Layover', amount: 545, status: 'pending' }],
+    documents: [
+      {
+        id: 'd1',
+        name: 'seal_photo.jpg',
+        type: 'Photo',
+        uploadedAt: 'Jul 28, 06:50 PM',
+        size: '1.4 MB',
+      },
+      {
+        id: 'd2',
+        name: 'BOL_T10659691.pdf',
+        type: 'BOL',
+        uploadedAt: 'Jul 27, 10:20 AM',
+        size: '610 KB',
+      },
+    ],
+    extras: [
+      {
+        id: 'x1',
+        type: 'Layover',
+        amount: 545,
+        status: 'pending',
+        note: 'Toledo rest — 8h',
+        quantity: 1,
+      },
+      {
+        id: 'x2',
+        type: 'Tip',
+        amount: 30,
+        status: 'pending',
+        note: 'Crossdock tip',
+        quantity: 1,
+      },
+    ],
   },
   {
     id: '4',
@@ -467,14 +801,20 @@ export const TRIPS: Trip[] = [
       {
         id: 'l1',
         name: 'Montreal Hub',
-        timestamp: 'Jul 29, 04:00 AM',
+        eventName: 'ACQUIRE',
+        timeIn: 'Jul 29, 04:00 AM',
+        timeOut: 'Jul 29, 04:12 AM',
         duration: '12 m',
+        cityState: 'Montreal, QC',
       },
       {
         id: 'l2',
-        name: 'CURRENT POSITION',
-        timestamp: 'Jul 29, 07:20 AM',
-        duration: '',
+        name: 'Laval DC',
+        eventName: 'DROP',
+        timeIn: 'Jul 29, 06:45 AM',
+        timeOut: 'Jul 29, 07:20 AM',
+        duration: '35 m',
+        cityState: 'Laval, QC',
         isCurrent: true,
       },
     ],
@@ -487,6 +827,7 @@ export const TRIPS: Trip[] = [
         amount: 270,
         taxCode: 'EXEMPT',
         payAdjustment: 'Regular Pay',
+        status: 'pending',
         lines: [
           {
             method: 'Hourly',
@@ -590,20 +931,29 @@ export const TRIPS: Trip[] = [
       {
         id: 'l1',
         name: 'Apodaca Yard',
-        timestamp: 'Jul 28, 11:30 PM',
+        eventName: 'HOOK',
+        timeIn: 'Jul 28, 11:30 PM',
+        timeOut: 'Jul 28, 11:50 PM',
         duration: '20 m',
+        cityState: 'Apodaca, NX',
       },
       {
         id: 'l2',
         name: 'Customer Dock 4',
-        timestamp: 'Jul 29, 12:30 AM',
+        eventName: 'DETENTION',
+        timeIn: 'Jul 29, 12:30 AM',
+        timeOut: 'Jul 29, 03:00 AM',
         duration: '2 h 30 m',
+        cityState: 'Monterrey, NX',
       },
       {
         id: 'l3',
-        name: 'CURRENT POSITION',
-        timestamp: 'Jul 29, 03:45 AM',
-        duration: '',
+        name: 'Customer Dock 4',
+        eventName: 'DROP',
+        timeIn: 'Jul 29, 03:00 AM',
+        timeOut: 'Jul 29, 03:45 AM',
+        duration: '45 m',
+        cityState: 'Monterrey, NX',
         isCurrent: true,
       },
     ],
@@ -611,7 +961,16 @@ export const TRIPS: Trip[] = [
     ifta: [{ id: 'i1', state: 'NX', totalMiles: 87.1, tollMiles: 11.2 }],
     notes: [],
     documents: [],
-    extras: [{ id: 'x1', type: 'Detention', amount: 225, status: 'pending' }],
+    extras: [
+      {
+        id: 'x1',
+        type: 'Detention',
+        amount: 225,
+        status: 'pending',
+        note: 'Customer dock wait',
+        quantity: 1,
+      },
+    ],
   },
   {
     id: '6',
@@ -667,14 +1026,20 @@ export const TRIPS: Trip[] = [
       {
         id: 'l1',
         name: 'Boucherville Hub',
-        timestamp: 'Jul 29, 05:00 AM',
+        eventName: 'ACQUIRE',
+        timeIn: 'Jul 29, 05:00 AM',
+        timeOut: 'Jul 29, 05:18 AM',
         duration: '18 m',
+        cityState: 'Boucherville, QC',
       },
       {
         id: 'l2',
-        name: 'CURRENT POSITION',
-        timestamp: 'Jul 29, 09:10 AM',
-        duration: '',
+        name: 'Longueuil DC',
+        eventName: 'DROP',
+        timeIn: 'Jul 29, 08:40 AM',
+        timeOut: 'Jul 29, 09:10 AM',
+        duration: '30 m',
+        cityState: 'Longueuil, QC',
         isCurrent: true,
       },
     ],
@@ -682,8 +1047,209 @@ export const TRIPS: Trip[] = [
     ifta: [{ id: 'i1', state: 'QC', totalMiles: 54.0, tollMiles: 0 }],
     notes: [],
     documents: [],
-    extras: [{ id: 'x1', type: 'TONU', amount: 250, status: 'rejected' }],
+    extras: [
+      {
+        id: 'x1',
+        type: 'TONU',
+        amount: 250,
+        status: 'rejected',
+        note: 'Load cancelled at gate',
+        quantity: 1,
+      },
+      {
+        id: 'x2',
+        type: 'Tip',
+        amount: 15,
+        status: 'pending',
+        note: 'Gate tip',
+        quantity: 1,
+      },
+    ],
   },
 ];
 
-export const TOTAL_FILTERED = 4075;
+const EXTRA_DRIVERS = [
+  ['AMANDEEP SINGH', 'ASINGH'],
+  ['GURPREET KAUR', 'GKAUR'],
+  ['NAVJOT SINGH', 'NSINGH'],
+  ['HARMAN BRAR', 'HBRAR'],
+  ['SUKHMAN GILL', 'SGILL'],
+  ['JASMEET SANDHU', 'JSANDHU'],
+  ['PARAMJIT DHILLON', 'PDHILLON'],
+  ['RAJWANT KAUR', 'RKAUR'],
+  ['MANPREET SIDHU', 'MSIDHU'],
+  ['TALWINDER SINGH', 'TSINGH'],
+  ['KULDEEP CHEEMA', 'KCHEEMA'],
+  ['SIMRANJEET KAUR', 'SKAUR2'],
+] as const;
+
+const EXTRA_TEAMS = [
+  ['', ''],
+  ['HARPREET SINGH', 'HSINGH2'],
+  ['RANJIT BAINS', 'RBAINS'],
+  ['', ''],
+  ['GURINDER TOOR', 'GTOOR'],
+] as const;
+
+const EXTRA_CATEGORIES = [
+  'MXMTY-Local',
+  'QC DEDICATED SH',
+  'RomulusDispatch',
+  'QC LOCAL',
+  'TOR Dedicated',
+  'Windsor Cross',
+  'Chicago Lane',
+  'Prairie Shuttle',
+] as const;
+
+const EXTRA_TERMINALS = ['QRO700LOSCUES', 'YQR100MAIN', 'DET200ROM', 'YUL300QC', 'YYZ400TOR', 'YWG500MB'] as const;
+const EXTRA_DISPATCHERS = ['Yoshua', 'Aman', 'Priya', 'Marc', 'Sofia', 'Derek'] as const;
+const EXTRA_ROLES = ['Local', 'Team', 'Company', 'Owner Operator'] as const;
+const EXTRA_STATUSES = ['unpaid', 'pending', 'paid', 'exception'] as const;
+
+function buildExtraTrips(count: number): Trip[] {
+  const trips: Trip[] = [];
+  for (let i = 0; i < count; i++) {
+    const idNum = i + 7;
+    const driver = EXTRA_DRIVERS[i % EXTRA_DRIVERS.length];
+    const team = EXTRA_TEAMS[i % EXTRA_TEAMS.length];
+    const role = EXTRA_ROLES[i % EXTRA_ROLES.length] as Trip['tripRole'];
+    const status = EXTRA_STATUSES[i % EXTRA_STATUSES.length] as Trip['paymentStatus'];
+    const category = EXTRA_CATEGORIES[i % EXTRA_CATEGORIES.length];
+    const terminal = EXTRA_TERMINALS[i % EXTRA_TERMINALS.length];
+    const dispatcher = EXTRA_DISPATCHERS[i % EXTRA_DISPATCHERS.length];
+    const miles = Number((42 + ((i * 17) % 380) + (i % 7) * 0.3).toFixed(1));
+    const day = 1 + (i % 28);
+    const hourOut = 4 + (i % 14);
+    const hourIn = Math.min(23, hourOut + 2 + (i % 5));
+    const tripNo = `T${10659720 + i}`;
+    const flagged = i % 9 === 0 || status === 'exception';
+    const paid = status === 'paid';
+    const city = ['Monterrey, NX', 'Saskatoon, SK', 'Romulus, MI', 'Montreal, QC', 'Toronto, ON', 'Chicago, IL'][
+      i % 6
+    ];
+    const locName = ['North Yard', 'Crossdock A', 'Customer Dock', 'Terminal Gate', 'Hub Ramp', 'DC Bay 3'][i % 6];
+
+    trips.push({
+      id: String(idNum),
+      tripNo,
+      subTrip: 1 + (i % 3),
+      leadDriver: driver[0],
+      leadDriverId: driver[1],
+      teamDriver: role === 'Team' ? team[0] || 'HARPREET SINGH' : team[0],
+      teamDriverId: role === 'Team' ? team[1] || 'HSINGH2' : team[1],
+      drivesFor: i % 4 === 0 ? 'Charger Logistics' : '',
+      tripCategory: category,
+      tripRole: role,
+      payMiles: miles,
+      payDate: paid || status === 'pending' ? `Aug ${10 + (i % 18)}, 2026` : '',
+      dateOut: `Jul ${day}, 2026 ${String(hourOut).padStart(2, '0')}:00 ${hourOut < 12 ? 'AM' : 'PM'}`,
+      dateIn: `Jul ${day}, 2026 ${String(hourIn).padStart(2, '0')}:${i % 2 === 0 ? '15' : '45'} ${hourIn < 12 ? 'AM' : 'PM'}`,
+      flagged,
+      paymentStatus: status,
+      tags: flagged ? ['exception'] : role === 'Team' ? ['team'] : [],
+      terminal,
+      dispatcher,
+      closureDate: `Jul ${day}, 2026 ${String(hourIn).padStart(2, '0')}:45 ${hourIn < 12 ? 'AM' : 'PM'}`,
+      lastUpdatedBy: dispatcher,
+      lastUpdatedAt: `Jul ${day}, 2026 10:00 AM`,
+      tractor: `CL${88000 + i}`,
+      trailer: `TR${12000 + i}`,
+      commodity: ['Auto parts', 'Retail freight', 'Produce', 'General'][i % 4],
+      origin: city,
+      destination: city,
+      customer: ['CARGOMEX', 'Loblaw', 'Amazon', 'Walmart'][i % 4],
+      exceptions:
+        status === 'exception'
+          ? [
+              {
+                customNote: 'Missing gate check / satellite gap',
+                errorException: '-',
+                ruleName: 'GPS_GAP',
+              },
+            ]
+          : [],
+      events: [
+        {
+          id: `e${idNum}-1`,
+          event: 'ACQUIRE',
+          paid,
+          equipment: `CL${88000 + i} [E]`,
+          location: locName,
+          cityState: city,
+          podRequired: false,
+          startTime: `${day} Jul ${String(hourOut).padStart(2, '0')}:00`,
+          endTime: `${day} Jul ${String(hourOut).padStart(2, '0')}:00`,
+          miles: 0,
+        },
+        {
+          id: `e${idNum}-2`,
+          event: 'DROP',
+          paid,
+          equipment: `CL${88000 + i} [E]`,
+          location: `${locName} Dest`,
+          cityState: city,
+          podRequired: true,
+          startTime: `${day} Jul ${String(hourIn).padStart(2, '0')}:15`,
+          endTime: `${day} Jul ${String(hourIn).padStart(2, '0')}:45`,
+          miles,
+        },
+      ],
+      locations: [
+        {
+          id: `l${idNum}-1`,
+          name: locName,
+          eventName: 'ACQUIRE',
+          timeIn: `Jul ${day}, ${String(hourOut).padStart(2, '0')}:00 AM`,
+          timeOut: `Jul ${day}, ${String(hourOut).padStart(2, '0')}:12 AM`,
+          duration: '12 m',
+          cityState: city,
+        },
+        {
+          id: `l${idNum}-2`,
+          name: `${locName} Dest`,
+          eventName: 'DROP',
+          timeIn: `Jul ${day}, ${String(hourIn).padStart(2, '0')}:15 PM`,
+          timeOut: `Jul ${day}, ${String(hourIn).padStart(2, '0')}:45 PM`,
+          duration: '30 m',
+          cityState: city,
+          isCurrent: true,
+        },
+      ],
+      payments:
+        paid || status === 'pending'
+          ? [
+              {
+                id: `p${idNum}`,
+                assets: `CL${88000 + i}`,
+                compensated: driver[0],
+                payDate: `Aug ${10 + (i % 18)}, 2026`,
+                amount: Number((miles * 1.9 + (i % 5) * 25).toFixed(2)),
+                taxCode: 'EXEMPT',
+                payAdjustment: 'Regular Pay',
+                status: paid ? 'paid' : 'pending',
+                notes: '',
+                lines: [
+                  {
+                    method: 'Mileage',
+                    basedOn: 'Loaded Miles',
+                    quantity: miles,
+                    payRate: 1.9,
+                    amount: Number((miles * 1.9).toFixed(2)),
+                  },
+                ],
+              },
+            ]
+          : [],
+      ifta: [{ id: `i${idNum}`, state: ['NX', 'SK', 'MI', 'QC', 'ON', 'IL'][i % 6], totalMiles: miles, tollMiles: Number((miles * 0.12).toFixed(2)) }],
+      notes: [],
+      documents: [],
+      extras: i % 5 === 0 ? [{ id: `x${idNum}`, type: 'Detention', amount: 125, status: 'pending', note: 'Dock wait', quantity: 1 }] : [],
+    });
+  }
+  return trips;
+}
+
+export const TRIPS: Trip[] = [...BASE_TRIPS, ...buildExtraTrips(120)];
+
+export const TOTAL_FILTERED = TRIPS.length;

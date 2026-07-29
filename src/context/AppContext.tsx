@@ -55,15 +55,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [trips, setTrips] = useState<Trip[]>(() => TRIPS.map((t) => ({ ...t })));
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [detailTab, setDetailTab] = useState<DetailTab>('locations');
-  const [notesSubTab, setNotesSubTab] = useState<NotesSubTab>('Payroll');
+  const [detailTab, setDetailTab] = useState<DetailTab>('payment');
+  const [notesSubTab, setNotesSubTab] = useState<NotesSubTab>('Driver');
   const [search, setSearch] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('all');
   const [flagFilter, setFlagFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
   const [tagFilter, setTagFilter] = useState('');
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(100);
+  const [perPage, setPerPage] = useState(25);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showExceptionModal, setShowExceptionModal] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
