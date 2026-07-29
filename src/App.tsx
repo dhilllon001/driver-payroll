@@ -13,6 +13,7 @@ import { FuelView } from './views/FuelView';
 import { IncidentsView } from './views/IncidentsView';
 import { DeductionsView } from './views/DeductionsView';
 import { OpsModuleView } from './views/OpsModuleView';
+import { DataEntrySuite } from './views/DataEntrySuite';
 import { PlaceholderView } from './views/PlaceholderView';
 import type { ViewId } from './types';
 import './styles/global.css';
@@ -87,6 +88,8 @@ function Shell() {
     <DeductionsView />
   ) : view === 'config' ? (
     <PayrollConfigView />
+  ) : opsId && (opsId.startsWith('ifta') || opsId.startsWith('de-')) ? (
+    <DataEntrySuite id={opsId} />
   ) : opsId ? (
     <OpsModuleView id={opsId} />
   ) : (

@@ -1,0 +1,149 @@
+.de-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--grey-bg);
+  color: var(--fg-2);
+  font-size: var(--fs-micro);
+  font-weight: 750;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.de-pill.active,
+.de-pill.include,
+.de-pill.processed {
+  background: var(--green-bg);
+  color: var(--positive);
+}
+
+.de-pill.inactive,
+.de-pill.exclude {
+  background: var(--grey-bg);
+  color: var(--fg-3);
+}
+
+.de-pill.failed {
+  background: var(--red-bg);
+  color: var(--negative);
+}
+
+.de-pill.soft {
+  background: var(--purple-bg);
+  color: var(--purple);
+}
+
+.de-pill.soft.teal {
+  background: var(--teal-bg);
+  color: var(--teal);
+}
+
+.de-pill.soft.purple {
+  background: var(--purple-bg);
+  color: var(--purple);
+}
+
+.de-segmented {
+  display: inline-flex;
+  min-height: 34px;
+  padding: 2px;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-2);
+}
+
+.de-segmented button {
+  flex: 1;
+  min-width: 66px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg-3);
+  font-size: var(--fs-small);
+  font-weight: 650;
+  text-transform: capitalize;
+}
+
+.de-segmented button.active {
+  background: #14171c;
+  color: #fff;
+}
+
+.de-report-grid {
+  display: grid;
+  grid-template-columns: minmax(310px, 0.8fr) minmax(620px, 1.6fr);
+  align-items: stretch;
+}
+
+.de-report-builder {
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-1);
+}
+
+.de-report-builder .tabs {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.de-report-builder .tab {
+  flex: 1;
+  padding-inline: 8px;
+  font-size: var(--fs-small);
+}
+
+.de-report-form {
+  display: grid;
+  gap: 15px;
+  padding: 20px;
+}
+
+.de-report-submit {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 20px 20px;
+}
+
+.de-section-title {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border-1);
+  background: var(--bg-surface-1);
+  color: var(--fg-1);
+  font-size: var(--fs-h4);
+  font-weight: 700;
+}
+
+.de-report-table {
+  min-width: 700px;
+}
+
+.de-miles-table {
+  min-width: 1550px;
+}
+
+.de-miles-table thead tr:first-child th {
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.de-miles-table thead tr:nth-child(2) th {
+  top: 32px;
+  background: #242932;
+}
+
+@media (max-width: 1050px) {
+  .de-report-grid {
+    display: flex;
+    overflow: auto;
+  }
+
+  .de-report-builder,
+  .de-report-grid > .mod-table-shell {
+    flex: none;
+    min-height: 420px;
+  }
+}
