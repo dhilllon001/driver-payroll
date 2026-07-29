@@ -788,18 +788,21 @@
 .detail-info-bar {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px 20px 16px;
+  gap: 16px;
+  padding: 16px 20px 18px;
   background: var(--bg-surface-1);
   border-bottom: 1px solid var(--border-1);
   flex-shrink: 0;
+  overflow: visible;
+  min-height: 0;
 }
 
 .info-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px 20px;
+  flex-wrap: wrap;
 }
 
 .info-identity {
@@ -807,12 +810,12 @@
   align-items: flex-start;
   gap: 14px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 280px;
 }
 
 .info-avatar {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--blue-soft);
   color: var(--action);
@@ -828,7 +831,7 @@
 .info-copy {
   min-width: 0;
   flex: 1;
-  padding-top: 2px;
+  padding-top: 1px;
 }
 
 .info-title-row {
@@ -852,7 +855,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 8px;
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: var(--fs-small);
   color: var(--fg-3);
   line-height: 1.4;
@@ -867,26 +870,26 @@
   color: var(--fg-4);
 }
 
-.info-metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-  align-items: start;
-  gap: 10px 18px;
-  overflow: visible;
-  padding-top: 12px;
+/* Flat fact row — no boxes, no scroll */
+.info-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px 28px;
+  padding-top: 14px;
   border-top: 1px solid var(--border-1);
+  overflow: visible;
 }
 
-.info-metric {
+.info-fact {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 5px;
   min-width: 0;
-  padding: 0;
-  border: none;
+  max-width: 100%;
 }
 
-.info-lbl {
+.info-fact-lbl {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -895,24 +898,22 @@
   line-height: 1.2;
 }
 
-.info-metric strong {
+.info-fact-val {
   font-size: 12px;
   font-weight: 650;
   color: var(--fg-1);
-  line-height: 1.35;
-  overflow-wrap: anywhere;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
-.info-range {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  font-variant-numeric: tabular-nums;
+.info-fact-range {
+  flex: 1 1 220px;
+  min-width: 180px;
 }
 
 .info-arrow {
   display: inline-block;
-  margin: 0 4px;
+  margin: 0 5px;
   color: var(--fg-4);
   font-weight: 500;
 }
@@ -2562,9 +2563,6 @@ body.is-resizing * {
   }
   .info-actions {
     width: 100%;
-  }
-  .info-metrics {
-    gap: 12px 16px;
   }
   .meta-strip,
   .ifta-stats,

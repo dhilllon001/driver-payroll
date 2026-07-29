@@ -1304,71 +1304,74 @@ export function TripDetailView() {
           </div>
         </div>
 
-        <div className="info-metrics">
+        <div className="info-facts">
           {(trip.origin || trip.destination) && (
-            <div className="info-metric">
-              <span className="info-lbl">Route</span>
-              <strong>
+            <div className="info-fact">
+              <span className="info-fact-lbl">Route</span>
+              <span className="info-fact-val">
                 {trip.origin || '—'}
                 <span className="info-arrow">→</span>
                 {trip.destination || '—'}
-              </strong>
+              </span>
             </div>
           )}
           {trip.commodity && (
-            <div className="info-metric">
-              <span className="info-lbl">Commodity</span>
-              <strong>{trip.commodity}</strong>
+            <div className="info-fact">
+              <span className="info-fact-lbl">Commodity</span>
+              <span className="info-fact-val">{trip.commodity}</span>
             </div>
           )}
           {trip.drivesFor && (
-            <div className="info-metric">
-              <span className="info-lbl">Drives for</span>
-              <strong>{trip.drivesFor}</strong>
+            <div className="info-fact">
+              <span className="info-fact-lbl">Drives for</span>
+              <span className="info-fact-val">{trip.drivesFor}</span>
             </div>
           )}
           {trip.payDate && (
-            <div className="info-metric">
-              <span className="info-lbl">Pay date</span>
-              <strong>{trip.payDate}</strong>
+            <div className="info-fact">
+              <span className="info-fact-lbl">Pay date</span>
+              <span className="info-fact-val">{trip.payDate}</span>
             </div>
           )}
-          <div className="info-metric">
-            <span className="info-lbl">Driver ID</span>
-            <strong>{trip.leadDriverId}</strong>
+          <div className="info-fact">
+            <span className="info-fact-lbl">Driver ID</span>
+            <span className="info-fact-val">{trip.leadDriverId}</span>
           </div>
-          <div className="info-metric">
-            <span className="info-lbl">Terminal</span>
-            <strong>{trip.terminal}</strong>
+          <div className="info-fact">
+            <span className="info-fact-lbl">Terminal</span>
+            <span className="info-fact-val">{trip.terminal}</span>
           </div>
-          <div className="info-metric">
-            <span className="info-lbl">Dispatcher</span>
-            <strong>{trip.dispatcher}</strong>
+          <div className="info-fact">
+            <span className="info-fact-lbl">Dispatcher</span>
+            <span className="info-fact-val">{trip.dispatcher}</span>
           </div>
-          <div className="info-metric">
-            <span className="info-lbl">Pay mi</span>
-            <strong className="tnum">{trip.payMiles.toFixed(1)}</strong>
+          <div className="info-fact">
+            <span className="info-fact-lbl">Pay mi</span>
+            <span className="info-fact-val tnum">{trip.payMiles.toFixed(1)}</span>
           </div>
-          <div className="info-metric">
-            <span className="info-lbl">Event mi</span>
-            <strong className="tnum">{eventMiles.toFixed(1)}</strong>
+          <div className="info-fact">
+            <span className="info-fact-lbl">Event mi</span>
+            <span className="info-fact-val tnum">{eventMiles.toFixed(1)}</span>
           </div>
-          <div className="info-metric">
-            <span className="info-lbl">Docs</span>
-            <strong className="tnum">{trip.documents.length}</strong>
+          <div className="info-fact">
+            <span className="info-fact-lbl">Docs</span>
+            <span className="info-fact-val tnum">{trip.documents.length}</span>
           </div>
           {(trip.tractor || trip.trailer) && (
-            <div className="info-metric">
-              <span className="info-lbl">Equipment</span>
-              <strong>{[trip.tractor, trip.trailer].filter(Boolean).join(' / ')}</strong>
+            <div className="info-fact">
+              <span className="info-fact-lbl">Equipment</span>
+              <span className="info-fact-val">
+                {[trip.tractor, trip.trailer].filter(Boolean).join(' / ')}
+              </span>
             </div>
           )}
-          <div className="info-metric">
-            <span className="info-lbl">Out → In</span>
-            <strong className="tnum info-range">
-              <span>{trip.dateOut}</span>
-              <span>{trip.dateIn}</span>
-            </strong>
+          <div className="info-fact info-fact-range">
+            <span className="info-fact-lbl">Out → In</span>
+            <span className="info-fact-val tnum">
+              {trip.dateOut}
+              <span className="info-arrow">→</span>
+              {trip.dateIn}
+            </span>
           </div>
         </div>
       </section>
