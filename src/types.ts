@@ -153,3 +153,50 @@ export type DetailTab =
   | 'notes'
   | 'ifta'
   | 'ai';
+
+export type ConfigStatus = 'active' | 'inactive';
+export type PayrollCurrency = 'CAD' | 'USD' | 'Peso';
+export type CoveragePeriod = 'Weekly' | 'BiWeekly' | 'SemiMonthly' | 'Monthly';
+
+export interface PayrollRegion {
+  id: string;
+  name: string;
+  coveragePeriod: CoveragePeriod;
+  divisions: string[];
+  status: ConfigStatus;
+}
+
+export interface PayrollMethod {
+  id: string;
+  name: string;
+  basedOn: string;
+}
+
+export interface ScheduleMethodLine {
+  id: string;
+  methodId: string;
+  methodName: string;
+  basedOn: string;
+  singleRate: number;
+  teamRate: number;
+}
+
+export interface ScheduleDriver {
+  id: string;
+  name: string;
+  code: string;
+  category: string;
+  division: string;
+  driverClass: string;
+  active: boolean;
+}
+
+export interface PayrollSchedule {
+  id: string;
+  name: string;
+  taxCode: string;
+  currency: PayrollCurrency;
+  status: ConfigStatus;
+  methods: ScheduleMethodLine[];
+  drivers: ScheduleDriver[];
+}

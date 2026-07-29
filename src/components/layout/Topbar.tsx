@@ -14,7 +14,7 @@ const TITLES: Record<string, string> = {
   'data-entry': 'Data Entry',
   'trip-expense': 'Trip Expense',
   'cash-advance': 'MX Cash Advance',
-  config: 'Configuration',
+  config: 'Payroll Configuration',
 };
 
 export function Topbar() {
