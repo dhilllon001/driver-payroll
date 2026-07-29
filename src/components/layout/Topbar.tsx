@@ -1,14 +1,9 @@
-import {
-  Bell,
-  Download,
-  Plus,
-  Search,
-  Upload,
-} from 'lucide-react';
+import { Bell, Search, Upload } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { opsTitle } from '../../data/opsSeed';
 import type { ViewId } from '../../types';
 
-const TITLES: Record<ViewId, string> = {
+const TITLES: Partial<Record<ViewId, string>> = {
   'trip-board': 'Trip Processing Board',
   payroll: 'Payroll Management',
   settlement: 'Settlement Report',
@@ -18,9 +13,14 @@ const TITLES: Record<ViewId, string> = {
   incidents: 'MX Driver Incident',
   deductions: 'Deductions & Reimbursements',
   ifta: 'IFTA',
+  'ifta-tax-rate': 'IFTA Tax Rate',
+  'ifta-reports': 'IFTA Reports',
   'data-entry': 'Data Entry',
   'trip-expense': 'Trip Expense',
   'cash-advance': 'MX Cash Advance',
+  nomilinea: 'Nomilinea',
+  'nomilinea-payroll': 'Nomilinea Payroll',
+  'nomilinea-concepts': 'Nomilinea Concepts',
   config: 'Payroll Configuration',
 };
 
@@ -36,16 +36,28 @@ type HeaderProfile = {
   placeholder: string;
   showSearch: boolean;
   actions: HeaderAction[];
-  /** Center the search between title and right actions */
   centerSearch?: boolean;
 };
 
-const HEADERS: Record<ViewId, HeaderProfile> = {
+const DEFAULT_OPS: HeaderProfile = {
+  placeholder: 'Search records…',
+  showSearch: true,
+  centerSearch: true,
+  actions: [],
+};
+
+const HEADERS: Partial<Record<ViewId, HeaderProfile>> = {
   'trip-board': {
     placeholder: 'Search trips, drivers, equipment…',
     showSearch: true,
     actions: [
-      { id: 'adv', label: 'Advanced Search', icon: Search, variant: 'secondary', toast: 'Advanced search coming soon' },
+      {
+        id: 'adv',
+        label: 'Advanced Search',
+        icon: Search,
+        variant: 'secondary',
+        toast: 'Advanced search coming soon',
+      },
       { id: 'upload', label: 'Upload Pay', icon: Upload, variant: 'primary', toast: 'Upload Pay started' },
     ],
   },
@@ -86,39 +98,10 @@ const HEADERS: Record<ViewId, HeaderProfile> = {
     actions: [],
   },
   deductions: {
-    placeholder: 'Search deductions, reimbursements…',
+    placeholder: 'Search deductions, reimbursements, comments…',
     showSearch: true,
-    actions: [
-      { id: 'add', label: 'Add Entry', icon: Plus, variant: 'primary', toast: 'Add deduction coming soon' },
-    ],
-  },
-  ifta: {
-    placeholder: 'Search IFTA periods, jurisdictions…',
-    showSearch: true,
-    actions: [
-      { id: 'export', label: 'Export IFTA', icon: Download, variant: 'primary', toast: 'IFTA export started' },
-    ],
-  },
-  'data-entry': {
-    placeholder: 'Search data entry batches…',
-    showSearch: true,
-    actions: [
-      { id: 'new', label: 'New Entry', icon: Plus, variant: 'primary', toast: 'New data entry started' },
-    ],
-  },
-  'trip-expense': {
-    placeholder: 'Search trip expenses, trips…',
-    showSearch: true,
-    actions: [
-      { id: 'add', label: 'Add Expense', icon: Plus, variant: 'primary', toast: 'Add expense coming soon' },
-    ],
-  },
-  'cash-advance': {
-    placeholder: 'Search cash advances, drivers…',
-    showSearch: true,
-    actions: [
-      { id: 'add', label: 'New Advance', icon: Plus, variant: 'primary', toast: 'New cash advance started' },
-    ],
+    centerSearch: true,
+    actions: [],
   },
   config: {
     placeholder: 'Search regions, methods, schedules…',
@@ -128,10 +111,18 @@ const HEADERS: Record<ViewId, HeaderProfile> = {
   },
 };
 
+function titleFor(view: ViewId) {
+  return TITLES[view] || opsTitle(view) || 'Driver Payroll';
+}
+
+function profileFor(view: ViewId): HeaderProfile {
+  return HEADERS[view] || DEFAULT_OPS;
+}
+
 export function Topbar() {
   const { view, search, setSearch, toast, selectedTripId } = useApp();
-  const profile = HEADERS[view] ?? HEADERS['trip-board'];
-  const title = selectedTripId ? 'Trip Detail' : TITLES[view] || 'Driver Payroll';
+  const profile = profileFor(view);
+  const title = selectedTripId ? 'Trip Detail' : titleFor(view);
   const centered = profile.centerSearch && !selectedTripId;
 
   return (

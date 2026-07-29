@@ -8,9 +8,28 @@ export type ViewId =
   | 'incidents'
   | 'deductions'
   | 'ifta'
+  | 'ifta-tax-rate'
+  | 'ifta-reports'
   | 'data-entry'
+  | 'de-driver-reduced-rate'
+  | 'de-california-pay'
+  | 'de-montreal-bonus'
+  | 'de-usa-loyalty'
+  | 'de-usa-loyalty-rate'
+  | 'de-us-otr-bonus'
+  | 'de-canada-loyalty'
+  | 'de-manage-miles'
+  | 'de-mx-base-pay'
   | 'trip-expense'
+  | 'te-assigned'
+  | 'te-unassigned'
+  | 'te-reimbursements'
+  | 'te-history'
+  | 'te-bulk-uploads'
   | 'cash-advance'
+  | 'nomilinea'
+  | 'nomilinea-payroll'
+  | 'nomilinea-concepts'
   | 'config';
 
 export type PaymentStatus = 'unpaid' | 'pending' | 'paid' | 'exception';
@@ -311,5 +330,44 @@ export interface IncidentRow {
   createdBy: string;
   createdOn: string;
   notes: IncidentNote[];
+}
+
+export type DeductionType = 'deduct' | 'reimburse';
+
+export interface DeductionRow {
+  id: string;
+  driverName: string;
+  driverCode: string;
+  division: string;
+  region: string;
+  effDate: string;
+  dedCode: string;
+  type: DeductionType;
+  amount: number;
+  currency: 'CAD' | 'USD' | 'Peso';
+  paymentType: 'one-time' | 'installment';
+  balancePaid: number;
+  balanceTotal: number;
+  paymentsDone: number;
+  paymentsTotal: number;
+  status: 'active' | 'closed';
+  comments: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  payrollDate: string;
+}
+
+export interface OpsCatalogRow {
+  id: string;
+  name: string;
+  code: string;
+  division: string;
+  category: string;
+  amount: number;
+  status: 'active' | 'inactive' | 'pending';
+  effectiveDate: string;
+  updatedBy: string;
+  updatedAt: string;
 }
 

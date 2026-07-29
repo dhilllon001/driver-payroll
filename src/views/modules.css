@@ -104,6 +104,26 @@
   font-variant-numeric: tabular-nums;
 }
 
+.mod-neg {
+  color: var(--negative);
+}
+
+.mod-pos {
+  color: var(--positive);
+}
+
+.mod-fx {
+  margin-right: 2px;
+}
+
+.mod-comment {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-2);
+}
+
 .mod-muted {
   color: var(--fg-3);
 }
