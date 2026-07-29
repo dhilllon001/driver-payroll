@@ -39,16 +39,30 @@ function eventBadge(event: EventType): string {
   return map[event];
 }
 
-function eventStatusLabel(e: TripEvent, index: number, total: number) {
+function eventStatusLabel(e: TripEvent, index: number, _total: number) {
   if (e.paid) return { label: 'Paid', cls: 'st-paid' };
-  if (index === 0) return { label: 'In progress', cls: 'st-active' };
-  if (index === total - 1) return { label: 'Pending', cls: 'st-pending' };
-  return { label: 'Pending', cls: 'st-pending' };
+  if (index === 0) return { label: 'Active', cls: 'st-active' };
+  return { label: 'Open', cls: 'st-pending' };
 }
 
 function EventRouteCards({ trip }: { trip: Trip }) {
-  const first = trip.events[0];
-  const last = trip.events[trip.events.length - 1];
+  const { setShowPaymentModal, toast, setTrips } = useApp();
+
+  const eventMiles = trip.events.reduce((sum, e) => sum + (e.miles || 0), 0);
+  const unpaidCount = trip.events.filter((e) => !e.paid).length;
+  const paidCount = trip.events.length - unpaidCount;
+  const payDelta = Number((eventMiles - trip.payMiles).toFixed(1));
+
+  const markAllPaid = () => {
+    setTrips((prev) =>
+      prev.map((t) =>
+        t.id === trip.id
+          ? { ...t, events: t.events.map((e) => ({ ...e, paid: true })) }
+          : t,
+      ),
+    );
+    toast('All events marked paid');
+  };
 
   return (
     <div className="route-col">
@@ -57,17 +71,49 @@ function EventRouteCards({ trip }: { trip: Trip }) {
         <span className="panel-count">{trip.events.length} events</span>
       </div>
 
-      <div className="route-summary-chips">
-        <div className="route-chip">
-          <span className="eyebrow">First event</span>
-          <strong>{first?.event ?? '—'}</strong>
-          <span className="chip-sub">{first?.cityState}</span>
+      <div className="route-stats">
+        <div className="route-stat">
+          <span className="eyebrow">Events</span>
+          <strong className="tnum">{trip.events.length}</strong>
+          <span className="stat-sub">
+            {paidCount} paid · {unpaidCount} open
+          </span>
         </div>
-        <div className="route-chip">
-          <span className="eyebrow">Last event</span>
-          <strong>{last?.event ?? '—'}</strong>
-          <span className="chip-sub">{last?.cityState}</span>
+        <div className="route-stat highlight">
+          <span className="eyebrow">Event miles</span>
+          <strong className="tnum miles-hi">{eventMiles.toFixed(1)}</strong>
+          <span className="stat-sub">sum of event legs</span>
         </div>
+        <div className="route-stat highlight">
+          <span className="eyebrow">Pay miles</span>
+          <strong className="tnum miles-hi">{trip.payMiles.toFixed(1)}</strong>
+          <span className="stat-sub">
+            {payDelta === 0
+              ? 'matches pay'
+              : payDelta > 0
+                ? `+${payDelta} vs pay`
+                : `${payDelta} vs pay`}
+          </span>
+        </div>
+      </div>
+
+      <div className="route-actions">
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={() => setShowPaymentModal(true)}
+        >
+          <Plus size={13} />
+          Add to Pay
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={markAllPaid}
+          disabled={unpaidCount === 0}
+        >
+          Mark events paid
+        </button>
       </div>
 
       <div className="route-cards">
@@ -79,35 +125,37 @@ function EventRouteCards({ trip }: { trip: Trip }) {
                 <span className="route-num">{i + 1}</span>
                 {i < trip.events.length - 1 && <span className="route-line" />}
               </div>
-              <div className={`route-card-body ${eventBadge(e.event)}`}>
+              <div className="route-card-body">
                 <div className="route-card-top">
-                  <span className={`badge badge-event ${eventBadge(e.event)}`}>
-                    {e.event}
+                  <div className="route-card-tags">
+                    <span className={`badge badge-event ${eventBadge(e.event)}`}>
+                      {e.event}
+                    </span>
+                    <span className={`status-pill ${status.cls}`}>{status.label}</span>
+                  </div>
+                  <span className={`miles-chip ${e.miles > 0 ? 'has-miles' : ''}`}>
+                    <span className="tnum">{e.miles > 0 ? e.miles.toFixed(1) : '0'}</span>
+                    <span className="mi">mi</span>
                   </span>
-                  <span className={`status-pill ${status.cls}`}>{status.label}</span>
                 </div>
-                <div className="route-card-title">{e.location}</div>
-                <div className="route-card-city">{e.cityState}</div>
-                <div className="route-card-meta">
-                  <div>
-                    <span className="eyebrow">Equipment</span>
-                    <strong>{e.equipment}</strong>
-                  </div>
-                  <div>
-                    <span className="eyebrow">Window</span>
-                    <strong className="tnum">
-                      {e.startTime}
-                      {e.endTime !== e.startTime ? ` → ${e.endTime}` : ''}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="eyebrow">Miles</span>
-                    <strong className="tnum">{e.miles || 0}</strong>
-                  </div>
-                  <div>
-                    <span className="eyebrow">POD</span>
-                    <strong>{e.podRequired ? 'Required' : 'No'}</strong>
-                  </div>
+                <div className="route-card-title" title={e.location}>
+                  {e.location}
+                </div>
+                <div className="route-card-foot">
+                  <span>{e.cityState}</span>
+                  <span className="sep">·</span>
+                  <span className="tnum">
+                    {e.startTime}
+                    {e.endTime !== e.startTime ? ` – ${e.endTime}` : ''}
+                  </span>
+                  <span className="sep">·</span>
+                  <span>{e.equipment}</span>
+                  {e.podRequired && (
+                    <>
+                      <span className="sep">·</span>
+                      <span className="pod-tag">POD</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
