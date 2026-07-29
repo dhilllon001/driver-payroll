@@ -210,12 +210,20 @@
   flex-shrink: 0;
   min-height: 48px;
 }
+.topbar.topbar-centered {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(220px, 420px) minmax(140px, 1fr);
+  align-items: center;
+  gap: 16px;
+}
 .topbar-title {
   font-weight: 650;
   font-size: 15px;
   margin: 0;
   color: #fff;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .searchbar {
   flex: 1;
@@ -229,6 +237,11 @@
   color: var(--topbar-muted);
   font-size: var(--fs-small);
   min-height: 34px;
+}
+.searchbar.searchbar-center {
+  width: 100%;
+  max-width: none;
+  justify-self: center;
 }
 .searchbar input {
   flex: 1;
@@ -247,6 +260,10 @@
   align-items: center;
   gap: 8px;
   margin-left: auto;
+}
+.topbar-centered .topbar-right {
+  margin-left: 0;
+  justify-self: end;
 }
 .tico {
   width: 30px;

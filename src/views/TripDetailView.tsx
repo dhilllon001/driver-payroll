@@ -1201,17 +1201,6 @@ export function TripDetailView() {
           />
         </div>
         <div className="chrome-end">
-          {trip.exceptions.length > 0 && (
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm chrome-view-note"
-              onClick={() => setShowExceptionModal(true)}
-            >
-              <NotebookPen size={13} />
-              View note
-              <span className="chrome-note-count">{trip.exceptions.length}</span>
-            </button>
-          )}
           <button
             type="button"
             className="chrome-bell"
@@ -1231,98 +1220,160 @@ export function TripDetailView() {
       </div>
 
       <section className="detail-info-bar">
-        <div className="info-identity">
-          <div className="info-avatar">{driverInitials(trip.leadDriver)}</div>
-          <div className="info-copy">
-            <div className="info-title-row">
-              <h2 className="info-title">{trip.leadDriver}</h2>
-              <span className={`badge badge-status ${trip.paymentStatus}`}>{trip.paymentStatus}</span>
-              {trip.flagged && <span className="badge badge-pending">Flagged</span>}
-              <span className="badge badge-neutral">{trip.tripRole}</span>
-            </div>
-            <div className="info-ids">
-              <span>
-                Trip <strong>{trip.tripNo}</strong>
-              </span>
-              <span className="sep">·</span>
-              <span>
-                Sub <strong>{trip.subTrip}</strong>
-              </span>
-              <span className="sep">·</span>
-              <span>{trip.tripCategory}</span>
-              <span className="sep">·</span>
-              <span>
-                Team <strong>{trip.teamDriver || '—'}</strong>
-              </span>
-              {trip.customer && (
-                <>
-                  <span className="sep">·</span>
-                  <span>
-                    Customer <strong>{trip.customer}</strong>
-                  </span>
-                </>
-              )}
-            </div>
-            <div className="info-metrics">
-              <div>
-                <span className="eyebrow">Driver ID</span>
-                <strong>{trip.leadDriverId}</strong>
+        <div className="info-top">
+          <div className="info-identity">
+            <div className="info-avatar">{driverInitials(trip.leadDriver)}</div>
+            <div className="info-copy">
+              <div className="info-title-row">
+                <h2 className="info-title">{trip.leadDriver}</h2>
+                <span className={`badge badge-status ${trip.paymentStatus}`}>{trip.paymentStatus}</span>
+                {trip.flagged && <span className="badge badge-pending">Flagged</span>}
+                <span className="badge badge-neutral">{trip.tripRole}</span>
               </div>
-              <div>
-                <span className="eyebrow">Terminal</span>
-                <strong>{trip.terminal}</strong>
-              </div>
-              <div>
-                <span className="eyebrow">Dispatcher</span>
-                <strong>{trip.dispatcher}</strong>
-              </div>
-              <div>
-                <span className="eyebrow">Pay mi</span>
-                <strong className="tnum">{trip.payMiles.toFixed(1)}</strong>
-              </div>
-              <div>
-                <span className="eyebrow">Event mi</span>
-                <strong className="tnum">{eventMiles.toFixed(1)}</strong>
-              </div>
-              <div>
-                <span className="eyebrow">Docs</span>
-                <strong className="tnum">{trip.documents.length}</strong>
-              </div>
-              {(trip.tractor || trip.trailer) && (
-                <div>
-                  <span className="eyebrow">Equipment</span>
-                  <strong>
-                    {[trip.tractor, trip.trailer].filter(Boolean).join(' / ')}
-                  </strong>
-                </div>
-              )}
-              <div>
-                <span className="eyebrow">Out → In</span>
-                <strong className="tnum">
-                  {trip.dateOut} → {trip.dateIn}
-                </strong>
+              <div className="info-ids">
+                <span>
+                  Trip <strong>{trip.tripNo}</strong>
+                </span>
+                <span className="sep">·</span>
+                <span>
+                  Sub <strong>{trip.subTrip}</strong>
+                </span>
+                <span className="sep">·</span>
+                <span>{trip.tripCategory}</span>
+                <span className="sep">·</span>
+                <span>
+                  Team <strong>{trip.teamDriver || '—'}</strong>
+                </span>
+                {trip.customer && (
+                  <>
+                    <span className="sep">·</span>
+                    <span>
+                      Customer <strong>{trip.customer}</strong>
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>
+
+          <div className="info-actions">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm info-view-note"
+              onClick={() => {
+                if (trip.exceptions.length > 0) {
+                  setShowExceptionModal(true);
+                } else {
+                  setDetailTab('notes');
+                  toast(
+                    trip.notes.length
+                      ? `Opened notes (${trip.notes.length})`
+                      : 'No notes yet — Notes tab opened',
+                  );
+                }
+              }}
+            >
+              <NotebookPen size={13} />
+              View Note
+              {(trip.exceptions.length > 0 || trip.notes.length > 0) && (
+                <span className="info-note-count">
+                  {trip.exceptions.length > 0 ? trip.exceptions.length : trip.notes.length}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              className={`btn btn-secondary btn-sm ${trip.flagged ? 'is-on' : ''}`}
+              onClick={toggleFlag}
+            >
+              <Flag size={13} fill={trip.flagged ? 'currentColor' : 'none'} />
+              {trip.flagged ? 'Flagged' : 'Flag'}
+            </button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={addDocument}>
+              <FileText size={13} />
+              Add Document
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowPaymentModal(true)}
+            >
+              <Plus size={13} />
+              Add Payment
+            </button>
+          </div>
         </div>
 
-        <div className="info-actions">
-          <button
-            type="button"
-            className={`btn btn-secondary btn-sm ${trip.flagged ? 'is-on' : ''}`}
-            onClick={toggleFlag}
-          >
-            <Flag size={13} fill={trip.flagged ? 'currentColor' : 'none'} />
-            {trip.flagged ? 'Flagged' : 'Flag'}
-          </button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={addDocument}>
-            <FileText size={13} />
-            Add Document
-          </button>
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setShowPaymentModal(true)}>
-            <Plus size={13} />
-            Add Payment
-          </button>
+        {(trip.origin || trip.destination || trip.commodity || trip.drivesFor) && (
+          <div className="info-highlights">
+            {(trip.origin || trip.destination) && (
+              <div className="info-highlight">
+                <span className="eyebrow">Route</span>
+                <strong>
+                  {trip.origin || '—'}
+                  <span className="info-arrow">→</span>
+                  {trip.destination || '—'}
+                </strong>
+              </div>
+            )}
+            {trip.commodity && (
+              <div className="info-highlight">
+                <span className="eyebrow">Commodity</span>
+                <strong>{trip.commodity}</strong>
+              </div>
+            )}
+            {trip.drivesFor && (
+              <div className="info-highlight">
+                <span className="eyebrow">Drives for</span>
+                <strong>{trip.drivesFor}</strong>
+              </div>
+            )}
+            {trip.payDate && (
+              <div className="info-highlight">
+                <span className="eyebrow">Pay date</span>
+                <strong>{trip.payDate}</strong>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="info-metrics">
+          <div className="info-metric">
+            <span className="eyebrow">Driver ID</span>
+            <strong>{trip.leadDriverId}</strong>
+          </div>
+          <div className="info-metric">
+            <span className="eyebrow">Terminal</span>
+            <strong>{trip.terminal}</strong>
+          </div>
+          <div className="info-metric">
+            <span className="eyebrow">Dispatcher</span>
+            <strong>{trip.dispatcher}</strong>
+          </div>
+          <div className="info-metric">
+            <span className="eyebrow">Pay mi</span>
+            <strong className="tnum">{trip.payMiles.toFixed(1)}</strong>
+          </div>
+          <div className="info-metric">
+            <span className="eyebrow">Event mi</span>
+            <strong className="tnum">{eventMiles.toFixed(1)}</strong>
+          </div>
+          <div className="info-metric">
+            <span className="eyebrow">Docs</span>
+            <strong className="tnum">{trip.documents.length}</strong>
+          </div>
+          {(trip.tractor || trip.trailer) && (
+            <div className="info-metric">
+              <span className="eyebrow">Equipment</span>
+              <strong>{[trip.tractor, trip.trailer].filter(Boolean).join(' / ')}</strong>
+            </div>
+          )}
+          <div className="info-metric info-metric-wide">
+            <span className="eyebrow">Out → In</span>
+            <strong className="tnum">
+              {trip.dateOut} → {trip.dateIn}
+            </strong>
+          </div>
         </div>
       </section>
 

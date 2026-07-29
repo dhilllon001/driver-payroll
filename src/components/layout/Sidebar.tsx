@@ -42,9 +42,11 @@ const GROUPS: { label: string; items: { id: ViewId; label: string; icon: typeof 
   ];
 
 export function Sidebar() {
-  const { view, setView, sidebarCollapsed, setSidebarCollapsed, setSelectedTripId } = useApp();
+  const { view, setView, sidebarCollapsed, setSidebarCollapsed, setSelectedTripId, setSearch } =
+    useApp();
 
   const go = (id: ViewId) => {
+    if (id !== view) setSearch('');
     setView(id);
     if (id === 'trip-board') setSelectedTripId(null);
   };

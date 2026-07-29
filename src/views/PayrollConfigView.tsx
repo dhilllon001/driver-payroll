@@ -1,4 +1,4 @@
-import { Plus, Pencil, Trash2, Search, X, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, AlertTriangle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
@@ -53,8 +53,10 @@ function CurrencyBadge({ currency }: { currency: PayrollCurrency }) {
 }
 
 export function PayrollConfigView() {
-  const { toast } = useApp();
-  const [regions, setRegions] = useState<PayrollRegion[]>(() => SEED_REGIONS.map((r) => ({ ...r, divisions: [...r.divisions] })));
+  const { toast, search } = useApp();
+  const [regions, setRegions] = useState<PayrollRegion[]>(() =>
+    SEED_REGIONS.map((r) => ({ ...r, divisions: [...r.divisions] })),
+  );
   const [methods, setMethods] = useState<PayrollMethod[]>(() => SEED_METHODS.map((m) => ({ ...m })));
   const [schedules, setSchedules] = useState<PayrollSchedule[]>(() =>
     SEED_SCHEDULES.map((s) => ({
@@ -64,19 +66,28 @@ export function PayrollConfigView() {
     })),
   );
 
-  const [globalQ, setGlobalQ] = useState('');
   const [regionQ, setRegionQ] = useState('');
   const [methodQ, setMethodQ] = useState('');
   const [scheduleQ, setScheduleQ] = useState('');
 
-  const [regionModal, setRegionModal] = useState<{ mode: 'add' | 'edit'; item?: PayrollRegion } | null>(null);
-  const [methodModal, setMethodModal] = useState<{ mode: 'add' | 'edit'; item?: PayrollMethod } | null>(null);
-  const [scheduleModal, setScheduleModal] = useState<{ mode: 'add' | 'edit'; item?: PayrollSchedule } | null>(null);
+  const [regionModal, setRegionModal] = useState<{ mode: 'add' | 'edit'; item?: PayrollRegion } | null>(
+    null,
+  );
+  const [methodModal, setMethodModal] = useState<{ mode: 'add' | 'edit'; item?: PayrollMethod } | null>(
+    null,
+  );
+  const [scheduleModal, setScheduleModal] = useState<{
+    mode: 'add' | 'edit';
+    item?: PayrollSchedule;
+  } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
 
   const inactiveSchedules = schedules.filter((s) => s.status === 'inactive').length;
-  const unusedMethods = methods.filter((m) => !schedules.some((s) => s.methods.some((l) => l.methodId === m.id))).length;
+  const unusedMethods = methods.filter(
+    (m) => !schedules.some((s) => s.methods.some((l) => l.methodId === m.id)),
+  ).length;
   const inactiveRegions = regions.filter((r) => r.status === 'inactive').length;
+  const globalQ = search.trim().toLowerCase();
 
   const filteredRegions = useMemo(() => {
     const q = `${globalQ} ${regionQ}`.trim().toLowerCase();
@@ -214,26 +225,23 @@ export function PayrollConfigView() {
 
   return (
     <div className="cfg-page">
-      <div className="cfg-hero">
-        <div>
-          <h1 className="cfg-title">Payroll Configuration</h1>
-          <p className="cfg-sub">
-            Manage payroll regions, pay methods, and schedules used across trip processing.
-          </p>
-        </div>
-        <div className="cfg-search-global">
-          <Search size={14} strokeWidth={2} />
-          <input
-            type="search"
-            placeholder="Search regions, methods, schedules…"
-            value={globalQ}
-            onChange={(e) => setGlobalQ(e.target.value)}
-          />
-          {globalQ && (
-            <button type="button" className="cfg-clear" aria-label="Clear" onClick={() => setGlobalQ('')}>
-              <X size={12} />
-            </button>
-          )}
+      <div className="cfg-toolbar">
+        <p className="cfg-sub">
+          Manage regions, pay methods, and schedules used across trip processing.
+        </p>
+        <div className="cfg-stats">
+          <div className="cfg-stat">
+            <span className="cfg-stat-n">{regions.length}</span>
+            <span className="cfg-stat-l">Regions</span>
+          </div>
+          <div className="cfg-stat">
+            <span className="cfg-stat-n">{methods.length}</span>
+            <span className="cfg-stat-l">Methods</span>
+          </div>
+          <div className="cfg-stat">
+            <span className="cfg-stat-n">{schedules.length}</span>
+            <span className="cfg-stat-l">Schedules</span>
+          </div>
         </div>
       </div>
 
@@ -518,7 +526,7 @@ function ConfigPanel({
             <Search size={13} />
             <input
               type="search"
-              placeholder={`Search ${title.toLowerCase()}…`}
+              placeholder={`Filter ${title.toLowerCase()}…`}
               value={search}
               onChange={(e) => onSearch(e.target.value)}
             />
@@ -530,11 +538,7 @@ function ConfigPanel({
         </div>
       </div>
       <div className="cfg-panel-body">
-        {empty ? (
-          <div className="empty-state">No matching {title.toLowerCase()}.</div>
-        ) : (
-          children
-        )}
+        {empty ? <div className="empty-state">No matching {title.toLowerCase()}.</div> : children}
       </div>
     </section>
   );
