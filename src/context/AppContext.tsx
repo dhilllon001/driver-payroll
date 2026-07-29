@@ -1,0 +1,146 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { TRIPS } from '../data/seed';
+import type { DetailTab, NotesSubTab, Trip, ViewId } from '../types';
+
+interface AppState {
+  view: ViewId;
+  setView: (v: ViewId) => void;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (v: boolean | ((c: boolean) => boolean)) => void;
+  trips: Trip[];
+  setTrips: React.Dispatch<React.SetStateAction<Trip[]>>;
+  selectedTripId: string | null;
+  setSelectedTripId: (id: string | null) => void;
+  selectedIds: Set<string>;
+  setSelectedIds: React.Dispatch<React.SetStateAction<Set<string>>>;
+  detailTab: DetailTab;
+  setDetailTab: (t: DetailTab) => void;
+  notesSubTab: NotesSubTab;
+  setNotesSubTab: (t: NotesSubTab) => void;
+  search: string;
+  setSearch: (s: string) => void;
+  paymentFilter: string;
+  setPaymentFilter: (s: string) => void;
+  flagFilter: string;
+  setFlagFilter: (s: string) => void;
+  roleFilter: string;
+  setRoleFilter: (s: string) => void;
+  tagFilter: string;
+  setTagFilter: (s: string) => void;
+  page: number;
+  setPage: (n: number) => void;
+  perPage: number;
+  setPerPage: (n: number) => void;
+  showPaymentModal: boolean;
+  setShowPaymentModal: (v: boolean) => void;
+  showExceptionModal: boolean;
+  setShowExceptionModal: (v: boolean) => void;
+  toast: (msg: string) => void;
+  toastMsg: string;
+  toastShow: boolean;
+}
+
+const AppContext = createContext<AppState | null>(null);
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [view, setView] = useState<ViewId>('trip-board');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [trips, setTrips] = useState<Trip[]>(() => TRIPS.map((t) => ({ ...t })));
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [detailTab, setDetailTab] = useState<DetailTab>('payment');
+  const [notesSubTab, setNotesSubTab] = useState<NotesSubTab>('Payroll');
+  const [search, setSearch] = useState('');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [flagFilter, setFlagFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [tagFilter, setTagFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(100);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showExceptionModal, setShowExceptionModal] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastShow, setToastShow] = useState(false);
+
+  const toast = useCallback((msg: string) => {
+    setToastMsg(msg);
+    setToastShow(true);
+    window.setTimeout(() => setToastShow(false), 2600);
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      view,
+      setView,
+      sidebarCollapsed,
+      setSidebarCollapsed,
+      trips,
+      setTrips,
+      selectedTripId,
+      setSelectedTripId,
+      selectedIds,
+      setSelectedIds,
+      detailTab,
+      setDetailTab,
+      notesSubTab,
+      setNotesSubTab,
+      search,
+      setSearch,
+      paymentFilter,
+      setPaymentFilter,
+      flagFilter,
+      setFlagFilter,
+      roleFilter,
+      setRoleFilter,
+      tagFilter,
+      setTagFilter,
+      page,
+      setPage,
+      perPage,
+      setPerPage,
+      showPaymentModal,
+      setShowPaymentModal,
+      showExceptionModal,
+      setShowExceptionModal,
+      toast,
+      toastMsg,
+      toastShow,
+    }),
+    [
+      view,
+      sidebarCollapsed,
+      trips,
+      selectedTripId,
+      selectedIds,
+      detailTab,
+      notesSubTab,
+      search,
+      paymentFilter,
+      flagFilter,
+      roleFilter,
+      tagFilter,
+      page,
+      perPage,
+      showPaymentModal,
+      showExceptionModal,
+      toast,
+      toastMsg,
+      toastShow,
+    ],
+  );
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+}
+
+export function useApp() {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error('useApp must be used within AppProvider');
+  return ctx;
+}

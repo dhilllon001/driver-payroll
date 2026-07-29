@@ -1,0 +1,100 @@
+:root {
+  /* Surfaces */
+  --bg-app: #e0e4ea;
+  --bg-surface-1: #ffffff;
+  --bg-surface-2: #f4f5f7;
+  --bg-surface-3: #d4d9e1;
+
+  /* Text */
+  --fg-1: #0f1a2a;
+  --fg-2: #3d4a5c;
+  --fg-3: #6b7685;
+  --fg-4: #a4adba;
+
+  /* Borders */
+  --border-1: #dde1e8;
+  --border-2: #cdd3dc;
+  --border-3: #b8bfc9;
+
+  /* Actions */
+  --action: #1e5faa;
+  --action-hover: #184e8d;
+  --focus-ring: #5795e3;
+  --positive: #1f7a43;
+  --negative: #a32b22;
+  --amber: #9a6b1a;
+
+  /* Soft fills */
+  --amber-bg: #fbf3e4;
+  --green-bg: #e8f5ee;
+  --red-bg: #fcebec;
+  --purple: #5b4b9e;
+  --purple-bg: #eeeaf8;
+  --teal: #1e7e82;
+  --teal-bg: #e6f5f6;
+  --blue-soft: #e8f1fb;
+  --grey-bg: #eef0f3;
+
+  /* Tables */
+  --table-row-alt: #f7f8fa;
+  --table-row-hover: #eef0f4;
+  --table-row-selected: #ebf3fc;
+
+  /* Chrome */
+  --topbar-bg: #14171c;
+  --topbar-fg: #e8edf3;
+  --topbar-muted: #9aa4b2;
+  --topbar-input: #20242b;
+  --sidebar-bg: #1a1d24;
+  --sidebar-fg: #e8edf3;
+  --sidebar-fg-2: #b4bfcd;
+  --sidebar-fg-3: #7c8898;
+  --sidebar-divider: rgba(255, 255, 255, 0.06);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-active: rgba(87, 149, 227, 0.14);
+  --drawer-header: #0f1a2a;
+
+  /* Category accents */
+  --cat-detention: #1e5faa;
+  --cat-detention-bg: #e8f1fb;
+  --cat-lumper: #5b4b9e;
+  --cat-lumper-bg: #eeeaf8;
+  --cat-layover: #1e7e82;
+  --cat-layover-bg: #e6f5f6;
+  --cat-tonu: #9a6b1a;
+  --cat-tonu-bg: #fbf3e4;
+  --cat-storage: #5b6472;
+  --cat-storage-bg: #eef0f3;
+
+  /* Typography */
+  --font-body: Inter, 'Helvetica Neue', Arial, sans-serif;
+  --fs-display: 32px;
+  --fs-h1: 24px;
+  --fs-h2: 20px;
+  --fs-h3: 16px;
+  --fs-h4: 14px;
+  --fs-body: 13px;
+  --fs-small: 12px;
+  --fs-micro: 11px;
+  --fs-eyebrow: 10px;
+
+  /* Shape */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+  --shadow-popover: 0 12px 32px rgba(15, 23, 42, 0.14);
+
+  /* Motion */
+  --dur-fast: 100ms;
+  --dur-base: 160ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+}
