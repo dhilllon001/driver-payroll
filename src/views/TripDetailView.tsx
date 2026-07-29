@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  Bell,
   FileText,
   Flag,
   MapPin,
@@ -8,6 +9,7 @@ import {
   Pencil,
   Plus,
   Receipt,
+  Search,
   Settings2,
   Trash2,
   Wallet,
@@ -43,6 +45,16 @@ function eventStatusLabel(e: TripEvent, index: number, _total: number) {
   if (e.paid) return { label: 'Paid', cls: 'st-paid' };
   if (index === 0) return { label: 'Active', cls: 'st-active' };
   return { label: 'Open', cls: 'st-pending' };
+}
+
+/** Split "29 Jul 12:15" → { date: "29 Jul", time: "12:15" } */
+function splitEventWhen(value: string) {
+  const parts = value.trim().split(/\s+/);
+  if (parts.length >= 3) {
+    return { date: `${parts[0]} ${parts[1]}`, time: parts.slice(2).join(' ') };
+  }
+  if (parts.length === 2) return { date: parts[0], time: parts[1] };
+  return { date: value, time: '' };
 }
 
 function EventRouteCards({ trip }: { trip: Trip }) {
@@ -119,6 +131,8 @@ function EventRouteCards({ trip }: { trip: Trip }) {
       <div className="route-cards">
         {trip.events.map((e, i) => {
           const status = eventStatusLabel(e, i, trip.events.length);
+          const when = splitEventWhen(e.startTime);
+          const endWhen = e.endTime !== e.startTime ? splitEventWhen(e.endTime) : null;
           return (
             <div key={e.id} className="route-card">
               <div className="route-rail">
@@ -126,36 +140,40 @@ function EventRouteCards({ trip }: { trip: Trip }) {
                 {i < trip.events.length - 1 && <span className="route-line" />}
               </div>
               <div className="route-card-body">
-                <div className="route-card-top">
-                  <div className="route-card-tags">
-                    <span className={`badge badge-event ${eventBadge(e.event)}`}>
-                      {e.event}
-                    </span>
-                    <span className={`status-pill ${status.cls}`}>{status.label}</span>
-                  </div>
-                  <span className={`miles-chip ${e.miles > 0 ? 'has-miles' : ''}`}>
-                    <span className="tnum">{e.miles > 0 ? e.miles.toFixed(1) : '0'}</span>
-                    <span className="mi">mi</span>
-                  </span>
-                </div>
-                <div className="route-card-title" title={e.location}>
-                  {e.location}
-                </div>
-                <div className="route-card-foot">
-                  <span>{e.cityState}</span>
-                  <span className="sep">·</span>
-                  <span className="tnum">
-                    {e.startTime}
-                    {e.endTime !== e.startTime ? ` – ${e.endTime}` : ''}
-                  </span>
-                  <span className="sep">·</span>
-                  <span>{e.equipment}</span>
-                  {e.podRequired && (
-                    <>
+                <div className="route-card-main">
+                  <div className="route-card-left">
+                    <div className="route-card-tags">
+                      <span className={`badge badge-event ${eventBadge(e.event)}`}>
+                        {e.event}
+                      </span>
+                      <span className={`miles-chip ${e.miles > 0 ? 'has-miles' : ''}`}>
+                        <span className="tnum">{e.miles > 0 ? e.miles.toFixed(1) : '0'}</span>
+                        <span className="mi">mi</span>
+                      </span>
+                      {e.podRequired && <span className="pod-tag">POD</span>}
+                    </div>
+                    <div className="route-card-title" title={e.location}>
+                      {e.location}
+                    </div>
+                    <div className="route-card-foot">
+                      <span>{e.cityState}</span>
                       <span className="sep">·</span>
-                      <span className="pod-tag">POD</span>
-                    </>
-                  )}
+                      <span>{e.equipment}</span>
+                    </div>
+                  </div>
+                  <div className="route-card-right">
+                    <span className={`status-pill ${status.cls}`}>{status.label}</span>
+                    <div className="event-when">
+                      <span className="event-date tnum">{when.date}</span>
+                      <span className="event-time tnum">{when.time}</span>
+                    </div>
+                    {endWhen && (
+                      <div className="event-when end">
+                        <span className="event-date tnum">{endWhen.date}</span>
+                        <span className="event-time tnum">{endWhen.time}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -463,13 +481,13 @@ export function TripDetailView() {
     setShowPaymentModal,
     setShowExceptionModal,
     setTrips,
+    search,
+    setSearch,
+    toast,
   } = useApp();
 
   const trip = trips.find((t) => t.id === selectedTripId);
   if (!trip) return null;
-
-  const first = trip.events[0];
-  const last = trip.events[trip.events.length - 1];
 
   const toggleFlag = () => {
     setTrips((prev) =>
@@ -479,21 +497,46 @@ export function TripDetailView() {
 
   return (
     <div className="detail">
-      {/* Chrome strip */}
       <div className="detail-chrome">
         <button type="button" className="chrome-back" onClick={() => setSelectedTripId(null)}>
           <ArrowLeft size={14} />
           Back to board
         </button>
-        <span className={`chrome-status status-${trip.paymentStatus}`}>{trip.paymentStatus}</span>
+        <div className="chrome-search">
+          <Search size={14} strokeWidth={2} />
+          <input
+            type="search"
+            placeholder="Search events, equipment, locations…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <button
+          type="button"
+          className="chrome-bell"
+          aria-label="Notifications"
+          onClick={() =>
+            toast(
+              trip.exceptions.length
+                ? trip.exceptions[0].customNote
+                : 'No new notifications',
+            )
+          }
+        >
+          <Bell size={16} />
+          {trip.exceptions.length > 0 && <span className="chrome-bell-dot" />}
+        </button>
       </div>
 
-      {/* High-level info card */}
       <section className="detail-info-bar">
         <div className="info-identity">
           <div className="info-avatar">{driverInitials(trip.leadDriver)}</div>
           <div className="info-copy">
-            <div className="info-title">{trip.leadDriver}</div>
+            <div className="info-title-row">
+              <h2 className="info-title">{trip.leadDriver}</h2>
+              <span className={`badge badge-status ${trip.paymentStatus}`}>{trip.paymentStatus}</span>
+              {trip.flagged && <span className="badge badge-pending">Flagged</span>}
+            </div>
             <div className="info-ids">
               <span>
                 Trip <strong>{trip.tripNo}</strong>
@@ -505,33 +548,22 @@ export function TripDetailView() {
               <span className="sep">·</span>
               <span>{trip.tripCategory}</span>
               <span className="sep">·</span>
-              <span>{trip.tripRole}</span>
+              <span>
+                Team <strong>{trip.teamDriver || '—'}</strong>
+              </span>
             </div>
             <div className="info-sub">
-              <span>ID {trip.leadDriverId}</span>
-              {first && (
-                <>
-                  <span className="sep">·</span>
-                  <span>{first.equipment}</span>
-                </>
-              )}
+              <span>{trip.leadDriverId}</span>
               <span className="sep">·</span>
               <span>{trip.terminal}</span>
               <span className="sep">·</span>
               <span>Disp. {trip.dispatcher}</span>
+              <span className="sep">·</span>
+              <span className="tnum">{trip.dateOut}</span>
+              <span className="sep">→</span>
+              <span className="tnum">{trip.dateIn}</span>
             </div>
           </div>
-        </div>
-
-        <div className="info-alerts">
-          {trip.flagged && <span className="alert-pill warn">Flagged</span>}
-          {trip.paymentStatus === 'exception' && <span className="alert-pill danger">Pay exception</span>}
-          {trip.paymentStatus === 'unpaid' && <span className="alert-pill muted">Unpaid</span>}
-          {trip.paymentStatus === 'pending' && <span className="alert-pill warn">Pay pending</span>}
-          {trip.paymentStatus === 'paid' && <span className="alert-pill ok">Paid</span>}
-          {trip.exceptions.length > 0 && (
-            <span className="alert-pill danger">{trip.exceptions[0].customNote}</span>
-          )}
         </div>
 
         <div className="info-actions">
@@ -553,36 +585,12 @@ export function TripDetailView() {
               className="btn btn-ghost btn-sm danger-text"
               onClick={() => setShowExceptionModal(true)}
             >
-              Exception
+              View notes
             </button>
           )}
         </div>
       </section>
 
-      {/* Route strip */}
-      <section className="detail-route-strip">
-        <div className="strip-end">
-          <span className="eyebrow">Date Out</span>
-          <strong className="tnum">{trip.dateOut}</strong>
-          <span className="strip-place">{first?.cityState ?? trip.terminal}</span>
-        </div>
-        <div className="strip-mid">
-          <div className="strip-track">
-            <span className="strip-dot" />
-            <span className="strip-bar" />
-            <span className="strip-miles tnum">{trip.payMiles.toFixed(1)} mi</span>
-            <span className="strip-bar" />
-            <span className="strip-dot end" />
-          </div>
-        </div>
-        <div className="strip-end right">
-          <span className="eyebrow">Date In</span>
-          <strong className="tnum">{trip.dateIn}</strong>
-          <span className="strip-place">{last?.cityState ?? '—'}</span>
-        </div>
-      </section>
-
-      {/* Body: left route cards · right horizontal tabs */}
       <div className="detail-split">
         <aside className="detail-left">
           <EventRouteCards trip={trip} />
