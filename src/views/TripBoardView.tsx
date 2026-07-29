@@ -9,9 +9,10 @@ import {
   Wallet,
   X,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../context/AppContext';
-import type { Trip } from '../types';
+import type { Trip, TripRole } from '../types';
 import './views.css';
 
 function PaymentIcon({ status }: { status: Trip['paymentStatus'] }) {
@@ -20,6 +21,13 @@ function PaymentIcon({ status }: { status: Trip['paymentStatus'] }) {
       {status}
     </span>
   );
+}
+
+function roleClass(role: TripRole) {
+  if (role === 'Local') return 'role-local';
+  if (role === 'Team') return 'role-team';
+  if (role === 'Company') return 'role-company';
+  return 'role-oo';
 }
 
 function RowMenu({
@@ -41,12 +49,37 @@ function RowMenu({
     setDetailTab,
     toast,
   } = useApp();
-  const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) return;
+    const place = () => {
+      const rect = btnRef.current!.getBoundingClientRect();
+      const menuW = 180;
+      const menuH = 220;
+      let left = rect.left;
+      let top = rect.bottom + 6;
+      if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+      if (top + menuH > window.innerHeight - 8) top = rect.top - menuH - 6;
+      setPos({ top: Math.max(8, top), left: Math.max(8, left) });
+    };
+    place();
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+      const t = e.target as Node;
+      if (btnRef.current?.contains(t) || popRef.current?.contains(t)) return;
+      onClose();
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
@@ -59,8 +92,9 @@ function RowMenu({
   };
 
   return (
-    <div className="row-menu" ref={ref} onClick={(e) => e.stopPropagation()}>
+    <div className="row-menu" onClick={(e) => e.stopPropagation()}>
       <button
+        ref={btnRef}
         type="button"
         className={`btn-icon row-menu-trigger ${open ? 'open' : ''}`}
         aria-label={`Actions for ${trip.tripNo}`}
@@ -69,60 +103,67 @@ function RowMenu({
       >
         <MoreVertical size={16} />
       </button>
-      {open && (
-        <div className="row-menu-pop" role="menu">
-          <button type="button" role="menuitem" onClick={openTrip}>
-            Open trip
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setSelectedTripId(trip.id);
-              setShowPaymentModal(true);
-              onClose();
-            }}
+      {open &&
+        createPortal(
+          <div
+            ref={popRef}
+            className="row-menu-pop portal"
+            role="menu"
+            style={{ top: pos.top, left: pos.left }}
           >
-            Add payment
-          </button>
-          {trip.exceptions.length > 0 && (
+            <button type="button" role="menuitem" onClick={openTrip}>
+              Open trip
+            </button>
             <button
               type="button"
               role="menuitem"
               onClick={() => {
                 setSelectedTripId(trip.id);
-                setShowExceptionModal(true);
+                setShowPaymentModal(true);
                 onClose();
               }}
             >
-              View exception
+              Add payment
             </button>
-          )}
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setTrips((prev) =>
-                prev.map((t) => (t.id === trip.id ? { ...t, flagged: !t.flagged } : t)),
-              );
-              toast(trip.flagged ? 'Flag cleared' : 'Trip flagged');
-              onClose();
-            }}
-          >
-            {trip.flagged ? 'Clear flag' : 'Flag trip'}
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              toast(`Exported ${trip.tripNo}`);
-              onClose();
-            }}
-          >
-            Export trip
-          </button>
-        </div>
-      )}
+            {trip.exceptions.length > 0 && (
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setSelectedTripId(trip.id);
+                  setShowExceptionModal(true);
+                  onClose();
+                }}
+              >
+                View exception
+              </button>
+            )}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setTrips((prev) =>
+                  prev.map((t) => (t.id === trip.id ? { ...t, flagged: !t.flagged } : t)),
+                );
+                toast(trip.flagged ? 'Flag cleared' : 'Trip flagged');
+                onClose();
+              }}
+            >
+              {trip.flagged ? 'Clear flag' : 'Flag trip'}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                toast(`Exported ${trip.tripNo}`);
+                onClose();
+              }}
+            >
+              Export trip
+            </button>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
@@ -132,8 +173,8 @@ export function TripBoardView() {
     trips,
     search,
     setSearch,
-    paymentFilter,
-    setPaymentFilter,
+    paymentFilters,
+    setPaymentFilters,
     flagFilter,
     setFlagFilter,
     roleFilter,
@@ -157,7 +198,7 @@ export function TripBoardView() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return trips.filter((t) => {
-      if (paymentFilter !== 'all' && t.paymentStatus !== paymentFilter) return false;
+      if (paymentFilters.length > 0 && !paymentFilters.includes(t.paymentStatus)) return false;
       if (flagFilter === 'flagged' && !t.flagged) return false;
       if (flagFilter === 'clear' && t.flagged) return false;
       if (roleFilter !== 'all' && t.tripRole !== roleFilter) return false;
@@ -171,14 +212,14 @@ export function TripBoardView() {
         t.teamDriver.toLowerCase().includes(q)
       );
     });
-  }, [trips, search, paymentFilter, flagFilter, roleFilter, tagFilter]);
+  }, [trips, search, paymentFilters, flagFilter, roleFilter, tagFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
 
   useEffect(() => {
     setPage(1);
-  }, [search, paymentFilter, flagFilter, roleFilter, tagFilter, setPage]);
+  }, [search, paymentFilters, flagFilter, roleFilter, tagFilter, setPage]);
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
@@ -254,13 +295,13 @@ export function TripBoardView() {
         clear: () => setSearch(''),
       });
     }
-    if (paymentFilter !== 'all') {
+    paymentFilters.forEach((status) => {
       chips.push({
-        key: 'payment',
-        label: `Status: ${paymentFilter}`,
-        clear: () => setPaymentFilter('all'),
+        key: `payment-${status}`,
+        label: `Status: ${status}`,
+        clear: () => setPaymentFilters((prev) => prev.filter((s) => s !== status)),
       });
-    }
+    });
     if (flagFilter === 'flagged') {
       chips.push({
         key: 'flag',
@@ -291,11 +332,11 @@ export function TripBoardView() {
     return chips;
   }, [
     search,
-    paymentFilter,
+    paymentFilters,
     flagFilter,
     roleFilter,
     tagFilter,
-    setPaymentFilter,
+    setPaymentFilters,
     setFlagFilter,
     setRoleFilter,
     setTagFilter,
@@ -304,22 +345,25 @@ export function TripBoardView() {
 
   const clearAllFilters = () => {
     setSearch('');
-    setPaymentFilter('all');
+    setPaymentFilters([]);
     setFlagFilter('all');
     setRoleFilter('all');
     setTagFilter('');
     setPage(1);
   };
 
-  const applyPaymentFilter = (value: string) => {
-    setPaymentFilter(paymentFilter === value ? 'all' : value);
-    if (value !== 'all') setFlagFilter('all');
+  const togglePaymentFilter = (value: string) => {
+    setPaymentFilters((prev) =>
+      prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value],
+    );
   };
 
-  const applyFlaggedFilter = () => {
+  const toggleFlaggedFilter = () => {
     setFlagFilter(flagFilter === 'flagged' ? 'all' : 'flagged');
-    setPaymentFilter('all');
   };
+
+  const noFilters =
+    paymentFilters.length === 0 && flagFilter === 'all' && !search.trim() && roleFilter === 'all' && !tagFilter.trim();
 
   return (
     <div className="board">
@@ -361,43 +405,40 @@ export function TripBoardView() {
       <div className="board-summary">
         <button
           type="button"
-          className={`board-sum-card all ${paymentFilter === 'all' && flagFilter === 'all' ? 'active' : ''}`}
-          onClick={() => {
-            setPaymentFilter('all');
-            setFlagFilter('all');
-          }}
+          className={`board-sum-card all ${noFilters ? 'active' : ''}`}
+          onClick={clearAllFilters}
         >
           <span>All trips</span>
           <strong className="tnum">{counts.all}</strong>
         </button>
         <button
           type="button"
-          className={`board-sum-card unpaid ${paymentFilter === 'unpaid' ? 'active' : ''}`}
-          onClick={() => applyPaymentFilter('unpaid')}
+          className={`board-sum-card unpaid ${paymentFilters.includes('unpaid') ? 'active' : ''}`}
+          onClick={() => togglePaymentFilter('unpaid')}
         >
           <span>Unpaid</span>
           <strong className="tnum">{counts.unpaid}</strong>
         </button>
         <button
           type="button"
-          className={`board-sum-card pending ${paymentFilter === 'pending' ? 'active' : ''}`}
-          onClick={() => applyPaymentFilter('pending')}
+          className={`board-sum-card pending ${paymentFilters.includes('pending') ? 'active' : ''}`}
+          onClick={() => togglePaymentFilter('pending')}
         >
           <span>Pending</span>
           <strong className="tnum">{counts.pending}</strong>
         </button>
         <button
           type="button"
-          className={`board-sum-card paid ${paymentFilter === 'paid' ? 'active' : ''}`}
-          onClick={() => applyPaymentFilter('paid')}
+          className={`board-sum-card paid ${paymentFilters.includes('paid') ? 'active' : ''}`}
+          onClick={() => togglePaymentFilter('paid')}
         >
           <span>Paid</span>
           <strong className="tnum">{counts.paid}</strong>
         </button>
         <button
           type="button"
-          className={`board-sum-card exception ${paymentFilter === 'exception' ? 'active' : ''}`}
-          onClick={() => applyPaymentFilter('exception')}
+          className={`board-sum-card exception ${paymentFilters.includes('exception') ? 'active' : ''}`}
+          onClick={() => togglePaymentFilter('exception')}
         >
           <span>Exception</span>
           <strong className="tnum">{counts.exception}</strong>
@@ -405,7 +446,7 @@ export function TripBoardView() {
         <button
           type="button"
           className={`board-sum-card flagged ${flagFilter === 'flagged' ? 'active' : ''}`}
-          onClick={applyFlaggedFilter}
+          onClick={toggleFlaggedFilter}
         >
           <span>Flagged</span>
           <strong className="tnum">{counts.flagged}</strong>
@@ -442,7 +483,7 @@ export function TripBoardView() {
               <th className="col-check">
                 <input type="checkbox" checked={pageSelected} onChange={toggleAll} aria-label="Select page" />
               </th>
-              <th className="col-menu">Action</th>
+              <th className="col-menu" aria-label="Actions" />
               <th className="col-status">Status</th>
               <th className="col-flag">Flag</th>
               <th>Trip No</th>
@@ -504,7 +545,7 @@ export function TripBoardView() {
                         toast(t.flagged ? 'Flag cleared' : 'Trip flagged');
                       }}
                     >
-                      <Flag size={14} fill={t.flagged ? 'currentColor' : 'none'} />
+                      <Flag size={16} fill={t.flagged ? 'currentColor' : 'none'} strokeWidth={2} />
                     </button>
                   </td>
                   <td>
@@ -541,7 +582,7 @@ export function TripBoardView() {
                     <span className="cat-cell">{t.tripCategory}</span>
                   </td>
                   <td>
-                    <span className="role-pill">{t.tripRole}</span>
+                    <span className={`role-pill ${roleClass(t.tripRole)}`}>{t.tripRole}</span>
                   </td>
                   <td className="tnum miles-cell">{t.payMiles.toFixed(1)}</td>
                   <td>{t.payDate || <span className="muted">—</span>}</td>

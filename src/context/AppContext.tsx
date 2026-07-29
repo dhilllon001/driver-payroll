@@ -26,8 +26,8 @@ interface AppState {
   setNotesSubTab: (t: NotesSubTab) => void;
   search: string;
   setSearch: (s: string) => void;
-  paymentFilter: string;
-  setPaymentFilter: (s: string) => void;
+  paymentFilters: string[];
+  setPaymentFilters: React.Dispatch<React.SetStateAction<string[]>>;
   flagFilter: string;
   setFlagFilter: (s: string) => void;
   roleFilter: string;
@@ -58,7 +58,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [detailTab, setDetailTab] = useState<DetailTab>('payment');
   const [notesSubTab, setNotesSubTab] = useState<NotesSubTab>('Driver');
   const [search, setSearch] = useState('');
-  const [paymentFilter, setPaymentFilter] = useState('all');
+  const [paymentFilters, setPaymentFilters] = useState<string[]>([]);
   const [flagFilter, setFlagFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
   const [tagFilter, setTagFilter] = useState('');
@@ -93,8 +93,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setNotesSubTab,
       search,
       setSearch,
-      paymentFilter,
-      setPaymentFilter,
+      paymentFilters,
+      setPaymentFilters,
       flagFilter,
       setFlagFilter,
       roleFilter,
@@ -122,7 +122,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       detailTab,
       notesSubTab,
       search,
-      paymentFilter,
+      paymentFilters,
       flagFilter,
       roleFilter,
       tagFilter,
