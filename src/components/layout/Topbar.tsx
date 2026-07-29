@@ -1,8 +1,6 @@
 import {
   Bell,
   Download,
-  FileBarChart,
-  Filter,
   Plus,
   Search,
   Upload,
@@ -58,41 +56,34 @@ const HEADERS: Record<ViewId, HeaderProfile> = {
     actions: [],
   },
   settlement: {
-    placeholder: 'Search settlements, drivers, batches…',
+    placeholder: 'Search settlements, drivers, divisions…',
     showSearch: true,
-    actions: [
-      { id: 'export', label: 'Export', icon: Download, variant: 'secondary', toast: 'Export started' },
-      { id: 'gen', label: 'Generate Report', icon: FileBarChart, variant: 'primary', toast: 'Settlement report generating' },
-    ],
+    centerSearch: true,
+    actions: [],
   },
   audit: {
-    placeholder: 'Search audit entries, trips, users…',
+    placeholder: 'Search audit trips, drivers, descriptions…',
     showSearch: true,
-    actions: [
-      { id: 'filter', label: 'Filters', icon: Filter, variant: 'secondary', toast: 'Audit filters coming soon' },
-      { id: 'export', label: 'Export', icon: Download, variant: 'primary', toast: 'Audit export started' },
-    ],
+    centerSearch: true,
+    actions: [],
   },
   'driver-ledger': {
-    placeholder: 'Search drivers, ledger entries…',
+    placeholder: 'Search ledger drivers, descriptions…',
     showSearch: true,
-    actions: [
-      { id: 'export', label: 'Export Ledger', icon: Download, variant: 'primary', toast: 'Ledger export started' },
-    ],
+    centerSearch: true,
+    actions: [],
   },
   fuel: {
-    placeholder: 'Search fuel tickets, drivers, units…',
+    placeholder: 'Search receipts, drivers, trucks…',
     showSearch: true,
-    actions: [
-      { id: 'import', label: 'Import Fuel', icon: Upload, variant: 'primary', toast: 'Fuel import started' },
-    ],
+    centerSearch: true,
+    actions: [],
   },
   incidents: {
-    placeholder: 'Search incidents, drivers, locations…',
+    placeholder: 'Search incidents by driver code or name…',
     showSearch: true,
-    actions: [
-      { id: 'add', label: 'Add Incident', icon: Plus, variant: 'primary', toast: 'Add incident coming soon' },
-    ],
+    centerSearch: true,
+    actions: [],
   },
   deductions: {
     placeholder: 'Search deductions, reimbursements…',

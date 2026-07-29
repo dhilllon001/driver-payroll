@@ -226,3 +226,90 @@ export interface PayrollRun {
   updatedAt: string;
 }
 
+export interface SettlementRow {
+  id: string;
+  driver: string;
+  driverCode: string;
+  division: string;
+  region: string;
+  category: string;
+  payrollDate: string;
+  status: 'closed' | 'open';
+  amount: number;
+  emailed: boolean;
+  generatedAt: string;
+}
+
+export interface AuditRow {
+  id: string;
+  tripNo: string;
+  flagStatus: 'none' | 'flagged' | 'exception';
+  driverCode: string;
+  description: string;
+  type: string;
+  createdOn: string;
+}
+
+export interface LedgerRow {
+  id: string;
+  driver: string;
+  driverCode: string;
+  txnDate: string;
+  description: string;
+  debit: number;
+  credit: number;
+  exchangeRate: number;
+  exchangeAmount: number;
+  balance: number;
+  balanceFx: number;
+  updatedBy: string;
+}
+
+export interface FuelRow {
+  id: string;
+  receiptNo: string;
+  receiptDate: string;
+  effectiveDate: string;
+  payrollDate: string;
+  driverCode: string;
+  truckNo: string;
+  itemType: string;
+  qtyLtr: number;
+  vendor: string;
+  cityState: string;
+  driverRate: number;
+  tax: number;
+  impactIfta: boolean;
+  allowDeduction: boolean;
+}
+
+export type IncidentStatus = 'open' | 'scheduled' | 'ongoing' | 'rejected' | 'completed';
+
+export interface IncidentNote {
+  id: string;
+  text: string;
+  at: string;
+  by: string;
+}
+
+export interface IncidentRow {
+  id: string;
+  driverCode: string;
+  driverName: string;
+  division: string;
+  category: string;
+  hireDate: string;
+  truckNo: string;
+  incidentType: string;
+  from: string;
+  to: string;
+  email: string;
+  status: IncidentStatus;
+  emergencyName: string;
+  emergencyPhone: string;
+  emergencyAddress: string;
+  createdBy: string;
+  createdOn: string;
+  notes: IncidentNote[];
+}
+

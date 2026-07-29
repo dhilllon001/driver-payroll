@@ -6,6 +6,11 @@ import { TripBoardView } from './views/TripBoardView';
 import { TripDetailView } from './views/TripDetailView';
 import { PayrollConfigView } from './views/PayrollConfigView';
 import { PayrollManagementView } from './views/PayrollManagementView';
+import { SettlementView } from './views/SettlementView';
+import { AuditView } from './views/AuditView';
+import { DriverLedgerView } from './views/DriverLedgerView';
+import { FuelView } from './views/FuelView';
+import { IncidentsView } from './views/IncidentsView';
 import { PlaceholderView } from './views/PlaceholderView';
 import './styles/global.css';
 import './components/ui/ui.css';
@@ -23,8 +28,29 @@ function Shell() {
 
   const showBoard = view === 'trip-board' && !selectedTripId;
   const showDetail = view === 'trip-board' && !!selectedTripId;
-  const showConfig = view === 'config';
-  const showPayroll = view === 'payroll';
+
+  const mainView =
+    showBoard ? (
+      <TripBoardView />
+    ) : showDetail ? (
+      <TripDetailView />
+    ) : view === 'payroll' ? (
+      <PayrollManagementView />
+    ) : view === 'settlement' ? (
+      <SettlementView />
+    ) : view === 'audit' ? (
+      <AuditView />
+    ) : view === 'driver-ledger' ? (
+      <DriverLedgerView />
+    ) : view === 'fuel' ? (
+      <FuelView />
+    ) : view === 'incidents' ? (
+      <IncidentsView />
+    ) : view === 'config' ? (
+      <PayrollConfigView />
+    ) : (
+      <PlaceholderView id={view} />
+    );
 
   return (
     <>
@@ -32,15 +58,7 @@ function Shell() {
         <Sidebar />
         <div className="main-col">
           {!showDetail && <Topbar />}
-          <div className="view-area">
-            {showBoard && <TripBoardView />}
-            {showDetail && <TripDetailView />}
-            {showPayroll && <PayrollManagementView />}
-            {showConfig && <PayrollConfigView />}
-            {!showBoard && !showDetail && !showPayroll && !showConfig && (
-              <PlaceholderView id={view} />
-            )}
-          </div>
+          <div className="view-area">{mainView}</div>
         </div>
       </div>
       {showPaymentModal && <AddPaymentModal />}

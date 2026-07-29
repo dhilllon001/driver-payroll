@@ -1,0 +1,28 @@
+.mod-page{display:flex;flex-direction:column;gap:12px;height:100%;min-height:0;padding:14px 16px 16px;overflow:hidden}
+.mod-filters{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;padding:10px 12px;background:var(--bg-surface-1);border:1px solid var(--border-1);border-radius:var(--radius-md)}
+.mod-filter{display:flex;flex-direction:column;gap:4px;min-width:116px}.mod-filter.grow{min-width:170px}
+.mod-filter>span{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8b5a2b}
+.mod-filter input,.mod-filter select{height:32px;border:1px solid var(--border-1);border-radius:var(--radius-md);background:var(--bg-surface-2);padding:5px 9px;color:var(--fg-1);font-size:var(--fs-small)}
+.mod-filters-actions{display:flex;align-items:center;gap:7px;margin-left:auto}
+.mod-table-shell{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--bg-surface-1);border:1px solid var(--border-1);border-radius:var(--radius-lg);overflow:hidden}
+.mod-table-scroll{flex:1;min-height:0;overflow:auto}.mod-table{width:100%;min-width:940px}
+.mod-table thead th{position:sticky;top:0;z-index:1;background:#14171c;color:#e8edf3;border-bottom:0;white-space:nowrap}
+.mod-table td{font-size:var(--fs-small);white-space:nowrap}.mod-table.compact th,.mod-table.compact td{padding:8px 9px}
+.mod-money{text-align:right;font-variant-numeric:tabular-nums}.mod-muted{color:var(--fg-3)}.mod-action-col{width:46px;text-align:center}
+.mod-status{display:inline-flex;align-items:center;padding:2px 7px;border-radius:var(--radius-pill);font-size:9px;font-weight:750;text-transform:uppercase;letter-spacing:.04em;background:var(--grey-bg);color:var(--fg-3)}
+.mod-status.closed,.mod-status.completed,.mod-status.none{background:var(--green-bg);color:var(--positive)}
+.mod-status.open,.mod-status.scheduled{background:var(--blue-soft);color:var(--action)}
+.mod-status.ongoing,.mod-status.flagged{background:var(--amber-bg);color:var(--amber)}
+.mod-status.rejected,.mod-status.exception{background:var(--red-bg);color:var(--negative)}
+.mod-link{border:0;background:transparent;padding:0;color:var(--action);font:inherit;font-weight:700;cursor:pointer}.mod-link:hover{text-decoration:underline}
+.mod-pager{display:flex;align-items:center;gap:12px;padding:9px 14px;border-top:1px solid var(--border-1);background:var(--bg-surface-2);font-size:var(--fs-small);color:var(--fg-2)}
+.mod-pager strong{color:var(--fg-1)}.mod-pager-nav{display:flex;align-items:center;gap:6px;margin-left:auto}
+.mod-row-menu{position:fixed;z-index:350;min-width:175px;padding:6px;background:var(--bg-surface-1);border:1px solid var(--border-1);border-radius:var(--radius-md);box-shadow:var(--shadow-popover)}
+.mod-row-menu-item{width:100%;display:flex;align-items:center;gap:8px;border:0;background:transparent;padding:8px 10px;border-radius:calc(var(--radius-md) - 2px);font-size:var(--fs-small);font-weight:600;color:var(--fg-1);text-align:left;cursor:pointer}
+.mod-row-menu-item:hover{background:var(--bg-surface-2)}.mod-row-menu-item.danger{color:var(--negative)}.mod-row-menu-item.danger:hover{background:var(--red-bg)}
+.mod-chip-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.mod-chip{border:1px solid var(--border-1);border-radius:var(--radius-pill);background:var(--bg-surface-1);padding:5px 11px;color:var(--fg-2);font-size:var(--fs-small);font-weight:650;text-transform:capitalize}.mod-chip.active{background:#14171c;color:#fff;border-color:#14171c}
+.mod-check{display:inline-flex;align-items:center;gap:6px;height:32px;font-size:var(--fs-small);font-weight:600;color:var(--fg-2);white-space:nowrap}.mod-check input{accent-color:var(--action)}
+.mod-modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.mod-modal-grid .wide{grid-column:1/-1}
+.mod-notes{display:flex;flex-direction:column;gap:9px}.mod-note{padding:10px;border:1px solid var(--border-1);border-radius:var(--radius-md);background:var(--bg-surface-2)}.mod-note p{margin:0 0 5px}.mod-note small{color:var(--fg-3)}
+.mod-note-compose{display:flex;gap:8px;margin-top:14px}.mod-note-compose textarea{flex:1;min-height:70px}
+@media(max-width:850px){.mod-filters-actions{margin-left:0;width:100%}.mod-modal-grid{grid-template-columns:1fr}}
