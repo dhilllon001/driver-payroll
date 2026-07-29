@@ -1098,15 +1098,6 @@ function AiAskTab({ trip }: { trip: Trip }) {
   );
 }
 
-function driverInitials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0])
-    .join('');
-}
-
 export function TripDetailView() {
   const {
     trips,
@@ -1222,12 +1213,11 @@ export function TripDetailView() {
       <section className="detail-info-bar">
         <div className="info-top">
           <div className="info-identity">
-            <div className="info-avatar">{driverInitials(trip.leadDriver)}</div>
             <div className="info-copy">
               <div className="info-title-row">
                 <h2 className="info-title">{trip.leadDriver}</h2>
+                <span className="info-driver-code">{trip.leadDriverId}</span>
                 <span className={`badge badge-status ${trip.paymentStatus}`}>{trip.paymentStatus}</span>
-                {trip.flagged && <span className="badge badge-pending">Flagged</span>}
                 <span className="badge badge-neutral">{trip.tripRole}</span>
               </div>
               <div className="info-ids">
@@ -1240,10 +1230,14 @@ export function TripDetailView() {
                 </span>
                 <span className="sep">·</span>
                 <span>{trip.tripCategory}</span>
-                <span className="sep">·</span>
-                <span>
-                  Team <strong>{trip.teamDriver || '—'}</strong>
-                </span>
+                {trip.teamDriver ? (
+                  <>
+                    <span className="sep">·</span>
+                    <span>
+                      Team <strong>{trip.teamDriver}</strong>
+                    </span>
+                  </>
+                ) : null}
                 {trip.customer && (
                   <>
                     <span className="sep">·</span>
@@ -1333,10 +1327,6 @@ export function TripDetailView() {
               <span className="info-fact-val">{trip.payDate}</span>
             </div>
           )}
-          <div className="info-fact">
-            <span className="info-fact-lbl">Driver ID</span>
-            <span className="info-fact-val">{trip.leadDriverId}</span>
-          </div>
           <div className="info-fact">
             <span className="info-fact-lbl">Terminal</span>
             <span className="info-fact-val">{trip.terminal}</span>
