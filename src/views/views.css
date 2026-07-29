@@ -190,6 +190,10 @@
   border-color: #c5ced9;
   box-shadow: 0 3px 10px rgba(15, 26, 42, 0.06);
 }
+.board-sum-card.active {
+  border-color: #9bb6d8;
+  box-shadow: 0 0 0 2px rgba(30, 95, 170, 0.14);
+}
 .board-sum-card span {
   font-size: 11px;
   font-weight: 650;
@@ -199,6 +203,60 @@
   font-size: 16px;
   font-weight: 750;
   letter-spacing: -0.02em;
+  color: var(--fg-1);
+}
+
+.board-applied-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 16px 0;
+  flex-shrink: 0;
+}
+.board-applied-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  flex-shrink: 0;
+}
+.board-applied-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+.board-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #b7cce8;
+  background: #eef4fc;
+  color: var(--action);
+  border-radius: var(--radius-pill);
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+.board-filter-chip:hover {
+  background: #e2ecf8;
+}
+.board-clear-filters {
+  border: 1px solid var(--border-1);
+  background: #fff;
+  color: var(--fg-2);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 650;
+  margin-left: auto;
+}
+.board-clear-filters:hover {
+  background: var(--bg-surface-2);
   color: var(--fg-1);
 }
 

@@ -3,11 +3,9 @@ import {
   ChevronLast,
   ChevronLeft,
   ChevronRight,
-  Download,
   Flag,
   MessageCircle,
   MoreVertical,
-  Search,
   Wallet,
   X,
 } from 'lucide-react';
@@ -133,6 +131,7 @@ export function TripBoardView() {
   const {
     trips,
     search,
+    setSearch,
     paymentFilter,
     setPaymentFilter,
     flagFilter,
@@ -246,71 +245,84 @@ export function TripBoardView() {
     return buttons;
   }, [safePage, totalPages]);
 
+  const appliedFilters = useMemo(() => {
+    const chips: { key: string; label: string; clear: () => void }[] = [];
+    if (search.trim()) {
+      chips.push({
+        key: 'search',
+        label: `Search: ${search.trim()}`,
+        clear: () => setSearch(''),
+      });
+    }
+    if (paymentFilter !== 'all') {
+      chips.push({
+        key: 'payment',
+        label: `Status: ${paymentFilter}`,
+        clear: () => setPaymentFilter('all'),
+      });
+    }
+    if (flagFilter === 'flagged') {
+      chips.push({
+        key: 'flag',
+        label: 'Flagged only',
+        clear: () => setFlagFilter('all'),
+      });
+    } else if (flagFilter === 'clear') {
+      chips.push({
+        key: 'flag',
+        label: 'Not flagged',
+        clear: () => setFlagFilter('all'),
+      });
+    }
+    if (roleFilter !== 'all') {
+      chips.push({
+        key: 'role',
+        label: `Role: ${roleFilter}`,
+        clear: () => setRoleFilter('all'),
+      });
+    }
+    if (tagFilter.trim()) {
+      chips.push({
+        key: 'tag',
+        label: `Tag: ${tagFilter.trim()}`,
+        clear: () => setTagFilter(''),
+      });
+    }
+    return chips;
+  }, [
+    search,
+    paymentFilter,
+    flagFilter,
+    roleFilter,
+    tagFilter,
+    setPaymentFilter,
+    setFlagFilter,
+    setRoleFilter,
+    setTagFilter,
+    setSearch,
+  ]);
+
+  const clearAllFilters = () => {
+    setSearch('');
+    setPaymentFilter('all');
+    setFlagFilter('all');
+    setRoleFilter('all');
+    setTagFilter('');
+    setPage(1);
+  };
+
+  const applyPaymentFilter = (value: string) => {
+    setPaymentFilter(paymentFilter === value ? 'all' : value);
+    if (value !== 'all') setFlagFilter('all');
+  };
+
+  const applyFlaggedFilter = () => {
+    setFlagFilter(flagFilter === 'flagged' ? 'all' : 'flagged');
+    setPaymentFilter('all');
+  };
+
   return (
     <div className="board">
-      <div className="board-toolbar">
-        <button type="button" className="btn btn-secondary btn-sm" onClick={() => toast('Advanced search')}>
-          <Search size={13} />
-          Advanced Search
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          onClick={() => toast(`Exported ${filtered.length} trip exceptions`)}
-        >
-          <Download size={13} />
-          Export Trip Exceptions
-        </button>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={() => toast('Upload Pay')}>
-          Upload Pay
-        </button>
-
-        <div className="filters">
-          <span className="filter-label">Filter By:</span>
-          <select
-            className="filter-select"
-            value={paymentFilter}
-            onChange={(e) => setPaymentFilter(e.target.value)}
-            aria-label="Payment Status"
-          >
-            <option value="all">Payment Status</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-            <option value="exception">Exception</option>
-          </select>
-          <select
-            className="filter-select"
-            value={flagFilter}
-            onChange={(e) => setFlagFilter(e.target.value)}
-            aria-label="Flag Status"
-          >
-            <option value="all">Flag Status</option>
-            <option value="flagged">Flagged</option>
-            <option value="clear">Not Flagged</option>
-          </select>
-          <select
-            className="filter-select"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-            aria-label="Trip Role"
-          >
-            <option value="all">Trip Role</option>
-            <option value="Local">Local</option>
-            <option value="Team">Team</option>
-            <option value="Owner Operator">Owner Operator</option>
-            <option value="Company">Company</option>
-          </select>
-          <input
-            className="filter-input"
-            placeholder="Tags"
-            value={tagFilter}
-            onChange={(e) => setTagFilter(e.target.value)}
-            aria-label="Tags"
-          />
-        </div>
-      </div>
-
       {selectedIds.size > 0 && (
         <div className="board-selection-bar" role="status" aria-live="polite">
           <div className="board-selection-left">
@@ -347,31 +359,81 @@ export function TripBoardView() {
       )}
 
       <div className="board-summary">
-        <button type="button" className="board-sum-card all" onClick={() => setPaymentFilter('all')}>
+        <button
+          type="button"
+          className={`board-sum-card all ${paymentFilter === 'all' && flagFilter === 'all' ? 'active' : ''}`}
+          onClick={() => {
+            setPaymentFilter('all');
+            setFlagFilter('all');
+          }}
+        >
           <span>All trips</span>
           <strong className="tnum">{counts.all}</strong>
         </button>
-        <button type="button" className="board-sum-card unpaid" onClick={() => setPaymentFilter('unpaid')}>
+        <button
+          type="button"
+          className={`board-sum-card unpaid ${paymentFilter === 'unpaid' ? 'active' : ''}`}
+          onClick={() => applyPaymentFilter('unpaid')}
+        >
           <span>Unpaid</span>
           <strong className="tnum">{counts.unpaid}</strong>
         </button>
-        <button type="button" className="board-sum-card pending" onClick={() => setPaymentFilter('pending')}>
+        <button
+          type="button"
+          className={`board-sum-card pending ${paymentFilter === 'pending' ? 'active' : ''}`}
+          onClick={() => applyPaymentFilter('pending')}
+        >
           <span>Pending</span>
           <strong className="tnum">{counts.pending}</strong>
         </button>
-        <button type="button" className="board-sum-card paid" onClick={() => setPaymentFilter('paid')}>
+        <button
+          type="button"
+          className={`board-sum-card paid ${paymentFilter === 'paid' ? 'active' : ''}`}
+          onClick={() => applyPaymentFilter('paid')}
+        >
           <span>Paid</span>
           <strong className="tnum">{counts.paid}</strong>
         </button>
-        <button type="button" className="board-sum-card exception" onClick={() => setPaymentFilter('exception')}>
+        <button
+          type="button"
+          className={`board-sum-card exception ${paymentFilter === 'exception' ? 'active' : ''}`}
+          onClick={() => applyPaymentFilter('exception')}
+        >
           <span>Exception</span>
           <strong className="tnum">{counts.exception}</strong>
         </button>
-        <button type="button" className="board-sum-card flagged" onClick={() => setFlagFilter('flagged')}>
+        <button
+          type="button"
+          className={`board-sum-card flagged ${flagFilter === 'flagged' ? 'active' : ''}`}
+          onClick={applyFlaggedFilter}
+        >
           <span>Flagged</span>
           <strong className="tnum">{counts.flagged}</strong>
         </button>
       </div>
+
+      {appliedFilters.length > 0 && (
+        <div className="board-applied-filters">
+          <span className="board-applied-label">Filters applied</span>
+          <div className="board-applied-chips">
+            {appliedFilters.map((chip) => (
+              <button
+                key={chip.key}
+                type="button"
+                className="board-filter-chip"
+                onClick={chip.clear}
+                title={`Clear ${chip.label}`}
+              >
+                {chip.label}
+                <X size={12} />
+              </button>
+            ))}
+          </div>
+          <button type="button" className="board-clear-filters" onClick={clearAllFilters}>
+            Clear all
+          </button>
+        </div>
+      )}
 
       <div className="board-table-wrap">
         <table className="data-table board-table">
