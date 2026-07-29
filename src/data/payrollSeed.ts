@@ -1,4 +1,4 @@
-import type { DriverClassification, PayrollRun } from '../types';
+import type { DriverClassification, ExchangeRates, PayrollRun, PayrollRunStatus } from '../types';
 
 export const PAYROLL_REGIONS = ['United States', 'Mexico', 'Canada'] as const;
 export const DRIVER_CLASSES: DriverClassification[] = [
@@ -14,281 +14,99 @@ const US_CLASSES: DriverClassification[] = ['Owner Operator', 'Temporary Drivers
 const MX_CLASSES: DriverClassification[] = ['Temporary Drivers', 'Owner Operator'];
 const CA_CLASSES: DriverClassification[] = ['Company Driver', 'Owner Operator'];
 
-const EX = {
-  us: { usdToCad: 1.4267, usdToPeso: 17.93, cadToPeso: 16.64 },
-  mx: { usdToCad: 1.412, usdToPeso: 18.05, cadToPeso: 16.9 },
-  ca: { usdToCad: 1.3985, usdToPeso: 17.75, cadToPeso: 16.52 },
+const EX: Record<string, ExchangeRates> = {
+  'United States': { usdToCad: 1.4267, usdToPeso: 17.93, cadToPeso: 16.64 },
+  Mexico: { usdToCad: 1.412, usdToPeso: 18.05, cadToPeso: 16.9 },
+  Canada: { usdToCad: 1.3985, usdToPeso: 17.75, cadToPeso: 16.52 },
 };
 
-export const PAYROLL_RUNS: PayrollRun[] = [
-  {
-    id: 'pr1',
-    payrollDate: 'Jan 2, 2026',
-    coverFrom: 'Dec 22, 2025',
-    coverTo: 'Dec 28, 2025',
-    status: 'closed',
-    region: 'United States',
-    classifications: US_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.us,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Jul 30, 2025 04:08 PM',
-    updatedBy: 'Hasandeep Singh',
-    updatedAt: 'Dec 30, 2025 03:06 PM',
-  },
-  {
-    id: 'pr2',
-    payrollDate: 'Jan 2, 2026',
-    coverFrom: 'Dec 22, 2025',
-    coverTo: 'Dec 28, 2025',
-    status: 'closed',
-    region: 'Mexico',
-    classifications: MX_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.mx,
-    createdBy: 'Kajal Jaiswal',
-    createdAt: 'Jul 28, 2025 11:22 AM',
-    updatedBy: 'Kajal Jaiswal',
-    updatedAt: 'Dec 29, 2025 09:14 AM',
-  },
-  {
-    id: 'pr3',
-    payrollDate: 'Jan 2, 2026',
-    coverFrom: 'Dec 22, 2025',
-    coverTo: 'Dec 28, 2025',
-    status: 'closed',
-    region: 'Canada',
-    classifications: CA_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.ca,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Jul 30, 2025 04:10 PM',
-    updatedBy: 'Hasandeep Singh',
-    updatedAt: 'Dec 30, 2025 02:41 PM',
-  },
-  {
-    id: 'pr4',
-    payrollDate: 'Dec 26, 2025',
-    coverFrom: 'Dec 15, 2025',
-    coverTo: 'Dec 21, 2025',
-    status: 'closed',
-    region: 'United States',
-    classifications: US_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.us,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Jul 30, 2025 04:08 PM',
-    updatedBy: 'Yoshua',
-    updatedAt: 'Dec 23, 2025 05:12 PM',
-  },
-  {
-    id: 'pr5',
-    payrollDate: 'Dec 26, 2025',
-    coverFrom: 'Dec 15, 2025',
-    coverTo: 'Dec 21, 2025',
-    status: 'closed',
-    region: 'Mexico',
-    classifications: MX_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.mx,
-    createdBy: 'Kajal Jaiswal',
-    createdAt: 'Jul 28, 2025 11:22 AM',
-    updatedBy: 'Kajal Jaiswal',
-    updatedAt: 'Dec 22, 2025 01:05 PM',
-  },
-  {
-    id: 'pr6',
-    payrollDate: 'Dec 26, 2025',
-    coverFrom: 'Dec 15, 2025',
-    coverTo: 'Dec 21, 2025',
-    status: 'closed',
-    region: 'Canada',
-    classifications: ALL_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.ca,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Jul 30, 2025 04:10 PM',
-    updatedBy: 'Hasandeep Singh',
-    updatedAt: 'Dec 23, 2025 10:33 AM',
-  },
-  {
-    id: 'pr7',
-    payrollDate: 'Dec 19, 2025',
-    coverFrom: 'Dec 8, 2025',
-    coverTo: 'Dec 14, 2025',
-    status: 'closed',
-    region: 'United States',
-    classifications: US_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: { usdToCad: 1.419, usdToPeso: 17.88, cadToPeso: 16.58 },
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Jul 30, 2025 04:08 PM',
-    updatedBy: 'Hasandeep Singh',
-    updatedAt: 'Dec 16, 2025 04:20 PM',
-  },
-  {
-    id: 'pr8',
-    payrollDate: 'Dec 19, 2025',
-    coverFrom: 'Dec 8, 2025',
-    coverTo: 'Dec 14, 2025',
-    status: 'closed',
-    region: 'Mexico',
-    classifications: MX_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.mx,
-    createdBy: 'Kajal Jaiswal',
-    createdAt: 'Jul 28, 2025 11:22 AM',
-    updatedBy: 'Yoshua',
-    updatedAt: 'Dec 15, 2025 08:45 AM',
-  },
-  {
-    id: 'pr9',
-    payrollDate: 'Dec 12, 2025',
-    coverFrom: 'Dec 1, 2025',
-    coverTo: 'Dec 7, 2025',
-    status: 'closed',
-    region: 'Canada',
-    classifications: CA_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.ca,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Jul 30, 2025 04:10 PM',
-    updatedBy: 'Hasandeep Singh',
-    updatedAt: 'Dec 9, 2025 03:18 PM',
-  },
-  {
-    id: 'pr10',
-    payrollDate: 'Dec 12, 2025',
-    coverFrom: 'Dec 1, 2025',
-    coverTo: 'Dec 7, 2025',
-    status: 'open',
-    region: 'United States',
-    classifications: ['Company Driver'],
-    coveragePeriod: 'Weekly',
-    exchange: EX.us,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Dec 1, 2025 09:00 AM',
-    updatedBy: 'Ashu Bhatia',
-    updatedAt: 'Dec 1, 2025 09:00 AM',
-  },
-  {
-    id: 'pr11',
-    payrollDate: 'Dec 5, 2025',
-    coverFrom: 'Nov 24, 2025',
-    coverTo: 'Nov 30, 2025',
-    status: 'closed',
-    region: 'Mexico',
-    classifications: MX_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.mx,
-    createdBy: 'Kajal Jaiswal',
-    createdAt: 'Nov 20, 2025 02:15 PM',
-    updatedBy: 'Kajal Jaiswal',
-    updatedAt: 'Dec 2, 2025 11:40 AM',
-  },
-  {
-    id: 'pr12',
-    payrollDate: 'Nov 28, 2025',
-    coverFrom: 'Nov 17, 2025',
-    coverTo: 'Nov 23, 2025',
-    status: 'processing',
-    region: 'Canada',
-    classifications: CA_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.ca,
-    createdBy: 'Hasandeep Singh',
-    createdAt: 'Nov 18, 2025 10:05 AM',
-    updatedBy: 'Hasandeep Singh',
-    updatedAt: 'Nov 27, 2025 06:22 PM',
-  },
-  {
-    id: 'pr13',
-    payrollDate: 'Nov 21, 2025',
-    coverFrom: 'Nov 10, 2025',
-    coverTo: 'Nov 16, 2025',
-    status: 'closed',
-    region: 'United States',
-    classifications: US_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.us,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Nov 5, 2025 01:30 PM',
-    updatedBy: 'Yoshua',
-    updatedAt: 'Nov 18, 2025 04:55 PM',
-  },
-  {
-    id: 'pr14',
-    payrollDate: 'Nov 14, 2025',
-    coverFrom: 'Nov 3, 2025',
-    coverTo: 'Nov 9, 2025',
-    status: 'closed',
-    region: 'Mexico',
-    classifications: ['Temporary Drivers'],
-    coveragePeriod: 'Weekly',
-    exchange: EX.mx,
-    createdBy: 'Kajal Jaiswal',
-    createdAt: 'Oct 30, 2025 08:12 AM',
-    updatedBy: 'Kajal Jaiswal',
-    updatedAt: 'Nov 11, 2025 12:08 PM',
-  },
-  {
-    id: 'pr15',
-    payrollDate: 'Nov 7, 2025',
-    coverFrom: 'Oct 27, 2025',
-    coverTo: 'Nov 2, 2025',
-    status: 'closed',
-    region: 'Canada',
-    classifications: ALL_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.ca,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Oct 22, 2025 03:40 PM',
-    updatedBy: 'Hasandeep Singh',
-    updatedAt: 'Nov 4, 2025 09:27 AM',
-  },
-  {
-    id: 'pr16',
-    payrollDate: 'Oct 31, 2025',
-    coverFrom: 'Oct 20, 2025',
-    coverTo: 'Oct 26, 2025',
-    status: 'closed',
-    region: 'United States',
-    classifications: US_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.us,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Oct 15, 2025 11:00 AM',
-    updatedBy: 'Hasandeep Singh',
-    updatedAt: 'Oct 28, 2025 02:14 PM',
-  },
-  {
-    id: 'pr17',
-    payrollDate: 'Oct 24, 2025',
-    coverFrom: 'Oct 13, 2025',
-    coverTo: 'Oct 19, 2025',
-    status: 'open',
-    region: 'Mexico',
-    classifications: MX_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.mx,
-    createdBy: 'Yoshua',
-    createdAt: 'Oct 10, 2025 04:18 PM',
-    updatedBy: 'Yoshua',
-    updatedAt: 'Oct 10, 2025 04:18 PM',
-  },
-  {
-    id: 'pr18',
-    payrollDate: 'Oct 17, 2025',
-    coverFrom: 'Oct 6, 2025',
-    coverTo: 'Oct 12, 2025',
-    status: 'closed',
-    region: 'Canada',
-    classifications: CA_CLASSES,
-    coveragePeriod: 'Weekly',
-    exchange: EX.ca,
-    createdBy: 'Ashu Bhatia',
-    createdAt: 'Oct 1, 2025 09:45 AM',
-    updatedBy: 'Kajal Jaiswal',
-    updatedAt: 'Oct 14, 2025 05:30 PM',
-  },
+const CLASSES: Record<string, DriverClassification[]> = {
+  'United States': US_CLASSES,
+  Mexico: MX_CLASSES,
+  Canada: CA_CLASSES,
+};
+
+const PEOPLE = [
+  'Ashu Bhatia',
+  'Kajal Jaiswal',
+  'Hasandeep Singh',
+  'Yoshua',
+  'Priya Sharma',
+  'Miguel Santos',
 ];
+
+/** Weekly payroll dates: pay date → cover window */
+const PERIODS: { pay: string; from: string; to: string }[] = [
+  { pay: 'Jan 16, 2026', from: 'Jan 5, 2026', to: 'Jan 11, 2026' },
+  { pay: 'Jan 9, 2026', from: 'Dec 29, 2025', to: 'Jan 4, 2026' },
+  { pay: 'Jan 2, 2026', from: 'Dec 22, 2025', to: 'Dec 28, 2025' },
+  { pay: 'Dec 26, 2025', from: 'Dec 15, 2025', to: 'Dec 21, 2025' },
+  { pay: 'Dec 19, 2025', from: 'Dec 8, 2025', to: 'Dec 14, 2025' },
+  { pay: 'Dec 12, 2025', from: 'Dec 1, 2025', to: 'Dec 7, 2025' },
+  { pay: 'Dec 5, 2025', from: 'Nov 24, 2025', to: 'Nov 30, 2025' },
+  { pay: 'Nov 28, 2025', from: 'Nov 17, 2025', to: 'Nov 23, 2025' },
+  { pay: 'Nov 21, 2025', from: 'Nov 10, 2025', to: 'Nov 16, 2025' },
+  { pay: 'Nov 14, 2025', from: 'Nov 3, 2025', to: 'Nov 9, 2025' },
+  { pay: 'Nov 7, 2025', from: 'Oct 27, 2025', to: 'Nov 2, 2025' },
+  { pay: 'Oct 31, 2025', from: 'Oct 20, 2025', to: 'Oct 26, 2025' },
+  { pay: 'Oct 24, 2025', from: 'Oct 13, 2025', to: 'Oct 19, 2025' },
+  { pay: 'Oct 17, 2025', from: 'Oct 6, 2025', to: 'Oct 12, 2025' },
+  { pay: 'Oct 10, 2025', from: 'Sep 29, 2025', to: 'Oct 5, 2025' },
+  { pay: 'Oct 3, 2025', from: 'Sep 22, 2025', to: 'Sep 28, 2025' },
+  { pay: 'Sep 26, 2025', from: 'Sep 15, 2025', to: 'Sep 21, 2025' },
+  { pay: 'Sep 19, 2025', from: 'Sep 8, 2025', to: 'Sep 14, 2025' },
+];
+
+function statusFor(periodIdx: number, regionIdx: number): PayrollRunStatus {
+  if (periodIdx === 0 && regionIdx === 0) return 'open';
+  if (periodIdx === 0 && regionIdx === 1) return 'processing';
+  if (periodIdx === 1 && regionIdx === 2) return 'open';
+  if (periodIdx === 5 && regionIdx === 0) return 'open';
+  return 'closed';
+}
+
+function classesFor(region: string, periodIdx: number): DriverClassification[] {
+  if (periodIdx % 7 === 3) return ALL_CLASSES;
+  if (periodIdx % 5 === 2 && region === 'Mexico') return ['Temporary Drivers'];
+  if (periodIdx % 6 === 1 && region === 'Canada') return ['Company Driver'];
+  return CLASSES[region];
+}
+
+function stamp(person: string, label: string) {
+  return { by: person, at: label };
+}
+
+export const PAYROLL_RUNS: PayrollRun[] = PERIODS.flatMap((period, pi) =>
+  PAYROLL_REGIONS.map((region, ri) => {
+    const creator = PEOPLE[(pi + ri) % PEOPLE.length];
+    const updater = PEOPLE[(pi + ri + 2) % PEOPLE.length];
+    const created = stamp(creator, `Jul 30, 2025 ${String(8 + ((pi + ri) % 8)).padStart(2, '0')}:1${ri} AM`);
+    const updated = stamp(
+      updater,
+      pi < 2
+        ? `Jan 5, 2026 ${String(10 + ri)}:0${ri} AM`
+        : `${period.to} ${String(12 + ((pi + ri) % 6)).padStart(2, '0')}:${String(10 + ri).padStart(2, '0')} PM`,
+    );
+    const fx = { ...EX[region] };
+    // slight variation per period
+    fx.usdToCad = Number((fx.usdToCad + (pi % 5) * 0.002).toFixed(4));
+    fx.usdToPeso = Number((fx.usdToPeso + (pi % 4) * 0.02).toFixed(4));
+    fx.cadToPeso = Number((fx.cadToPeso + (pi % 3) * 0.01).toFixed(4));
+
+    return {
+      id: `pr-${pi + 1}-${ri + 1}`,
+      payrollDate: period.pay,
+      coverFrom: period.from,
+      coverTo: period.to,
+      status: statusFor(pi, ri),
+      region,
+      classifications: classesFor(region, pi),
+      coveragePeriod: 'Weekly' as const,
+      exchange: fx,
+      createdBy: created.by,
+      createdAt: created.at,
+      updatedBy: updated.by,
+      updatedAt: updated.at,
+    };
+  }),
+);

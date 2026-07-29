@@ -304,16 +304,6 @@ export function PayrollManagementView() {
 
   return (
     <div className="pay-mgmt">
-      <div className="pay-mgmt-toolbar">
-        <div>
-          <p className="pay-mgmt-sub">Create and manage payroll dates by region and driver class.</p>
-        </div>
-        <button type="button" className="btn btn-primary btn-sm" onClick={() => setModal({ mode: 'add' })}>
-          <Plus size={14} />
-          Add Payroll Date
-        </button>
-      </div>
-
       <div className="pay-filters">
         <label className="pay-filter">
           <span>Year</span>
@@ -380,6 +370,14 @@ export function PayrollManagementView() {
             ))}
           </select>
         </label>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm pay-filters-add"
+          onClick={() => setModal({ mode: 'add' })}
+        >
+          <Plus size={14} />
+          Add Payroll Date
+        </button>
       </div>
 
       {pendingDelete && (
