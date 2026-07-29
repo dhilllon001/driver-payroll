@@ -10,14 +10,14 @@ const names = ['Aiden Singh', 'Maya Patel', 'Noah Brown', 'Emma Wilson', 'Liam M
 const date = (i: number) => `2026-${String(7 - Math.floor(i / 12)).padStart(2, '0')}-${String(28 - (i % 20)).padStart(2, '0')}`;
 const code = (i: number) => `DRV-${String(1041 + i).padStart(4, '0')}`;
 
-export const SETTLEMENT_ROWS: SettlementRow[] = Array.from({ length: 22 }, (_, i) => ({
+export const SETTLEMENT_ROWS: SettlementRow[] = Array.from({ length: 36 }, (_, i) => ({
   id: `SET-${260700 + i}`,
   driver: names[i % names.length],
   driverCode: code(i),
   division: DIVISIONS[i % DIVISIONS.length],
   region: REGIONS_MOD[i % REGIONS_MOD.length],
   category: CATEGORIES[i % CATEGORIES.length],
-  payrollDate: i < 11 ? '2026-07-24' : '2026-07-10',
+  payrollDate: i < 12 ? '2026-07-24' : i < 24 ? '2026-07-10' : '2026-06-26',
   status: i % 4 === 0 ? 'open' : 'closed',
   amount: 1840 + i * 137.45,
   emailed: i % 3 !== 0,
@@ -25,7 +25,7 @@ export const SETTLEMENT_ROWS: SettlementRow[] = Array.from({ length: 22 }, (_, i
 }));
 
 const auditDescriptions = ['Missing POD document', 'Pay miles exceed route miles', 'Fuel receipt requires review', 'Duplicate detention payment', 'Trip successfully audited'];
-export const AUDIT_ROWS: AuditRow[] = Array.from({ length: 20 }, (_, i) => ({
+export const AUDIT_ROWS: AuditRow[] = Array.from({ length: 32 }, (_, i) => ({
   id: `AUD-${5000 + i}`,
   tripNo: `TR-${88210 + i}`,
   flagStatus: i % 5 === 0 ? 'exception' : i % 3 === 0 ? 'flagged' : 'none',
@@ -35,7 +35,7 @@ export const AUDIT_ROWS: AuditRow[] = Array.from({ length: 20 }, (_, i) => ({
   createdOn: `${date(i)} ${String(9 + (i % 8)).padStart(2, '0')}:15`,
 }));
 
-export const LEDGER_ROWS: LedgerRow[] = Array.from({ length: 24 }, (_, i) => {
+export const LEDGER_ROWS: LedgerRow[] = Array.from({ length: 40 }, (_, i) => {
   const debit = i % 3 === 0 ? 125 + i * 4.25 : 0;
   const credit = i % 3 !== 0 ? 760 + i * 31.5 : 0;
   const balance = 4200 + i * 510 + credit - debit;
@@ -55,7 +55,7 @@ export const LEDGER_ROWS: LedgerRow[] = Array.from({ length: 24 }, (_, i) => {
   };
 });
 
-export const FUEL_ROWS: FuelRow[] = Array.from({ length: 21 }, (_, i) => ({
+export const FUEL_ROWS: FuelRow[] = Array.from({ length: 34 }, (_, i) => ({
   id: `FUEL-${8300 + i}`,
   receiptNo: `RC-${2607000 + i}`,
   receiptDate: date(i),
@@ -73,7 +73,7 @@ export const FUEL_ROWS: FuelRow[] = Array.from({ length: 21 }, (_, i) => ({
   allowDeduction: i % 4 !== 0,
 }));
 
-export const INCIDENT_ROWS: IncidentRow[] = Array.from({ length: 18 }, (_, i) => ({
+export const INCIDENT_ROWS: IncidentRow[] = Array.from({ length: 28 }, (_, i) => ({
   id: `INC-${260100 + i}`,
   driverCode: code(i),
   driverName: names[i % names.length],
