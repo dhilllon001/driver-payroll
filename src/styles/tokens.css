@@ -41,10 +41,10 @@
   --table-row-selected: #ebf3fc;
 
   /* Chrome */
-  --topbar-bg: #14171c;
-  --topbar-fg: #e8edf3;
-  --topbar-muted: #9aa4b2;
-  --topbar-input: #20242b;
+  --topbar-bg: #ffffff;
+  --topbar-fg: #0f1a2a;
+  --topbar-muted: #6b7685;
+  --topbar-input: #f4f5f7;
   --sidebar-bg: #1a1d24;
   --sidebar-fg: #e8edf3;
   --sidebar-fg-2: #b4bfcd;

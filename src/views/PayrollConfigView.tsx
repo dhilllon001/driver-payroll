@@ -18,11 +18,14 @@ import type {
 import {
   MethodModal,
   RegionModal,
-  ScheduleModal,
   type MethodForm,
   type RegionForm,
-  type ScheduleForm,
 } from '../components/modals/ConfigModals';
+import {
+  ScheduleDetailPanel,
+  createEmptySchedule,
+  scheduleInitial,
+} from '../components/config/ScheduleDetailPanel';
 import { RowActionMenu, type RowActionItem } from '../components/ui/RowActionMenu';
 import './modules.css';
 import './config.css';
@@ -93,14 +96,12 @@ export function PayrollConfigView() {
   const [methodModal, setMethodModal] = useState<{ mode: 'add' | 'edit'; item?: PayrollMethod } | null>(
     null,
   );
-  const [scheduleModal, setScheduleModal] = useState<{
-    mode: 'add' | 'edit';
-    item?: PayrollSchedule;
-  } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
     SEED_SCHEDULES[0]?.id ?? null,
   );
+  const [scheduleEditing, setScheduleEditing] = useState(false);
+  const [isNewSchedule, setIsNewSchedule] = useState(false);
 
   const globalQ = search.trim().toLowerCase();
   const q = `${globalQ} ${localQ}`.trim().toLowerCase();
@@ -147,18 +148,21 @@ export function PayrollConfigView() {
 
   useEffect(() => {
     if (tab !== 'schedules') return;
+    if (isNewSchedule) return;
     if (filteredSchedules.length === 0) {
       setSelectedScheduleId(null);
+      setScheduleEditing(false);
       return;
     }
     if (!selectedScheduleId || !filteredSchedules.some((s) => s.id === selectedScheduleId)) {
       setSelectedScheduleId(filteredSchedules[0].id);
+      setScheduleEditing(false);
     }
-  }, [tab, filteredSchedules, selectedScheduleId]);
+  }, [tab, filteredSchedules, selectedScheduleId, isNewSchedule]);
 
   const selectedSchedule =
-    filteredSchedules.find((s) => s.id === selectedScheduleId) ??
     schedules.find((s) => s.id === selectedScheduleId) ??
+    filteredSchedules.find((s) => s.id === selectedScheduleId) ??
     null;
 
   const methodUsage = useMemo(() => {
@@ -252,34 +256,59 @@ export function PayrollConfigView() {
     return true;
   };
 
-  const saveSchedule = (form: ScheduleForm) => {
-    if (!form.name.trim()) {
+  const beginEditSchedule = (id?: string) => {
+    if (id) setSelectedScheduleId(id);
+    setIsNewSchedule(false);
+    setScheduleEditing(true);
+  };
+
+  const beginAddSchedule = () => {
+    const draft = createEmptySchedule();
+    draft.name = 'New Payroll Schedule';
+    setSchedules((prev) => [draft, ...prev]);
+    setSelectedScheduleId(draft.id);
+    setIsNewSchedule(true);
+    setScheduleEditing(true);
+    setTab('schedules');
+  };
+
+  const cancelScheduleEdit = () => {
+    if (isNewSchedule && selectedScheduleId) {
+      setSchedules((prev) => prev.filter((s) => s.id !== selectedScheduleId));
+      setIsNewSchedule(false);
+      setSelectedScheduleId(SEED_SCHEDULES[0]?.id ?? null);
+    }
+    setScheduleEditing(false);
+  };
+
+  const saveScheduleInline = (next: PayrollSchedule) => {
+    if (!next.name.trim()) {
       toast('Schedule name is required');
-      return false;
+      return;
     }
-    const next: PayrollSchedule = {
-      id: scheduleModal?.item?.id ?? uid('s'),
-      name: form.name.trim(),
-      taxCode: form.taxCode,
-      currency: form.currency,
-      status: form.status,
-      methods: form.methods,
-      drivers: form.drivers,
-    };
-    if (scheduleModal?.mode === 'edit' && scheduleModal.item) {
-      setSchedules((prev) => prev.map((s) => (s.id === next.id ? next : s)));
-      setSelectedScheduleId(next.id);
-      toast('Schedule updated');
-    } else {
-      setSchedules((prev) => [next, ...prev]);
-      setSelectedScheduleId(next.id);
-      toast('Schedule added');
+    setSchedules((prev) => {
+      const exists = prev.some((s) => s.id === next.id);
+      return exists ? prev.map((s) => (s.id === next.id ? next : s)) : [next, ...prev];
+    });
+    setSelectedScheduleId(next.id);
+    setIsNewSchedule(false);
+    setScheduleEditing(false);
+    toast(isNewSchedule ? 'Schedule added' : 'Schedule updated');
+  };
+
+  const selectScheduleCard = (id: string) => {
+    if (scheduleEditing && id !== selectedScheduleId) {
+      if (isNewSchedule && selectedScheduleId) {
+        setSchedules((prev) => prev.filter((s) => s.id !== selectedScheduleId));
+        setIsNewSchedule(false);
+      }
+      setScheduleEditing(false);
     }
-    setScheduleModal(null);
-    return true;
+    setSelectedScheduleId(id);
   };
 
   const switchTab = (next: ConfigTab) => {
+    if (scheduleEditing) cancelScheduleEdit();
     setTab(next);
     setLocalQ('');
     setStatusFilter('all');
@@ -293,7 +322,7 @@ export function PayrollConfigView() {
       ? () => setRegionModal({ mode: 'add' })
       : tab === 'methods'
         ? () => setMethodModal({ mode: 'add' })
-        : () => setScheduleModal({ mode: 'add' });
+        : beginAddSchedule;
 
   const rowsCount =
     tab === 'regions'
@@ -421,191 +450,97 @@ export function PayrollConfigView() {
       )}
 
       {tab === 'schedules' ? (
-        <div className="cfg-split">
+        <div className="cfg-split cfg-split-shell">
           <aside className="cfg-split-list" aria-label="Schedules">
             <div className="cfg-split-list-head">
-              <strong>{filteredSchedules.length}</strong>
-              <span>schedules</span>
+              <div>
+                <strong>{filteredSchedules.length}</strong>
+                <span> schedules</span>
+              </div>
+              <span className="cfg-split-list-hint">Select to review</span>
             </div>
             <div className="cfg-split-list-scroll">
               {filteredSchedules.length === 0 ? (
                 <div className="empty-state">No schedules match this filter.</div>
               ) : (
-                filteredSchedules.map((s) => (
-                  <div
-                    key={s.id}
-                    role="button"
-                    tabIndex={0}
-                    className={`cfg-sched-card ${selectedScheduleId === s.id ? 'active' : ''}`}
-                    onClick={() => setSelectedScheduleId(s.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setSelectedScheduleId(s.id);
-                      }
-                    }}
-                  >
-                    <div className="cfg-sched-card-top">
-                      <span className="cfg-sched-card-name">{s.name}</span>
-                      <span
-                        className="cfg-sched-card-menu"
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => e.stopPropagation()}
-                      >
-                        <RowActionMenu
-                          items={EDIT_DELETE}
-                          onAction={(action) => {
-                            if (action === 'edit') setScheduleModal({ mode: 'edit', item: s });
-                            if (action === 'delete')
-                              setPendingDelete({ kind: 'schedule', id: s.id, name: s.name });
-                          }}
-                        />
-                      </span>
+                filteredSchedules.map((s) => {
+                  const tone =
+                    s.currency === 'CAD' ? 'cad' : s.currency === 'Peso' ? 'mxn' : 'usd';
+                  return (
+                    <div
+                      key={s.id}
+                      role="button"
+                      tabIndex={0}
+                      className={`cfg-sched-card ${selectedScheduleId === s.id ? 'active' : ''} ${
+                        scheduleEditing && selectedScheduleId === s.id ? 'editing' : ''
+                      }`}
+                      onClick={() => selectScheduleCard(s.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          selectScheduleCard(s.id);
+                        }
+                      }}
+                    >
+                      <div className={`cfg-avatar sm ${tone}`}>{scheduleInitial(s.name || 'S')}</div>
+                      <div className="cfg-sched-card-body">
+                        <div className="cfg-sched-card-top">
+                          <span className="cfg-sched-card-name">{s.name || 'Untitled schedule'}</span>
+                          <span
+                            className="cfg-sched-card-menu"
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          >
+                            <RowActionMenu
+                              items={EDIT_DELETE}
+                              onAction={(action) => {
+                                if (action === 'edit') beginEditSchedule(s.id);
+                                if (action === 'delete')
+                                  setPendingDelete({ kind: 'schedule', id: s.id, name: s.name });
+                              }}
+                            />
+                          </span>
+                        </div>
+                        <div className="cfg-sched-card-meta">
+                          <StatusPill status={s.status} />
+                          <CurrencyBadge currency={s.currency} />
+                        </div>
+                        <div className="cfg-sched-card-stats">
+                          <span>
+                            <Wallet size={12} /> {s.methods.length}
+                          </span>
+                          <span>
+                            <Users size={12} /> {s.drivers.length}
+                          </span>
+                          <span className="cfg-sched-tax">{s.taxCode}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="cfg-sched-card-meta">
-                      <StatusPill status={s.status} />
-                      <CurrencyBadge currency={s.currency} />
-                    </div>
-                    <div className="cfg-sched-card-stats">
-                      <span>
-                        <Wallet size={12} /> {s.methods.length} methods
-                      </span>
-                      <span>
-                        <Users size={12} /> {s.drivers.length} drivers
-                      </span>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </aside>
 
-          <section className="cfg-split-detail" aria-live="polite">
-            {!selectedSchedule ? (
+          {!selectedSchedule ? (
+            <section className="cfg-split-detail">
               <div className="cfg-split-empty">
+                <div className="cfg-avatar usd">SC</div>
                 <h3>Select a schedule</h3>
                 <p>Choose a card on the left to review methods, drivers, and settings.</p>
               </div>
-            ) : (
-              <>
-                <div className="cfg-detail-head">
-                  <div>
-                    <div className="cfg-detail-title-row">
-                      <h2>{selectedSchedule.name}</h2>
-                      <StatusPill status={selectedSchedule.status} />
-                    </div>
-                    <p className="cfg-detail-sub">
-                      Tax {selectedSchedule.taxCode} · {selectedSchedule.currency}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => setScheduleModal({ mode: 'edit', item: selectedSchedule })}
-                  >
-                    <Pencil size={13} />
-                    Edit Schedule
-                  </button>
-                </div>
-
-                <div className="cfg-detail-kpis">
-                  <div className="cfg-detail-kpi">
-                    <span className="cfg-detail-kpi-l">Tax code</span>
-                    <span className="cfg-tax-code">{selectedSchedule.taxCode}</span>
-                  </div>
-                  <div className="cfg-detail-kpi">
-                    <span className="cfg-detail-kpi-l">Currency</span>
-                    <CurrencyBadge currency={selectedSchedule.currency} />
-                  </div>
-                  <div className="cfg-detail-kpi">
-                    <span className="cfg-detail-kpi-l">Methods</span>
-                    <strong>{selectedSchedule.methods.length}</strong>
-                  </div>
-                  <div className="cfg-detail-kpi">
-                    <span className="cfg-detail-kpi-l">Drivers</span>
-                    <strong>{selectedSchedule.drivers.length}</strong>
-                  </div>
-                </div>
-
-                <div className="cfg-detail-panels">
-                  <div className="cfg-detail-panel">
-                    <div className="cfg-detail-panel-head">
-                      <h3>Payroll methods</h3>
-                      <span className="cfg-tab-count">{selectedSchedule.methods.length}</span>
-                    </div>
-                    {selectedSchedule.methods.length === 0 ? (
-                      <div className="cfg-detail-empty">No methods linked to this schedule.</div>
-                    ) : (
-                      <div className="cfg-detail-table-wrap">
-                        <table className="data-table cfg-detail-table">
-                          <thead>
-                            <tr>
-                              <th>Method</th>
-                              <th>Based on</th>
-                              <th>Single</th>
-                              <th>Team</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedSchedule.methods.map((m) => (
-                              <tr key={m.id}>
-                                <td className="cfg-strong">{m.methodName}</td>
-                                <td>
-                                  <span className="cfg-based-on">{m.basedOn}</span>
-                                </td>
-                                <td>{m.singleRate}</td>
-                                <td>{m.teamRate}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="cfg-detail-panel">
-                    <div className="cfg-detail-panel-head">
-                      <h3>Assigned drivers</h3>
-                      <span className="cfg-tab-count">{selectedSchedule.drivers.length}</span>
-                    </div>
-                    {selectedSchedule.drivers.length === 0 ? (
-                      <div className="cfg-detail-empty">No drivers assigned.</div>
-                    ) : (
-                      <div className="cfg-detail-table-wrap">
-                        <table className="data-table cfg-detail-table">
-                          <thead>
-                            <tr>
-                              <th>Driver</th>
-                              <th>Category</th>
-                              <th>Division</th>
-                              <th>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedSchedule.drivers.map((d) => (
-                              <tr key={d.id}>
-                                <td>
-                                  <div className="driver-cell">
-                                    <span className="name">{d.name}</span>
-                                    <span className="uid">{d.code}</span>
-                                  </div>
-                                </td>
-                                <td>{d.category}</td>
-                                <td>{d.division}</td>
-                                <td>
-                                  <StatusPill status={d.active ? 'active' : 'inactive'} />
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-          </section>
+            </section>
+          ) : (
+            <ScheduleDetailPanel
+              schedule={selectedSchedule}
+              allMethods={methods}
+              availableDrivers={AVAILABLE_DRIVERS}
+              editing={scheduleEditing}
+              onStartEdit={() => beginEditSchedule(selectedSchedule.id)}
+              onCancelEdit={cancelScheduleEdit}
+              onSave={saveScheduleInline}
+            />
+          )}
         </div>
       ) : (
         <div className="mod-table-shell">
@@ -739,16 +674,6 @@ export function PayrollConfigView() {
           initial={methodModal.item}
           onClose={() => setMethodModal(null)}
           onSave={saveMethod}
-        />
-      )}
-      {scheduleModal && (
-        <ScheduleModal
-          mode={scheduleModal.mode}
-          initial={scheduleModal.item}
-          allMethods={methods}
-          availableDrivers={AVAILABLE_DRIVERS}
-          onClose={() => setScheduleModal(null)}
-          onSave={saveSchedule}
         />
       )}
     </div>
