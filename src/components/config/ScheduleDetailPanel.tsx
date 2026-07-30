@@ -18,17 +18,6 @@ function StatusPill({ status }: { status: ConfigStatus }) {
   );
 }
 
-function CurrencyBadge({ currency }: { currency: PayrollCurrency }) {
-  return <span className="cfg-currency-pill">{currency}</span>;
-}
-
-function scheduleInitial(name: string) {
-  const clean = name.replace(/[^A-Za-z0-9 ]/g, ' ').trim();
-  const parts = clean.split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  return (parts[0] || 'S').slice(0, 2).toUpperCase();
-}
-
 function cloneSchedule(s: PayrollSchedule): PayrollSchedule {
   return {
     ...s,
@@ -134,12 +123,10 @@ export function ScheduleDetailPanel({
 
   const view = editing ? draft : schedule;
   const canSave = draft.name.trim().length > 0;
-  const tone =
-    view.currency === 'CAD' ? 'cad' : view.currency === 'Peso' ? 'mxn' : 'usd';
 
   return (
     <section className={`cfg-split-detail ${editing ? 'is-editing' : ''}`} aria-live="polite">
-      <div className="cfg-detail-head">
+      <div className="cfg-detail-head cfg-detail-head-simple">
         <div className="cfg-detail-head-main">
           {editing ? (
             <div className="cfg-inline-fields">
@@ -185,19 +172,16 @@ export function ScheduleDetailPanel({
               </label>
             </div>
           ) : (
-            <div className="cfg-detail-hero">
-              <div className={`cfg-avatar ${tone}`}>{scheduleInitial(view.name)}</div>
-              <div>
-                <div className="cfg-detail-title-row">
-                  <h2>{view.name}</h2>
-                  <StatusPill status={view.status} />
-                </div>
-                <p className="cfg-detail-sub">
-                  {view.taxCode} · {view.currency} · {view.methods.length} methods ·{' '}
-                  {view.drivers.length} drivers
-                </p>
+            <>
+              <div className="cfg-detail-title-row">
+                <h2>{view.name}</h2>
+                <StatusPill status={view.status} />
               </div>
-            </div>
+              <p className="cfg-detail-sub">
+                {view.taxCode} · {view.currency} · {view.methods.length} methods ·{' '}
+                {view.drivers.length} drivers
+              </p>
+            </>
           )}
         </div>
         <div className="cfg-detail-actions">
@@ -214,7 +198,7 @@ export function ScheduleDetailPanel({
                 onClick={() => onSave({ ...draft, name: draft.name.trim() })}
               >
                 <Check size={13} />
-                Save changes
+                Save
               </button>
             </>
           ) : (
@@ -226,9 +210,9 @@ export function ScheduleDetailPanel({
         </div>
       </div>
 
-      <div className="cfg-detail-kpis">
+      <div className="cfg-detail-kpis cfg-detail-kpis-flat">
         <div className="cfg-detail-kpi">
-          <span className="cfg-detail-kpi-l">Tax code</span>
+          <span className="cfg-detail-kpi-l">Tax</span>
           <strong>{view.taxCode}</strong>
         </div>
         <div className="cfg-detail-kpi">
@@ -248,10 +232,7 @@ export function ScheduleDetailPanel({
       <div className="cfg-detail-panels">
         <div className="cfg-detail-panel">
           <div className="cfg-detail-panel-head">
-            <div>
-              <h3>Payroll methods</h3>
-              <p>Rates applied on this schedule</p>
-            </div>
+            <h3>Payment methods</h3>
             <span className="cfg-tab-count">{view.methods.length}</span>
           </div>
 
@@ -292,41 +273,51 @@ export function ScheduleDetailPanel({
           )}
 
           {view.methods.length === 0 ? (
-            <div className="cfg-detail-empty">No methods linked yet.</div>
+            <div className="cfg-detail-empty">No methods linked.</div>
           ) : (
-            <ul className="cfg-soft-list">
-              {view.methods.map((m) => (
-                <li key={m.id} className="cfg-soft-item">
-                  {editing && (
-                    <button
-                      type="button"
-                      className="btn-icon danger"
-                      aria-label="Remove method"
-                      onClick={() => removeMethod(m.id)}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  )}
-                  <div className="cfg-soft-main">
-                    <strong>{m.methodName}</strong>
-                    {editing ? (
-                      <select
-                        value={m.basedOn}
-                        onChange={(e) => updateMethod(m.id, { basedOn: e.target.value })}
-                      >
-                        {BASED_ON_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span className="cfg-based-on">{m.basedOn}</span>
+            <table className="cfg-plain-table">
+              <thead>
+                <tr>
+                  {editing && <th className="mod-action-col" />}
+                  <th>Method</th>
+                  <th>Based on</th>
+                  <th>Single</th>
+                  <th>Team</th>
+                </tr>
+              </thead>
+              <tbody>
+                {view.methods.map((m) => (
+                  <tr key={m.id}>
+                    {editing && (
+                      <td className="mod-action-col">
+                        <button
+                          type="button"
+                          className="btn-icon danger"
+                          aria-label="Remove method"
+                          onClick={() => removeMethod(m.id)}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </td>
                     )}
-                  </div>
-                  <div className="cfg-soft-rates">
-                    <label>
-                      <span>Single</span>
+                    <td className="cfg-strong">{m.methodName}</td>
+                    <td>
+                      {editing ? (
+                        <select
+                          value={m.basedOn}
+                          onChange={(e) => updateMethod(m.id, { basedOn: e.target.value })}
+                        >
+                          {BASED_ON_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        m.basedOn
+                      )}
+                    </td>
+                    <td>
                       {editing ? (
                         <input
                           type="number"
@@ -337,11 +328,10 @@ export function ScheduleDetailPanel({
                           }
                         />
                       ) : (
-                        <em>{money(m.singleRate)}</em>
+                        money(m.singleRate)
                       )}
-                    </label>
-                    <label>
-                      <span>Team</span>
+                    </td>
+                    <td>
                       {editing ? (
                         <input
                           type="number"
@@ -352,22 +342,19 @@ export function ScheduleDetailPanel({
                           }
                         />
                       ) : (
-                        <em>{money(m.teamRate)}</em>
+                        money(m.teamRate)
                       )}
-                    </label>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
 
         <div className="cfg-detail-panel">
           <div className="cfg-detail-panel-head">
-            <div>
-              <h3>Assigned drivers</h3>
-              <p>Drivers paid on this schedule</p>
-            </div>
+            <h3>Assigned drivers</h3>
             <span className="cfg-tab-count">{view.drivers.length}</span>
           </div>
 
@@ -400,33 +387,46 @@ export function ScheduleDetailPanel({
           {view.drivers.length === 0 ? (
             <div className="cfg-detail-empty">No drivers assigned.</div>
           ) : (
-            <ul className="cfg-soft-list">
-              {view.drivers.map((d) => (
-                <li key={d.id} className="cfg-soft-item">
-                  {editing && (
-                    <button
-                      type="button"
-                      className="btn-icon danger"
-                      aria-label="Remove driver"
-                      onClick={() => removeDriver(d.id)}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  )}
-                  <div className="cfg-driver-avatar">{d.name.slice(0, 1)}</div>
-                  <div className="cfg-soft-main">
-                    <strong>{d.name}</strong>
-                    <span className="cfg-soft-meta">
-                      {d.code} · {d.division}
-                    </span>
-                  </div>
-                  <div className="cfg-soft-side">
-                    <span className="cfg-class-pill">{d.driverClass}</span>
-                    <StatusPill status={d.active ? 'active' : 'inactive'} />
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <table className="cfg-plain-table">
+              <thead>
+                <tr>
+                  {editing && <th className="mod-action-col" />}
+                  <th>Driver</th>
+                  <th>Class</th>
+                  <th>Division</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {view.drivers.map((d) => (
+                  <tr key={d.id}>
+                    {editing && (
+                      <td className="mod-action-col">
+                        <button
+                          type="button"
+                          className="btn-icon danger"
+                          aria-label="Remove driver"
+                          onClick={() => removeDriver(d.id)}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </td>
+                    )}
+                    <td>
+                      <div className="driver-cell">
+                        <span className="name">{d.name}</span>
+                        <span className="uid">{d.code}</span>
+                      </div>
+                    </td>
+                    <td>{d.driverClass}</td>
+                    <td>{d.division}</td>
+                    <td>
+                      <StatusPill status={d.active ? 'active' : 'inactive'} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
@@ -445,5 +445,3 @@ export function createEmptySchedule(): PayrollSchedule {
     drivers: [],
   };
 }
-
-export { CurrencyBadge, StatusPill, scheduleInitial };

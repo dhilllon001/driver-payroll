@@ -3,13 +3,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   AVAILABLE_DRIVERS,
+  DIVISIONS,
   METHODS as SEED_METHODS,
   REGIONS as SEED_REGIONS,
   SCHEDULES as SEED_SCHEDULES,
 } from '../data/configSeed';
 import type {
   ConfigStatus,
-  PayrollCountry,
   PayrollCurrency,
   PayrollMethod,
   PayrollRegion,
@@ -30,7 +30,6 @@ import './modules.css';
 import './config.css';
 
 export type ConfigSection = 'regions' | 'methods' | 'schedules';
-type CountryFilter = 'all' | PayrollCountry;
 type PendingDelete =
   | { kind: 'region'; id: string; name: string }
   | { kind: 'method'; id: string; name: string }
@@ -40,13 +39,6 @@ type PendingDelete =
 const EDIT_DELETE: RowActionItem[] = [
   { id: 'edit', label: 'Edit', icon: Pencil },
   { id: 'delete', label: 'Delete', icon: Trash2, danger: true },
-];
-
-const COUNTRY_CHIPS: { id: CountryFilter; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'Canada', label: 'Canada' },
-  { id: 'Mexico', label: 'Mexico' },
-  { id: 'USA', label: 'USA' },
 ];
 
 function uid(prefix: string) {
@@ -65,14 +57,8 @@ function CurrencyBadge({ currency }: { currency: PayrollCurrency }) {
   return <span className="cfg-currency-pill">{currency}</span>;
 }
 
-function CountryBadge({ country }: { country: PayrollCountry }) {
-  const tone = country === 'Canada' ? 'ca' : country === 'Mexico' ? 'mx' : 'us';
-  return <span className={`cfg-country-pill ${tone}`}>{country}</span>;
-}
-
 export function PayrollConfigView({ section }: { section: ConfigSection }) {
   const { toast, search } = useApp();
-  const [countryFilter, setCountryFilter] = useState<CountryFilter>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | ConfigStatus>('all');
   const [localQ, setLocalQ] = useState('');
 
@@ -95,6 +81,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
     null,
   );
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
+  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(SEED_REGIONS[0]?.id ?? null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
     SEED_SCHEDULES[0]?.id ?? null,
   );
@@ -104,7 +91,6 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   useEffect(() => {
     setLocalQ('');
     setStatusFilter('all');
-    setCountryFilter('all');
     setScheduleEditing(false);
     setIsNewSchedule(false);
   }, [section]);
@@ -112,26 +98,17 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   const globalQ = search.trim().toLowerCase();
   const q = `${globalQ} ${localQ}`.trim().toLowerCase();
 
-  const countryCounts = useMemo(() => {
-    const base = { Canada: 0, Mexico: 0, USA: 0 };
-    for (const r of regions) base[r.country] += 1;
-    return base;
-  }, [regions]);
-
   const filteredRegions = useMemo(() => {
     return regions.filter((r) => {
-      if (countryFilter !== 'all' && r.country !== countryFilter) return false;
       if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (!q) return true;
       return (
         r.name.toLowerCase().includes(q) ||
         r.country.toLowerCase().includes(q) ||
-        r.coveragePeriod.toLowerCase().includes(q) ||
-        r.currency.toLowerCase().includes(q) ||
         r.divisions.some((d) => d.toLowerCase().includes(q))
       );
     });
-  }, [regions, countryFilter, statusFilter, q]);
+  }, [regions, statusFilter, q]);
 
   const filteredMethods = useMemo(() => {
     if (!q) return methods;
@@ -153,6 +130,17 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   }, [schedules, statusFilter, q]);
 
   useEffect(() => {
+    if (section !== 'regions') return;
+    if (filteredRegions.length === 0) {
+      setSelectedRegionId(null);
+      return;
+    }
+    if (!selectedRegionId || !filteredRegions.some((r) => r.id === selectedRegionId)) {
+      setSelectedRegionId(filteredRegions[0].id);
+    }
+  }, [section, filteredRegions, selectedRegionId]);
+
+  useEffect(() => {
     if (section !== 'schedules') return;
     if (isNewSchedule) return;
     if (filteredSchedules.length === 0) {
@@ -166,6 +154,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
     }
   }, [section, filteredSchedules, selectedScheduleId, isNewSchedule]);
 
+  const selectedRegion = regions.find((r) => r.id === selectedRegionId) ?? null;
   const selectedSchedule = schedules.find((s) => s.id === selectedScheduleId) ?? null;
 
   const methodUsage = useMemo(() => {
@@ -216,22 +205,35 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
       );
       toast('Region updated');
     } else {
-      setRegions((prev) => [
-        {
-          id: uid('r'),
-          name: form.name.trim(),
-          country: form.country,
-          currency: form.currency,
-          coveragePeriod: form.coveragePeriod,
-          divisions: form.divisions,
-          status: form.status,
-        },
-        ...prev,
-      ]);
+      const next = {
+        id: uid('r'),
+        name: form.name.trim(),
+        country: form.country,
+        currency: form.currency,
+        coveragePeriod: form.coveragePeriod,
+        divisions: form.divisions,
+        status: form.status,
+      };
+      setRegions((prev) => [next, ...prev]);
+      setSelectedRegionId(next.id);
       toast('Region added');
     }
     setRegionModal(null);
     return true;
+  };
+
+  const toggleDivision = (division: string) => {
+    if (!selectedRegion) return;
+    setRegions((prev) =>
+      prev.map((r) => {
+        if (r.id !== selectedRegion.id) return r;
+        const has = r.divisions.includes(division);
+        return {
+          ...r,
+          divisions: has ? r.divisions.filter((d) => d !== division) : [...r.divisions, division],
+        };
+      }),
+    );
   };
 
   const saveMethod = (form: MethodForm) => {
@@ -298,7 +300,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
     toast(isNewSchedule ? 'Schedule added' : 'Schedule updated');
   };
 
-  const selectScheduleCard = (id: string) => {
+  const selectScheduleRow = (id: string) => {
     if (scheduleEditing && id !== selectedScheduleId) {
       if (isNewSchedule && selectedScheduleId) {
         setSchedules((prev) => prev.filter((s) => s.id !== selectedScheduleId));
@@ -318,50 +320,8 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
         ? () => setMethodModal({ mode: 'add' })
         : beginAddSchedule;
 
-  const rowsCount =
-    section === 'regions'
-      ? filteredRegions.length
-      : section === 'methods'
-        ? filteredMethods.length
-        : filteredSchedules.length;
-
   return (
     <div className="mod-page cfg-page">
-      <div className="cfg-toolbar-clean">
-        <div>
-          <p className="cfg-eyebrow">Payroll Configuration</p>
-          <h2 className="cfg-page-title">
-            {section === 'regions' ? 'Regions' : section === 'methods' ? 'Methods' : 'Schedules'}
-          </h2>
-        </div>
-        <p className="cfg-sub">
-          {section === 'regions'
-            ? 'Country coverage for Canada, Mexico, and USA.'
-            : section === 'methods'
-              ? 'Pay methods used when building schedules and trip pay.'
-              : 'Select a schedule to review methods, drivers, and rates.'}
-        </p>
-      </div>
-
-      {section === 'regions' && (
-        <div className="cfg-country-chips" role="tablist" aria-label="Filter by country">
-          {COUNTRY_CHIPS.map((chip) => {
-            const count = chip.id === 'all' ? regions.length : countryCounts[chip.id];
-            return (
-              <button
-                key={chip.id}
-                type="button"
-                className={`cfg-country-chip ${countryFilter === chip.id ? 'active' : ''}`}
-                onClick={() => setCountryFilter(chip.id)}
-              >
-                <span>{chip.label}</span>
-                <span className="cfg-tab-count">{count}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
       <div className="mod-filters cfg-filters">
         <label className="mod-filter grow">
           <span>Search</span>
@@ -370,7 +330,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
             onChange={(e) => setLocalQ(e.target.value)}
             placeholder={
               section === 'regions'
-                ? 'Search region, division…'
+                ? 'Search region or division…'
                 : section === 'methods'
                   ? 'Search method…'
                   : 'Search schedule…'
@@ -414,22 +374,177 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
         </div>
       )}
 
-      {section === 'schedules' ? (
+      {section === 'regions' && (
+        <div className="cfg-split cfg-split-shell">
+          <aside className="cfg-split-list" aria-label="Regions">
+            <div className="cfg-split-list-scroll">
+              {filteredRegions.length === 0 ? (
+                <div className="empty-state">No regions match this filter.</div>
+              ) : (
+                <table className="cfg-list-table cfg-region-list">
+                  <thead>
+                    <tr>
+                      <th className="mod-action-col">Action</th>
+                      <th>Region</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRegions.map((r) => (
+                      <tr
+                        key={r.id}
+                        className={selectedRegionId === r.id ? 'active' : ''}
+                        onClick={() => setSelectedRegionId(r.id)}
+                      >
+                        <td className="mod-action-col" onClick={(e) => e.stopPropagation()}>
+                          <RowActionMenu
+                            items={EDIT_DELETE}
+                            onAction={(action) => {
+                              if (action === 'edit') setRegionModal({ mode: 'edit', item: r });
+                              if (action === 'delete')
+                                setPendingDelete({ kind: 'region', id: r.id, name: r.name });
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <div className="cfg-list-name">
+                            {r.country === 'USA' ? 'United States' : r.country}
+                          </div>
+                          <div className="cfg-list-meta">
+                            {r.currency} · {r.coveragePeriod} · {r.divisions.length} divisions
+                          </div>
+                        </td>
+                        <td>
+                          <StatusPill status={r.status} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </aside>
+
+          <section className="cfg-split-detail">
+            {!selectedRegion ? (
+              <div className="cfg-split-empty">
+                <h3>Select a region</h3>
+                <p>Choose Canada or United States to manage divisions.</p>
+              </div>
+            ) : (
+              <>
+                <div className="cfg-detail-head cfg-detail-head-simple">
+                  <div>
+                    <div className="cfg-detail-title-row">
+                      <h2>
+                        {selectedRegion.country === 'USA' ? 'United States' : selectedRegion.country}
+                      </h2>
+                      <StatusPill status={selectedRegion.status} />
+                    </div>
+                    <p className="cfg-detail-sub">
+                      {selectedRegion.currency} · {selectedRegion.coveragePeriod} ·{' '}
+                      {selectedRegion.divisions.length} divisions
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => setRegionModal({ mode: 'edit', item: selectedRegion })}
+                  >
+                    <Pencil size={13} />
+                    Edit
+                  </button>
+                </div>
+                <div className="cfg-region-detail">
+                  <div className="cfg-region-detail-head">
+                    <h3>Divisions</h3>
+                    <span className="cfg-tab-count">{selectedRegion.divisions.length}</span>
+                  </div>
+                  <div className="cfg-division-grid">
+                    {DIVISIONS.map((d) => {
+                      const on = selectedRegion.divisions.includes(d);
+                      return (
+                        <button
+                          key={d}
+                          type="button"
+                          className={`cfg-division-item ${on ? 'on' : ''}`}
+                          onClick={() => toggleDivision(d)}
+                        >
+                          <span className="cfg-division-check">{on ? '✓' : ''}</span>
+                          <span>{d}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      )}
+
+      {section === 'methods' && (
+        <div className="mod-table-shell">
+          <div className="mod-table-scroll">
+            <table className="data-table mod-table cfg-table">
+              <thead>
+                <tr>
+                  <th className="mod-action-col">Action</th>
+                  <th>Method name</th>
+                  <th>Based on</th>
+                  <th>Used in schedules</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredMethods.length === 0 ? (
+                  <tr>
+                    <td colSpan={4}>
+                      <div className="empty-state">No methods match this search.</div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredMethods.map((m) => {
+                    const used = methodUsage.get(m.id) ?? 0;
+                    return (
+                      <tr key={m.id}>
+                        <td className="mod-action-col">
+                          <RowActionMenu
+                            items={EDIT_DELETE}
+                            onAction={(action) => {
+                              if (action === 'edit') setMethodModal({ mode: 'edit', item: m });
+                              if (action === 'delete')
+                                setPendingDelete({ kind: 'method', id: m.id, name: m.name });
+                            }}
+                          />
+                        </td>
+                        <td className="cfg-strong">{m.name}</td>
+                        <td>{m.basedOn}</td>
+                        <td>{used}</td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="mod-pager">
+            <strong>Total Records: {filteredMethods.length}</strong>
+          </div>
+        </div>
+      )}
+
+      {section === 'schedules' && (
         <div className="cfg-split cfg-split-shell">
           <aside className="cfg-split-list" aria-label="Schedules">
-            <div className="cfg-split-list-head">
-              <strong>{filteredSchedules.length}</strong>
-              <span> schedules</span>
-            </div>
             <div className="cfg-split-list-scroll">
               {filteredSchedules.length === 0 ? (
                 <div className="empty-state">No schedules match this filter.</div>
               ) : (
-                <table className="cfg-list-table">
+                <table className="cfg-list-table cfg-sched-list">
                   <thead>
                     <tr>
                       <th className="mod-action-col">Action</th>
-                      <th>Schedule</th>
+                      <th className="cfg-col-schedule">Schedule</th>
                       <th>Status</th>
                       <th>Cur</th>
                     </tr>
@@ -441,12 +556,9 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
                         className={`${selectedScheduleId === s.id ? 'active' : ''} ${
                           scheduleEditing && selectedScheduleId === s.id ? 'editing' : ''
                         }`}
-                        onClick={() => selectScheduleCard(s.id)}
+                        onClick={() => selectScheduleRow(s.id)}
                       >
-                        <td
-                          className="mod-action-col"
-                          onClick={(e) => e.stopPropagation()}
-                        >
+                        <td className="mod-action-col" onClick={(e) => e.stopPropagation()}>
                           <RowActionMenu
                             items={EDIT_DELETE}
                             onAction={(action) => {
@@ -456,7 +568,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
                             }}
                           />
                         </td>
-                        <td>
+                        <td className="cfg-col-schedule">
                           <div className="cfg-list-name">{s.name || 'Untitled'}</div>
                           <div className="cfg-list-meta">
                             {s.taxCode} · {s.methods.length} methods · {s.drivers.length} drivers
@@ -480,7 +592,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
             <section className="cfg-split-detail">
               <div className="cfg-split-empty">
                 <h3>Select a schedule</h3>
-                <p>Choose a row on the left to review methods, drivers, and settings.</p>
+                <p>Choose a row on the left to review methods and drivers.</p>
               </div>
             </section>
           ) : (
@@ -494,122 +606,6 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
               onSave={saveScheduleInline}
             />
           )}
-        </div>
-      ) : (
-        <div className="mod-table-shell">
-          <div className="mod-table-scroll">
-            {section === 'regions' && (
-              <table className="data-table mod-table cfg-table">
-                <thead>
-                  <tr>
-                    <th className="mod-action-col">Action</th>
-                    <th>Country</th>
-                    <th>Region</th>
-                    <th>Currency</th>
-                    <th>Divisions</th>
-                    <th>Coverage</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRegions.length === 0 ? (
-                    <tr>
-                      <td colSpan={7}>
-                        <div className="empty-state">No regions match this filter.</div>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredRegions.map((r) => (
-                      <tr key={r.id}>
-                        <td className="mod-action-col">
-                          <RowActionMenu
-                            items={EDIT_DELETE}
-                            onAction={(action) => {
-                              if (action === 'edit') setRegionModal({ mode: 'edit', item: r });
-                              if (action === 'delete')
-                                setPendingDelete({ kind: 'region', id: r.id, name: r.name });
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <CountryBadge country={r.country} />
-                        </td>
-                        <td className="cfg-strong">{r.name}</td>
-                        <td>
-                          <CurrencyBadge currency={r.currency} />
-                        </td>
-                        <td>
-                          <span className="cfg-count-badge" title={r.divisions.join(', ')}>
-                            {r.divisions.length}
-                          </span>
-                          <span className="cfg-muted cfg-divisions-preview">
-                            {r.divisions.slice(0, 2).join(', ')}
-                            {r.divisions.length > 2 ? '…' : ''}
-                          </span>
-                        </td>
-                        <td>{r.coveragePeriod}</td>
-                        <td>
-                          <StatusPill status={r.status} />
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            )}
-
-            {section === 'methods' && (
-              <table className="data-table mod-table cfg-table">
-                <thead>
-                  <tr>
-                    <th className="mod-action-col">Action</th>
-                    <th>Method name</th>
-                    <th>Based on</th>
-                    <th>Used in schedules</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredMethods.length === 0 ? (
-                    <tr>
-                      <td colSpan={4}>
-                        <div className="empty-state">No methods match this search.</div>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredMethods.map((m) => {
-                      const used = methodUsage.get(m.id) ?? 0;
-                      return (
-                        <tr key={m.id}>
-                          <td className="mod-action-col">
-                            <RowActionMenu
-                              items={EDIT_DELETE}
-                              onAction={(action) => {
-                                if (action === 'edit') setMethodModal({ mode: 'edit', item: m });
-                                if (action === 'delete')
-                                  setPendingDelete({ kind: 'method', id: m.id, name: m.name });
-                              }}
-                            />
-                          </td>
-                          <td className="cfg-strong">{m.name}</td>
-                          <td>
-                            <span className="cfg-based-on">{m.basedOn}</span>
-                          </td>
-                          <td>
-                            <span className={`cfg-count-badge ${used === 0 ? 'is-muted' : ''}`}>
-                              {used}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-          <div className="mod-pager">
-            <strong>Total Records: {rowsCount}</strong>
-          </div>
         </div>
       )}
 

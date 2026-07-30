@@ -94,7 +94,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(280px, 34%) minmax(0, 66%);
+  grid-template-columns: minmax(320px, 38%) minmax(0, 62%);
   gap: 0;
   overflow: hidden;
 }
@@ -224,6 +224,150 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.cfg-sched-list {
+  table-layout: fixed;
+}
+
+.cfg-sched-list .cfg-col-schedule {
+  width: auto;
+}
+
+.cfg-sched-list th:nth-child(3),
+.cfg-sched-list td:nth-child(3) {
+  width: 72px;
+}
+
+.cfg-sched-list th:nth-child(4),
+.cfg-sched-list td:nth-child(4) {
+  width: 56px;
+}
+
+.cfg-region-list .cfg-list-name {
+  white-space: normal;
+}
+
+.cfg-detail-head-simple {
+  padding: 14px 16px;
+}
+
+.cfg-detail-kpis-flat {
+  background: #fff;
+}
+
+.cfg-region-detail {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 18px 20px;
+  background: #f7f8fa;
+}
+
+.cfg-region-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cfg-region-detail-head h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--fg-1);
+}
+
+.cfg-division-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.cfg-division-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 12px 12px;
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--fg-2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cfg-division-item:hover {
+  border-color: var(--border-2);
+}
+
+.cfg-division-item.on {
+  border-color: rgba(139, 90, 43, 0.35);
+  background: #fffaf5;
+  color: var(--fg-1);
+}
+
+.cfg-division-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--border-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #8b5a2b;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.cfg-division-item.on .cfg-division-check {
+  border-color: #8b5a2b;
+  background: #8b5a2b;
+  color: #fff;
+}
+
+.cfg-plain-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cfg-plain-table thead th {
+  padding: 8px 12px;
+  background: #f4f5f7;
+  color: var(--fg-3);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1px solid var(--border-1);
+}
+
+.cfg-plain-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-1);
+  font-size: 12px;
+  color: var(--fg-2);
+  vertical-align: middle;
+}
+
+.cfg-plain-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cfg-plain-table input,
+.cfg-plain-table select {
+  height: 30px;
+  width: 100%;
+  max-width: 120px;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  background: #fff;
+  padding: 2px 8px;
+  font-size: 12px;
 }
 
 .cfg-avatar {
@@ -412,10 +556,10 @@
 
 .cfg-detail-panel-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 14px 14px 12px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--border-1);
   background: #fff;
 }
@@ -428,9 +572,7 @@
 }
 
 .cfg-detail-panel-head p {
-  margin: 3px 0 0;
-  font-size: 11px;
-  color: var(--fg-4);
+  display: none;
 }
 
 .cfg-detail-empty {
