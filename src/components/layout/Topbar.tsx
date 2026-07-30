@@ -1,7 +1,7 @@
-import { Bell, Search, Upload } from 'lucide-react';
+import { Bell, Plus, Search, Upload } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { opsTitle } from '../../data/opsSeed';
-import type { ViewId } from '../../types';
+import type { ConfigStatus, ViewId } from '../../types';
 
 const TITLES: Partial<Record<ViewId, string>> = {
   'trip-board': 'Trip Processing Board',
@@ -140,11 +140,25 @@ function profileFor(view: ViewId): HeaderProfile {
   return HEADERS[view] || DEFAULT_OPS;
 }
 
+function isConfigView(view: ViewId) {
+  return view === 'config' || view.startsWith('config-');
+}
+
 export function Topbar() {
-  const { view, search, setSearch, toast, selectedTripId } = useApp();
+  const {
+    view,
+    search,
+    setSearch,
+    toast,
+    selectedTripId,
+    configStatusFilter,
+    setConfigStatusFilter,
+    configHeader,
+  } = useApp();
   const profile = profileFor(view);
   const title = selectedTripId ? 'Trip Detail' : titleFor(view);
   const centered = profile.centerSearch && !selectedTripId;
+  const showConfigTools = isConfigView(view) && !!configHeader && !selectedTripId;
 
   return (
     <header className={`topbar ${centered ? 'topbar-centered' : ''}`}>
@@ -164,6 +178,21 @@ export function Topbar() {
       )}
 
       <div className="topbar-right">
+        {showConfigTools && configHeader.showStatus && (
+          <label className="topbar-status">
+            <span className="sr-only">Status</span>
+            <select
+              value={configStatusFilter}
+              onChange={(e) => setConfigStatusFilter(e.target.value as 'all' | ConfigStatus)}
+              aria-label="Filter by status"
+            >
+              <option value="all">All status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+        )}
+
         {profile.actions.map((action) => {
           const Icon = action.icon;
           return (
@@ -178,6 +207,19 @@ export function Topbar() {
             </button>
           );
         })}
+
+        {showConfigTools && (
+          <button
+            type="button"
+            className="tico tico-add"
+            aria-label={configHeader.addLabel}
+            title={configHeader.addLabel}
+            onClick={configHeader.onAdd}
+          >
+            <Plus size={15} />
+          </button>
+        )}
+
         <button type="button" className="tico" aria-label="Notifications">
           <Bell size={15} />
         </button>

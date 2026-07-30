@@ -99,6 +99,10 @@
   overflow: hidden;
 }
 
+.cfg-split-narrow {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
 .cfg-split-shell {
   border: 1px solid var(--border-1);
   border-radius: 12px;
@@ -278,32 +282,118 @@
   color: var(--fg-1);
 }
 
-.cfg-division-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 8px;
+.cfg-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.cfg-division-item {
+.cfg-nav-list > li {
+  position: relative;
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.cfg-nav-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
   gap: 10px;
   text-align: left;
-  padding: 12px 12px;
+  padding: 10px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--fg-2);
+  cursor: pointer;
+}
+
+.cfg-nav-item:hover {
+  background: #f7f8fa;
+}
+
+.cfg-nav-item.active {
+  background: #fff8f1;
+  border-color: rgba(139, 90, 43, 0.18);
+  box-shadow: inset 3px 0 0 #8b5a2b;
+}
+
+.cfg-nav-flag {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cfg-nav-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cfg-nav-copy strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg-1);
+  line-height: 1.25;
+}
+
+.cfg-nav-copy span {
+  font-size: 11px;
+  color: var(--fg-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cfg-nav-item .cfg-status {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.cfg-nav-actions {
+  display: flex;
+  align-items: center;
+  padding-right: 2px;
+}
+
+.cfg-division-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 720px;
+}
+
+.cfg-division-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 12px 14px;
   border: 1px solid var(--border-1);
   border-radius: 10px;
   background: #fff;
   color: var(--fg-2);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.cfg-division-item:hover {
+.cfg-division-row:hover {
   border-color: var(--border-2);
 }
 
-.cfg-division-item.on {
+.cfg-division-row.on {
   border-color: rgba(139, 90, 43, 0.35);
   background: #fffaf5;
   color: var(--fg-1);
@@ -323,10 +413,113 @@
   flex-shrink: 0;
 }
 
-.cfg-division-item.on .cfg-division-check {
+.cfg-division-row.on .cfg-division-check {
   border-color: #8b5a2b;
   background: #8b5a2b;
   color: #fff;
+}
+
+.cfg-division-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfg-division-state {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--fg-4);
+}
+
+.cfg-division-row.on .cfg-division-state {
+  color: #8b5a2b;
+}
+
+.cfg-method-detail {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 18px 20px;
+  background: #f7f8fa;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cfg-method-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.cfg-method-fields .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.cfg-method-fields .field > span:first-child {
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+.cfg-method-fields strong {
+  font-size: 14px;
+  color: var(--fg-1);
+}
+
+.cfg-method-fields input,
+.cfg-method-fields select {
+  height: 34px;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  background: #fff;
+  padding: 0 10px;
+  font-size: 13px;
+  color: var(--fg-1);
+}
+
+.cfg-method-usage {
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.cfg-method-usage .cfg-region-detail-head {
+  margin: 0;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-1);
+}
+
+.cfg-usage-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cfg-usage-list li {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--fg-1);
+}
+
+.cfg-usage-list li:hover {
+  background: #f7f8fa;
 }
 
 .cfg-plain-table {
@@ -717,7 +910,8 @@
 }
 
 @media (max-width: 1100px) {
-  .cfg-split {
+  .cfg-split,
+  .cfg-split-narrow {
     grid-template-columns: 1fr;
     overflow: auto;
   }
@@ -726,6 +920,10 @@
     max-height: 280px;
     border-right: 0;
     border-bottom: 1px solid var(--border-1);
+  }
+
+  .cfg-method-fields {
+    grid-template-columns: 1fr;
   }
 
   .cfg-detail-kpis,

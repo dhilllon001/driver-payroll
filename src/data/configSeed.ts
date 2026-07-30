@@ -7,6 +7,10 @@ export const DIVISIONS = [
   'CLX CANADA',
   'ROMULUS DISPATCH',
   'QC DEDICATED',
+  'MTY LOCAL',
+  'TIJUANA CROSSING',
+  'AB HIGHWAY',
+  'US DEDICATED',
 ];
 
 export const BASED_ON_OPTIONS = [
@@ -31,7 +35,17 @@ export const REGIONS: PayrollRegion[] = [
       'CLX CANADA',
       'QC DEDICATED',
       'TS TRUCKING',
+      'AB HIGHWAY',
     ],
+    status: 'active',
+  },
+  {
+    id: 'r2',
+    name: 'Mexico',
+    country: 'Mexico',
+    currency: 'Peso',
+    coveragePeriod: 'Weekly',
+    divisions: ['CLX MEXICO', 'MTY LOCAL', 'TIJUANA CROSSING', 'CHARGER LOGISTICS INC'],
     status: 'active',
   },
   {
@@ -44,6 +58,7 @@ export const REGIONS: PayrollRegion[] = [
       'CHARGER LOGISTICS INC',
       'ROMULUS DISPATCH',
       'TS TRUCKING',
+      'US DEDICATED',
     ],
     status: 'active',
   },

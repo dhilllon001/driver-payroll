@@ -7,7 +7,13 @@ import {
   type ReactNode,
 } from 'react';
 import { TRIPS } from '../data/seed';
-import type { DetailTab, NotesSubTab, Trip, ViewId } from '../types';
+import type { ConfigStatus, DetailTab, NotesSubTab, Trip, ViewId } from '../types';
+
+export type ConfigHeaderControls = {
+  showStatus: boolean;
+  addLabel: string;
+  onAdd: () => void;
+} | null;
 
 interface AppState {
   view: ViewId;
@@ -42,6 +48,10 @@ interface AppState {
   setShowPaymentModal: (v: boolean) => void;
   showExceptionModal: boolean;
   setShowExceptionModal: (v: boolean) => void;
+  configStatusFilter: 'all' | ConfigStatus;
+  setConfigStatusFilter: (s: 'all' | ConfigStatus) => void;
+  configHeader: ConfigHeaderControls;
+  setConfigHeader: (h: ConfigHeaderControls) => void;
   toast: (msg: string) => void;
   toastMsg: string;
   toastShow: boolean;
@@ -66,6 +76,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [perPage, setPerPage] = useState(25);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showExceptionModal, setShowExceptionModal] = useState(false);
+  const [configStatusFilter, setConfigStatusFilter] = useState<'all' | ConfigStatus>('all');
+  const [configHeader, setConfigHeader] = useState<ConfigHeaderControls>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [toastShow, setToastShow] = useState(false);
 
@@ -109,6 +121,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setShowPaymentModal,
       showExceptionModal,
       setShowExceptionModal,
+      configStatusFilter,
+      setConfigStatusFilter,
+      configHeader,
+      setConfigHeader,
       toast,
       toastMsg,
       toastShow,
@@ -130,6 +146,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       perPage,
       showPaymentModal,
       showExceptionModal,
+      configStatusFilter,
+      configHeader,
       toast,
       toastMsg,
       toastShow,

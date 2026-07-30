@@ -1,8 +1,9 @@
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   AVAILABLE_DRIVERS,
+  BASED_ON_OPTIONS,
   DIVISIONS,
   METHODS as SEED_METHODS,
   REGIONS as SEED_REGIONS,
@@ -45,6 +46,11 @@ function uid(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function regionLabel(r: Pick<PayrollRegion, 'country' | 'name'>) {
+  if (r.country === 'USA') return 'United States';
+  return r.name || r.country;
+}
+
 function StatusPill({ status }: { status: ConfigStatus }) {
   return (
     <span className={`cfg-status ${status === 'active' ? 'is-active' : 'is-inactive'}`}>
@@ -57,10 +63,20 @@ function CurrencyBadge({ currency }: { currency: PayrollCurrency }) {
   return <span className="cfg-currency-pill">{currency}</span>;
 }
 
+function countryCode(country: PayrollRegion['country']) {
+  if (country === 'Canada') return 'CA';
+  if (country === 'Mexico') return 'MX';
+  return 'US';
+}
+
 export function PayrollConfigView({ section }: { section: ConfigSection }) {
-  const { toast, search } = useApp();
-  const [statusFilter, setStatusFilter] = useState<'all' | ConfigStatus>('all');
-  const [localQ, setLocalQ] = useState('');
+  const {
+    toast,
+    search,
+    configStatusFilter,
+    setConfigStatusFilter,
+    setConfigHeader,
+  } = useApp();
 
   const [regions, setRegions] = useState<PayrollRegion[]>(() =>
     SEED_REGIONS.map((r) => ({ ...r, divisions: [...r.divisions] })),
@@ -82,21 +98,23 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   );
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
   const [selectedRegionId, setSelectedRegionId] = useState<string | null>(SEED_REGIONS[0]?.id ?? null);
+  const [selectedMethodId, setSelectedMethodId] = useState<string | null>(SEED_METHODS[0]?.id ?? null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
     SEED_SCHEDULES[0]?.id ?? null,
   );
   const [scheduleEditing, setScheduleEditing] = useState(false);
   const [isNewSchedule, setIsNewSchedule] = useState(false);
+  const [methodDraft, setMethodDraft] = useState<{ name: string; basedOn: string } | null>(null);
 
   useEffect(() => {
-    setLocalQ('');
-    setStatusFilter('all');
+    setConfigStatusFilter('all');
     setScheduleEditing(false);
     setIsNewSchedule(false);
-  }, [section]);
+    setMethodDraft(null);
+  }, [section, setConfigStatusFilter]);
 
-  const globalQ = search.trim().toLowerCase();
-  const q = `${globalQ} ${localQ}`.trim().toLowerCase();
+  const q = search.trim().toLowerCase();
+  const statusFilter = configStatusFilter;
 
   const filteredRegions = useMemo(() => {
     return regions.filter((r) => {
@@ -141,6 +159,19 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   }, [section, filteredRegions, selectedRegionId]);
 
   useEffect(() => {
+    if (section !== 'methods') return;
+    if (filteredMethods.length === 0) {
+      setSelectedMethodId(null);
+      setMethodDraft(null);
+      return;
+    }
+    if (!selectedMethodId || !filteredMethods.some((m) => m.id === selectedMethodId)) {
+      setSelectedMethodId(filteredMethods[0].id);
+      setMethodDraft(null);
+    }
+  }, [section, filteredMethods, selectedMethodId]);
+
+  useEffect(() => {
     if (section !== 'schedules') return;
     if (isNewSchedule) return;
     if (filteredSchedules.length === 0) {
@@ -155,17 +186,47 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   }, [section, filteredSchedules, selectedScheduleId, isNewSchedule]);
 
   const selectedRegion = regions.find((r) => r.id === selectedRegionId) ?? null;
+  const selectedMethod = methods.find((m) => m.id === selectedMethodId) ?? null;
   const selectedSchedule = schedules.find((s) => s.id === selectedScheduleId) ?? null;
 
   const methodUsage = useMemo(() => {
     const map = new Map<string, number>();
+    const scheduleNames = new Map<string, string[]>();
     for (const s of schedules) {
       for (const line of s.methods) {
         map.set(line.methodId, (map.get(line.methodId) ?? 0) + 1);
+        const names = scheduleNames.get(line.methodId) ?? [];
+        if (!names.includes(s.name)) names.push(s.name);
+        scheduleNames.set(line.methodId, names);
       }
     }
-    return map;
+    return { counts: map, schedules: scheduleNames };
   }, [schedules]);
+
+  const beginAddSchedule = useCallback(() => {
+    const draft = createEmptySchedule();
+    draft.name = 'New Payroll Schedule';
+    setSchedules((prev) => [draft, ...prev]);
+    setSelectedScheduleId(draft.id);
+    setIsNewSchedule(true);
+    setScheduleEditing(true);
+  }, []);
+
+  const onAdd = useCallback(() => {
+    if (section === 'regions') setRegionModal({ mode: 'add' });
+    else if (section === 'methods') setMethodModal({ mode: 'add' });
+    else beginAddSchedule();
+  }, [section, beginAddSchedule]);
+
+  useEffect(() => {
+    setConfigHeader({
+      showStatus: section === 'regions' || section === 'schedules',
+      addLabel:
+        section === 'regions' ? 'Add Region' : section === 'methods' ? 'Add Method' : 'Add Schedule',
+      onAdd,
+    });
+    return () => setConfigHeader(null);
+  }, [section, onAdd, setConfigHeader]);
 
   const confirmDelete = () => {
     if (!pendingDelete) return;
@@ -174,6 +235,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
       toast(`Region “${pendingDelete.name}” deleted`);
     } else if (pendingDelete.kind === 'method') {
       setMethods((prev) => prev.filter((m) => m.id !== pendingDelete.id));
+      if (selectedMethodId === pendingDelete.id) setSelectedMethodId(null);
       toast(`Method “${pendingDelete.name}” deleted`);
     } else {
       setSchedules((prev) => prev.filter((s) => s.id !== pendingDelete.id));
@@ -251,28 +313,41 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
       );
       toast('Method updated');
     } else {
-      setMethods((prev) => [
-        { id: uid('m'), name: form.name.trim(), basedOn: form.basedOn },
-        ...prev,
-      ]);
+      const next = { id: uid('m'), name: form.name.trim(), basedOn: form.basedOn };
+      setMethods((prev) => [next, ...prev]);
+      setSelectedMethodId(next.id);
       toast('Method added');
     }
     setMethodModal(null);
+    setMethodDraft(null);
     return true;
+  };
+
+  const startMethodEdit = () => {
+    if (!selectedMethod) return;
+    setMethodDraft({ name: selectedMethod.name, basedOn: selectedMethod.basedOn });
+  };
+
+  const saveMethodInline = () => {
+    if (!selectedMethod || !methodDraft) return;
+    if (!methodDraft.name.trim()) {
+      toast('Method name is required');
+      return;
+    }
+    setMethods((prev) =>
+      prev.map((m) =>
+        m.id === selectedMethod.id
+          ? { ...m, name: methodDraft.name.trim(), basedOn: methodDraft.basedOn }
+          : m,
+      ),
+    );
+    setMethodDraft(null);
+    toast('Method updated');
   };
 
   const beginEditSchedule = (id?: string) => {
     if (id) setSelectedScheduleId(id);
     setIsNewSchedule(false);
-    setScheduleEditing(true);
-  };
-
-  const beginAddSchedule = () => {
-    const draft = createEmptySchedule();
-    draft.name = 'New Payroll Schedule';
-    setSchedules((prev) => [draft, ...prev]);
-    setSelectedScheduleId(draft.id);
-    setIsNewSchedule(true);
     setScheduleEditing(true);
   };
 
@@ -311,53 +386,16 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
     setSelectedScheduleId(id);
   };
 
-  const addLabel =
-    section === 'regions' ? 'Add Region' : section === 'methods' ? 'Add Method' : 'Add Schedule';
-  const onAdd =
-    section === 'regions'
-      ? () => setRegionModal({ mode: 'add' })
-      : section === 'methods'
-        ? () => setMethodModal({ mode: 'add' })
-        : beginAddSchedule;
+  const selectMethodRow = (id: string) => {
+    setSelectedMethodId(id);
+    setMethodDraft(null);
+  };
+
+  const usedCount = selectedMethod ? methodUsage.counts.get(selectedMethod.id) ?? 0 : 0;
+  const usedIn = selectedMethod ? methodUsage.schedules.get(selectedMethod.id) ?? [] : [];
 
   return (
     <div className="mod-page cfg-page">
-      <div className="mod-filters cfg-filters">
-        <label className="mod-filter grow">
-          <span>Search</span>
-          <input
-            value={localQ}
-            onChange={(e) => setLocalQ(e.target.value)}
-            placeholder={
-              section === 'regions'
-                ? 'Search region or division…'
-                : section === 'methods'
-                  ? 'Search method…'
-                  : 'Search schedule…'
-            }
-          />
-        </label>
-        {(section === 'regions' || section === 'schedules') && (
-          <label className="mod-filter">
-            <span>Status</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | ConfigStatus)}
-            >
-              <option value="all">All</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </label>
-        )}
-        <div className="mod-filters-actions">
-          <button type="button" className="btn btn-primary btn-sm" onClick={onAdd}>
-            <Plus size={13} />
-            {addLabel}
-          </button>
-        </div>
-      </div>
-
       {pendingDelete && (
         <div className="cfg-confirm-strip">
           <span>
@@ -375,52 +413,43 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
       )}
 
       {section === 'regions' && (
-        <div className="cfg-split cfg-split-shell">
+        <div className="cfg-split cfg-split-shell cfg-split-narrow">
           <aside className="cfg-split-list" aria-label="Regions">
             <div className="cfg-split-list-scroll">
               {filteredRegions.length === 0 ? (
                 <div className="empty-state">No regions match this filter.</div>
               ) : (
-                <table className="cfg-list-table cfg-region-list">
-                  <thead>
-                    <tr>
-                      <th className="mod-action-col">Action</th>
-                      <th>Region</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRegions.map((r) => (
-                      <tr
-                        key={r.id}
-                        className={selectedRegionId === r.id ? 'active' : ''}
+                <ul className="cfg-nav-list">
+                  {filteredRegions.map((r) => (
+                    <li key={r.id}>
+                      <button
+                        type="button"
+                        className={`cfg-nav-item ${selectedRegionId === r.id ? 'active' : ''}`}
                         onClick={() => setSelectedRegionId(r.id)}
                       >
-                        <td className="mod-action-col" onClick={(e) => e.stopPropagation()}>
-                          <RowActionMenu
-                            items={EDIT_DELETE}
-                            onAction={(action) => {
-                              if (action === 'edit') setRegionModal({ mode: 'edit', item: r });
-                              if (action === 'delete')
-                                setPendingDelete({ kind: 'region', id: r.id, name: r.name });
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <div className="cfg-list-name">
-                            {r.country === 'USA' ? 'United States' : r.country}
-                          </div>
-                          <div className="cfg-list-meta">
-                            {r.currency} · {r.coveragePeriod} · {r.divisions.length} divisions
-                          </div>
-                        </td>
-                        <td>
-                          <StatusPill status={r.status} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        <span className={`cfg-nav-flag cfg-country-pill ${countryCode(r.country).toLowerCase()}`}>
+                          {countryCode(r.country)}
+                        </span>
+                        <span className="cfg-nav-copy">
+                          <strong>{regionLabel(r)}</strong>
+                          <span>
+                            {r.divisions.length} divisions · {r.status === 'active' ? 'Active' : 'Inactive'}
+                          </span>
+                        </span>
+                      </button>
+                      <div className="cfg-nav-actions">
+                        <RowActionMenu
+                          items={EDIT_DELETE}
+                          onAction={(action) => {
+                            if (action === 'edit') setRegionModal({ mode: 'edit', item: r });
+                            if (action === 'delete')
+                              setPendingDelete({ kind: 'region', id: r.id, name: regionLabel(r) });
+                          }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </aside>
@@ -429,21 +458,19 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
             {!selectedRegion ? (
               <div className="cfg-split-empty">
                 <h3>Select a region</h3>
-                <p>Choose Canada or United States to manage divisions.</p>
+                <p>Choose Canada, United States, or Mexico to manage divisions.</p>
               </div>
             ) : (
               <>
                 <div className="cfg-detail-head cfg-detail-head-simple">
                   <div>
                     <div className="cfg-detail-title-row">
-                      <h2>
-                        {selectedRegion.country === 'USA' ? 'United States' : selectedRegion.country}
-                      </h2>
+                      <h2>{regionLabel(selectedRegion)}</h2>
                       <StatusPill status={selectedRegion.status} />
                     </div>
                     <p className="cfg-detail-sub">
                       {selectedRegion.currency} · {selectedRegion.coveragePeriod} ·{' '}
-                      {selectedRegion.divisions.length} divisions
+                      {selectedRegion.divisions.length} of {DIVISIONS.length} divisions
                     </p>
                   </div>
                   <button
@@ -460,22 +487,24 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
                     <h3>Divisions</h3>
                     <span className="cfg-tab-count">{selectedRegion.divisions.length}</span>
                   </div>
-                  <div className="cfg-division-grid">
+                  <ul className="cfg-division-list">
                     {DIVISIONS.map((d) => {
                       const on = selectedRegion.divisions.includes(d);
                       return (
-                        <button
-                          key={d}
-                          type="button"
-                          className={`cfg-division-item ${on ? 'on' : ''}`}
-                          onClick={() => toggleDivision(d)}
-                        >
-                          <span className="cfg-division-check">{on ? '✓' : ''}</span>
-                          <span>{d}</span>
-                        </button>
+                        <li key={d}>
+                          <button
+                            type="button"
+                            className={`cfg-division-row ${on ? 'on' : ''}`}
+                            onClick={() => toggleDivision(d)}
+                          >
+                            <span className="cfg-division-check">{on ? '✓' : ''}</span>
+                            <span className="cfg-division-name">{d}</span>
+                            <span className="cfg-division-state">{on ? 'Assigned' : 'Available'}</span>
+                          </button>
+                        </li>
                       );
                     })}
-                  </div>
+                  </ul>
                 </div>
               </>
             )}
@@ -484,52 +513,147 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
       )}
 
       {section === 'methods' && (
-        <div className="mod-table-shell">
-          <div className="mod-table-scroll">
-            <table className="data-table mod-table cfg-table">
-              <thead>
-                <tr>
-                  <th className="mod-action-col">Action</th>
-                  <th>Method name</th>
-                  <th>Based on</th>
-                  <th>Used in schedules</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMethods.length === 0 ? (
-                  <tr>
-                    <td colSpan={4}>
-                      <div className="empty-state">No methods match this search.</div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMethods.map((m) => {
-                    const used = methodUsage.get(m.id) ?? 0;
+        <div className="cfg-split cfg-split-shell cfg-split-narrow">
+          <aside className="cfg-split-list" aria-label="Methods">
+            <div className="cfg-split-list-scroll">
+              {filteredMethods.length === 0 ? (
+                <div className="empty-state">No methods match this search.</div>
+              ) : (
+                <ul className="cfg-nav-list">
+                  {filteredMethods.map((m) => {
+                    const used = methodUsage.counts.get(m.id) ?? 0;
                     return (
-                      <tr key={m.id}>
-                        <td className="mod-action-col">
+                      <li key={m.id}>
+                        <button
+                          type="button"
+                          className={`cfg-nav-item ${selectedMethodId === m.id ? 'active' : ''}`}
+                          onClick={() => selectMethodRow(m.id)}
+                        >
+                          <span className="cfg-nav-copy">
+                            <strong>{m.name}</strong>
+                            <span>
+                              {m.basedOn} · {used} schedules
+                            </span>
+                          </span>
+                        </button>
+                        <div className="cfg-nav-actions" onClick={(e) => e.stopPropagation()}>
                           <RowActionMenu
                             items={EDIT_DELETE}
                             onAction={(action) => {
-                              if (action === 'edit') setMethodModal({ mode: 'edit', item: m });
+                              if (action === 'edit') {
+                                setSelectedMethodId(m.id);
+                                setMethodDraft({ name: m.name, basedOn: m.basedOn });
+                              }
                               if (action === 'delete')
                                 setPendingDelete({ kind: 'method', id: m.id, name: m.name });
                             }}
                           />
-                        </td>
-                        <td className="cfg-strong">{m.name}</td>
-                        <td>{m.basedOn}</td>
-                        <td>{used}</td>
-                      </tr>
+                        </div>
+                      </li>
                     );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="mod-pager">
-            <strong>Total Records: {filteredMethods.length}</strong>
-          </div>
+                  })}
+                </ul>
+              )}
+            </div>
+          </aside>
+
+          <section className="cfg-split-detail">
+            {!selectedMethod ? (
+              <div className="cfg-split-empty">
+                <h3>Select a method</h3>
+                <p>Choose a payment method on the left to review and edit details.</p>
+              </div>
+            ) : (
+              <>
+                <div className="cfg-detail-head cfg-detail-head-simple">
+                  <div>
+                    <div className="cfg-detail-title-row">
+                      <h2>{selectedMethod.name}</h2>
+                    </div>
+                    <p className="cfg-detail-sub">
+                      Based on {selectedMethod.basedOn} · Used in {usedCount} schedules
+                    </p>
+                  </div>
+                  <div className="cfg-detail-actions">
+                    {methodDraft ? (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setMethodDraft(null)}
+                        >
+                          Cancel
+                        </button>
+                        <button type="button" className="btn btn-primary btn-sm" onClick={saveMethodInline}>
+                          Save
+                        </button>
+                      </>
+                    ) : (
+                      <button type="button" className="btn btn-primary btn-sm" onClick={startMethodEdit}>
+                        <Pencil size={13} />
+                        Edit
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="cfg-method-detail">
+                  <div className="cfg-method-fields">
+                    <label className="field">
+                      <span>Method name</span>
+                      {methodDraft ? (
+                        <input
+                          value={methodDraft.name}
+                          onChange={(e) =>
+                            setMethodDraft((prev) => (prev ? { ...prev, name: e.target.value } : prev))
+                          }
+                        />
+                      ) : (
+                        <strong>{selectedMethod.name}</strong>
+                      )}
+                    </label>
+                    <label className="field">
+                      <span>Based on</span>
+                      {methodDraft ? (
+                        <select
+                          value={methodDraft.basedOn}
+                          onChange={(e) =>
+                            setMethodDraft((prev) =>
+                              prev ? { ...prev, basedOn: e.target.value } : prev,
+                            )
+                          }
+                        >
+                          {BASED_ON_OPTIONS.map((o) => (
+                            <option key={o} value={o}>
+                              {o}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span className="cfg-based-on">{selectedMethod.basedOn}</span>
+                      )}
+                    </label>
+                  </div>
+
+                  <div className="cfg-method-usage">
+                    <div className="cfg-region-detail-head">
+                      <h3>Used in schedules</h3>
+                      <span className="cfg-tab-count">{usedCount}</span>
+                    </div>
+                    {usedIn.length === 0 ? (
+                      <div className="cfg-detail-empty">Not assigned to any schedule yet.</div>
+                    ) : (
+                      <ul className="cfg-usage-list">
+                        {usedIn.map((name) => (
+                          <li key={name}>{name}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
         </div>
       )}
 
