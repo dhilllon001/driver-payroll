@@ -10,7 +10,7 @@ const LABELS: Partial<Record<ViewId, string>> = {
   fuel: 'Fuel Management',
   incidents: 'MX Driver Incident',
   deductions: 'Deductions & Reimbursements',
-  config: 'Configuration',
+  config: 'Payroll Configuration',
 };
 
 export function PlaceholderView({ id }: { id: ViewId }) {

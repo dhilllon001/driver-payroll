@@ -1,4 +1,4 @@
-import { Plus, Pencil, Trash2, Search, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
@@ -9,6 +9,7 @@ import {
 } from '../data/configSeed';
 import type {
   ConfigStatus,
+  PayrollCountry,
   PayrollCurrency,
   PayrollMethod,
   PayrollRegion,
@@ -22,14 +23,29 @@ import {
   type RegionForm,
   type ScheduleForm,
 } from '../components/modals/ConfigModals';
-import './views.css';
+import { RowActionMenu, type RowActionItem } from '../components/ui/RowActionMenu';
+import './modules.css';
 import './config.css';
 
+type ConfigTab = 'regions' | 'methods' | 'schedules';
+type CountryFilter = 'all' | PayrollCountry;
 type PendingDelete =
   | { kind: 'region'; id: string; name: string }
   | { kind: 'method'; id: string; name: string }
   | { kind: 'schedule'; id: string; name: string }
   | null;
+
+const EDIT_DELETE: RowActionItem[] = [
+  { id: 'edit', label: 'Edit', icon: Pencil },
+  { id: 'delete', label: 'Delete', icon: Trash2, danger: true },
+];
+
+const COUNTRY_CHIPS: { id: CountryFilter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'Canada', label: 'Canada' },
+  { id: 'Mexico', label: 'Mexico' },
+  { id: 'USA', label: 'USA' },
+];
 
 function uid(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -44,16 +60,21 @@ function StatusPill({ status }: { status: ConfigStatus }) {
 }
 
 function CurrencyBadge({ currency }: { currency: PayrollCurrency }) {
-  const flag = currency === 'CAD' ? '🇨🇦' : currency === 'USD' ? '🇺🇸' : '🇲🇽';
-  return (
-    <span className="cfg-currency">
-      <span aria-hidden>{flag}</span> {currency}
-    </span>
-  );
+  return <span className="cfg-currency-pill">{currency}</span>;
+}
+
+function CountryBadge({ country }: { country: PayrollCountry }) {
+  const tone = country === 'Canada' ? 'ca' : country === 'Mexico' ? 'mx' : 'us';
+  return <span className={`cfg-country-pill ${tone}`}>{country}</span>;
 }
 
 export function PayrollConfigView() {
   const { toast, search } = useApp();
+  const [tab, setTab] = useState<ConfigTab>('regions');
+  const [countryFilter, setCountryFilter] = useState<CountryFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | ConfigStatus>('all');
+  const [localQ, setLocalQ] = useState('');
+
   const [regions, setRegions] = useState<PayrollRegion[]>(() =>
     SEED_REGIONS.map((r) => ({ ...r, divisions: [...r.divisions] })),
   );
@@ -65,10 +86,6 @@ export function PayrollConfigView() {
       drivers: s.drivers.map((d) => ({ ...d })),
     })),
   );
-
-  const [regionQ, setRegionQ] = useState('');
-  const [methodQ, setMethodQ] = useState('');
-  const [scheduleQ, setScheduleQ] = useState('');
 
   const [regionModal, setRegionModal] = useState<{ mode: 'add' | 'edit'; item?: PayrollRegion } | null>(
     null,
@@ -82,44 +99,58 @@ export function PayrollConfigView() {
   } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
 
-  const inactiveSchedules = schedules.filter((s) => s.status === 'inactive').length;
-  const unusedMethods = methods.filter(
-    (m) => !schedules.some((s) => s.methods.some((l) => l.methodId === m.id)),
-  ).length;
-  const inactiveRegions = regions.filter((r) => r.status === 'inactive').length;
   const globalQ = search.trim().toLowerCase();
+  const q = `${globalQ} ${localQ}`.trim().toLowerCase();
+
+  const countryCounts = useMemo(() => {
+    const base = { Canada: 0, Mexico: 0, USA: 0 };
+    for (const r of regions) base[r.country] += 1;
+    return base;
+  }, [regions]);
 
   const filteredRegions = useMemo(() => {
-    const q = `${globalQ} ${regionQ}`.trim().toLowerCase();
-    if (!q) return regions;
-    return regions.filter(
-      (r) =>
+    return regions.filter((r) => {
+      if (countryFilter !== 'all' && r.country !== countryFilter) return false;
+      if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
         r.name.toLowerCase().includes(q) ||
+        r.country.toLowerCase().includes(q) ||
         r.coveragePeriod.toLowerCase().includes(q) ||
-        r.divisions.some((d) => d.toLowerCase().includes(q)) ||
-        r.status.includes(q),
-    );
-  }, [regions, globalQ, regionQ]);
+        r.currency.toLowerCase().includes(q) ||
+        r.divisions.some((d) => d.toLowerCase().includes(q))
+      );
+    });
+  }, [regions, countryFilter, statusFilter, q]);
 
   const filteredMethods = useMemo(() => {
-    const q = `${globalQ} ${methodQ}`.trim().toLowerCase();
     if (!q) return methods;
     return methods.filter(
       (m) => m.name.toLowerCase().includes(q) || m.basedOn.toLowerCase().includes(q),
     );
-  }, [methods, globalQ, methodQ]);
+  }, [methods, q]);
 
   const filteredSchedules = useMemo(() => {
-    const q = `${globalQ} ${scheduleQ}`.trim().toLowerCase();
-    if (!q) return schedules;
-    return schedules.filter(
-      (s) =>
+    return schedules.filter((s) => {
+      if (statusFilter !== 'all' && s.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
         s.name.toLowerCase().includes(q) ||
         s.currency.toLowerCase().includes(q) ||
-        s.taxCode.toLowerCase().includes(q) ||
-        s.status.includes(q),
-    );
-  }, [schedules, globalQ, scheduleQ]);
+        s.taxCode.toLowerCase().includes(q)
+      );
+    });
+  }, [schedules, statusFilter, q]);
+
+  const methodUsage = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const s of schedules) {
+      for (const line of s.methods) {
+        map.set(line.methodId, (map.get(line.methodId) ?? 0) + 1);
+      }
+    }
+    return map;
+  }, [schedules]);
 
   const confirmDelete = () => {
     if (!pendingDelete) return;
@@ -148,6 +179,8 @@ export function PayrollConfigView() {
             ? {
                 ...r,
                 name: form.name.trim(),
+                country: form.country,
+                currency: form.currency,
                 coveragePeriod: form.coveragePeriod,
                 divisions: form.divisions,
                 status: form.status,
@@ -161,6 +194,8 @@ export function PayrollConfigView() {
         {
           id: uid('r'),
           name: form.name.trim(),
+          country: form.country,
+          currency: form.currency,
           coveragePeriod: form.coveragePeriod,
           divisions: form.divisions,
           status: form.status,
@@ -223,49 +258,130 @@ export function PayrollConfigView() {
     return true;
   };
 
+  const switchTab = (next: ConfigTab) => {
+    setTab(next);
+    setLocalQ('');
+    setStatusFilter('all');
+    if (next !== 'regions') setCountryFilter('all');
+  };
+
+  const addLabel =
+    tab === 'regions' ? 'Add Region' : tab === 'methods' ? 'Add Method' : 'Add Schedule';
+  const onAdd =
+    tab === 'regions'
+      ? () => setRegionModal({ mode: 'add' })
+      : tab === 'methods'
+        ? () => setMethodModal({ mode: 'add' })
+        : () => setScheduleModal({ mode: 'add' });
+
+  const rowsCount =
+    tab === 'regions'
+      ? filteredRegions.length
+      : tab === 'methods'
+        ? filteredMethods.length
+        : filteredSchedules.length;
+
   return (
-    <div className="cfg-page">
-      <div className="cfg-toolbar">
-        <p className="cfg-sub">
-          Manage regions, pay methods, and schedules used across trip processing.
-        </p>
-        <div className="cfg-stats">
-          <div className="cfg-stat">
-            <span className="cfg-stat-n">{regions.length}</span>
-            <span className="cfg-stat-l">Regions</span>
-          </div>
-          <div className="cfg-stat">
-            <span className="cfg-stat-n">{methods.length}</span>
-            <span className="cfg-stat-l">Methods</span>
-          </div>
-          <div className="cfg-stat">
-            <span className="cfg-stat-n">{schedules.length}</span>
-            <span className="cfg-stat-l">Schedules</span>
-          </div>
+    <div className="mod-page cfg-page">
+      <div className="cfg-tabs-row">
+        <div className="tabs cfg-page-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            className={`tab ${tab === 'regions' ? 'active' : ''}`}
+            aria-selected={tab === 'regions'}
+            onClick={() => switchTab('regions')}
+          >
+            Regions
+            <span className="cfg-tab-count">{regions.length}</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            className={`tab ${tab === 'methods' ? 'active' : ''}`}
+            aria-selected={tab === 'methods'}
+            onClick={() => switchTab('methods')}
+          >
+            Methods
+            <span className="cfg-tab-count">{methods.length}</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            className={`tab ${tab === 'schedules' ? 'active' : ''}`}
+            aria-selected={tab === 'schedules'}
+            onClick={() => switchTab('schedules')}
+          >
+            Schedules
+            <span className="cfg-tab-count">{schedules.length}</span>
+          </button>
         </div>
+        <p className="cfg-sub">
+          {tab === 'regions'
+            ? 'Country and region coverage for Canada, Mexico, and USA.'
+            : tab === 'methods'
+              ? 'Pay methods used when building schedules and trip pay.'
+              : 'Payroll schedules with currency, drivers, and linked methods.'}
+        </p>
       </div>
 
-      {(inactiveSchedules > 0 || unusedMethods > 0 || inactiveRegions > 0) && (
-        <div className="cfg-alerts">
-          {inactiveSchedules > 0 && (
-            <span className="cfg-alert-chip warn">
-              <AlertTriangle size={12} /> {inactiveSchedules} inactive schedule
-              {inactiveSchedules === 1 ? '' : 's'}
-            </span>
-          )}
-          {unusedMethods > 0 && (
-            <span className="cfg-alert-chip muted">
-              {unusedMethods} method{unusedMethods === 1 ? '' : 's'} unused
-            </span>
-          )}
-          {inactiveRegions > 0 && (
-            <span className="cfg-alert-chip warn">
-              <AlertTriangle size={12} /> {inactiveRegions} inactive region
-              {inactiveRegions === 1 ? '' : 's'}
-            </span>
-          )}
+      {tab === 'regions' && (
+        <div className="cfg-country-chips" role="tablist" aria-label="Filter by country">
+          {COUNTRY_CHIPS.map((chip) => {
+            const count =
+              chip.id === 'all'
+                ? regions.length
+                : countryCounts[chip.id];
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                className={`cfg-country-chip ${countryFilter === chip.id ? 'active' : ''}`}
+                onClick={() => setCountryFilter(chip.id)}
+              >
+                <span>{chip.label}</span>
+                <span className="cfg-tab-count">{count}</span>
+              </button>
+            );
+          })}
         </div>
       )}
+
+      <div className="mod-filters">
+        <label className="mod-filter grow">
+          <span>Search</span>
+          <input
+            value={localQ}
+            onChange={(e) => setLocalQ(e.target.value)}
+            placeholder={
+              tab === 'regions'
+                ? 'Search region, division…'
+                : tab === 'methods'
+                  ? 'Search method…'
+                  : 'Search schedule…'
+            }
+          />
+        </label>
+        {(tab === 'regions' || tab === 'schedules') && (
+          <label className="mod-filter">
+            <span>Status</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | ConfigStatus)}
+            >
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </label>
+        )}
+        <div className="mod-filters-actions">
+          <button type="button" className="btn btn-primary btn-sm" onClick={onAdd}>
+            <Plus size={13} />
+            {addLabel}
+          </button>
+        </div>
+      </div>
 
       {pendingDelete && (
         <div className="cfg-confirm-strip">
@@ -283,177 +399,176 @@ export function PayrollConfigView() {
         </div>
       )}
 
-      <div className="cfg-grid">
-        <div className="cfg-stack">
-          <ConfigPanel
-            title="Regions"
-            count={filteredRegions.length}
-            total={regions.length}
-            search={regionQ}
-            onSearch={setRegionQ}
-            addLabel="Add Region"
-            onAdd={() => setRegionModal({ mode: 'add' })}
-            empty={filteredRegions.length === 0}
-          >
-            <table className="data-table cfg-table">
+      <div className="mod-table-shell">
+        <div className="mod-table-scroll">
+          {tab === 'regions' && (
+            <table className="data-table mod-table cfg-table">
               <thead>
                 <tr>
+                  <th>Country</th>
                   <th>Region</th>
+                  <th>Currency</th>
                   <th>Divisions</th>
-                  <th>Status</th>
                   <th>Coverage</th>
-                  <th className="cfg-col-actions" />
+                  <th>Status</th>
+                  <th className="mod-action-col">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRegions.map((r) => (
-                  <tr key={r.id}>
-                    <td className="cfg-strong">{r.name}</td>
-                    <td>
-                      <span className="cfg-count-badge" title={r.divisions.join(', ')}>
-                        {r.divisions.length}
-                      </span>
-                      <span className="cfg-muted cfg-divisions-preview">
-                        {r.divisions.slice(0, 2).join(', ')}
-                        {r.divisions.length > 2 ? '…' : ''}
-                      </span>
-                    </td>
-                    <td>
-                      <StatusPill status={r.status} />
-                    </td>
-                    <td>{r.coveragePeriod}</td>
-                    <td className="cfg-col-actions">
-                      <button
-                        type="button"
-                        className="btn-icon"
-                        aria-label="Edit region"
-                        onClick={() => setRegionModal({ mode: 'edit', item: r })}
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-icon danger"
-                        aria-label="Delete region"
-                        onClick={() => setPendingDelete({ kind: 'region', id: r.id, name: r.name })}
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                {filteredRegions.length === 0 ? (
+                  <tr>
+                    <td colSpan={7}>
+                      <div className="empty-state">No regions match this filter.</div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredRegions.map((r) => (
+                    <tr key={r.id}>
+                      <td>
+                        <CountryBadge country={r.country} />
+                      </td>
+                      <td className="cfg-strong">{r.name}</td>
+                      <td>
+                        <CurrencyBadge currency={r.currency} />
+                      </td>
+                      <td>
+                        <span className="cfg-count-badge" title={r.divisions.join(', ')}>
+                          {r.divisions.length}
+                        </span>
+                        <span className="cfg-muted cfg-divisions-preview">
+                          {r.divisions.slice(0, 2).join(', ')}
+                          {r.divisions.length > 2 ? '…' : ''}
+                        </span>
+                      </td>
+                      <td>{r.coveragePeriod}</td>
+                      <td>
+                        <StatusPill status={r.status} />
+                      </td>
+                      <td className="mod-action-col">
+                        <RowActionMenu
+                          items={EDIT_DELETE}
+                          onAction={(action) => {
+                            if (action === 'edit') setRegionModal({ mode: 'edit', item: r });
+                            if (action === 'delete')
+                              setPendingDelete({ kind: 'region', id: r.id, name: r.name });
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
-          </ConfigPanel>
+          )}
 
-          <ConfigPanel
-            title="Methods"
-            count={filteredMethods.length}
-            total={methods.length}
-            search={methodQ}
-            onSearch={setMethodQ}
-            addLabel="Add Method"
-            onAdd={() => setMethodModal({ mode: 'add' })}
-            empty={filteredMethods.length === 0}
-            taller
-          >
-            <table className="data-table cfg-table">
+          {tab === 'methods' && (
+            <table className="data-table mod-table cfg-table">
               <thead>
                 <tr>
                   <th>Method name</th>
                   <th>Based on</th>
-                  <th className="cfg-col-actions" />
+                  <th>Used in schedules</th>
+                  <th className="mod-action-col">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredMethods.map((m) => (
-                  <tr key={m.id}>
-                    <td className="cfg-strong">{m.name}</td>
-                    <td>
-                      <span className="cfg-based-on">{m.basedOn}</span>
-                    </td>
-                    <td className="cfg-col-actions">
-                      <button
-                        type="button"
-                        className="btn-icon"
-                        aria-label="Edit method"
-                        onClick={() => setMethodModal({ mode: 'edit', item: m })}
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-icon danger"
-                        aria-label="Delete method"
-                        onClick={() => setPendingDelete({ kind: 'method', id: m.id, name: m.name })}
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                {filteredMethods.length === 0 ? (
+                  <tr>
+                    <td colSpan={4}>
+                      <div className="empty-state">No methods match this search.</div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredMethods.map((m) => {
+                    const used = methodUsage.get(m.id) ?? 0;
+                    return (
+                      <tr key={m.id}>
+                        <td className="cfg-strong">{m.name}</td>
+                        <td>
+                          <span className="cfg-based-on">{m.basedOn}</span>
+                        </td>
+                        <td>
+                          <span className={`cfg-count-badge ${used === 0 ? 'is-muted' : ''}`}>
+                            {used}
+                          </span>
+                        </td>
+                        <td className="mod-action-col">
+                          <RowActionMenu
+                            items={EDIT_DELETE}
+                            onAction={(action) => {
+                              if (action === 'edit') setMethodModal({ mode: 'edit', item: m });
+                              if (action === 'delete')
+                                setPendingDelete({ kind: 'method', id: m.id, name: m.name });
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
-          </ConfigPanel>
-        </div>
+          )}
 
-        <ConfigPanel
-          title="Schedules"
-          count={filteredSchedules.length}
-          total={schedules.length}
-          search={scheduleQ}
-          onSearch={setScheduleQ}
-          addLabel="Add Schedule"
-          onAdd={() => setScheduleModal({ mode: 'add' })}
-          empty={filteredSchedules.length === 0}
-          fill
-        >
-          <table className="data-table cfg-table">
-            <thead>
-              <tr>
-                <th>Schedule name</th>
-                <th>Drivers</th>
-                <th>Status</th>
-                <th>Currency</th>
-                <th className="cfg-col-actions" />
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSchedules.map((s) => (
-                <tr key={s.id}>
-                  <td className="cfg-strong">{s.name}</td>
-                  <td>
-                    <span className="cfg-count-badge">{s.drivers.length}</span>
-                  </td>
-                  <td>
-                    <StatusPill status={s.status} />
-                  </td>
-                  <td>
-                    <CurrencyBadge currency={s.currency} />
-                  </td>
-                  <td className="cfg-col-actions">
-                    <button
-                      type="button"
-                      className="btn-icon"
-                      aria-label="Edit schedule"
-                      onClick={() => setScheduleModal({ mode: 'edit', item: s })}
-                    >
-                      <Pencil size={13} />
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-icon danger"
-                      aria-label="Delete schedule"
-                      onClick={() => setPendingDelete({ kind: 'schedule', id: s.id, name: s.name })}
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </td>
+          {tab === 'schedules' && (
+            <table className="data-table mod-table cfg-table">
+              <thead>
+                <tr>
+                  <th>Schedule name</th>
+                  <th>Tax code</th>
+                  <th>Methods</th>
+                  <th>Drivers</th>
+                  <th>Currency</th>
+                  <th>Status</th>
+                  <th className="mod-action-col">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </ConfigPanel>
+              </thead>
+              <tbody>
+                {filteredSchedules.length === 0 ? (
+                  <tr>
+                    <td colSpan={7}>
+                      <div className="empty-state">No schedules match this filter.</div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredSchedules.map((s) => (
+                    <tr key={s.id}>
+                      <td className="cfg-strong">{s.name}</td>
+                      <td>
+                        <span className="cfg-tax-code">{s.taxCode}</span>
+                      </td>
+                      <td>
+                        <span className="cfg-count-badge">{s.methods.length}</span>
+                      </td>
+                      <td>
+                        <span className="cfg-count-badge">{s.drivers.length}</span>
+                      </td>
+                      <td>
+                        <CurrencyBadge currency={s.currency} />
+                      </td>
+                      <td>
+                        <StatusPill status={s.status} />
+                      </td>
+                      <td className="mod-action-col">
+                        <RowActionMenu
+                          items={EDIT_DELETE}
+                          onAction={(action) => {
+                            if (action === 'edit') setScheduleModal({ mode: 'edit', item: s });
+                            if (action === 'delete')
+                              setPendingDelete({ kind: 'schedule', id: s.id, name: s.name });
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+        <div className="mod-pager">
+          <strong>Total Records: {rowsCount}</strong>
+        </div>
       </div>
 
       {regionModal && (
@@ -483,63 +598,5 @@ export function PayrollConfigView() {
         />
       )}
     </div>
-  );
-}
-
-function ConfigPanel({
-  title,
-  count,
-  total,
-  search,
-  onSearch,
-  addLabel,
-  onAdd,
-  children,
-  empty,
-  taller,
-  fill,
-}: {
-  title: string;
-  count: number;
-  total: number;
-  search: string;
-  onSearch: (v: string) => void;
-  addLabel: string;
-  onAdd: () => void;
-  children: React.ReactNode;
-  empty?: boolean;
-  taller?: boolean;
-  fill?: boolean;
-}) {
-  return (
-    <section className={`cfg-panel ${taller ? 'is-taller' : ''} ${fill ? 'is-fill' : ''}`}>
-      <div className="cfg-panel-head">
-        <div className="cfg-panel-title">
-          <h2>{title}</h2>
-          <span className="cfg-panel-count">
-            {count}
-            {count !== total ? ` / ${total}` : ''}
-          </span>
-        </div>
-        <div className="cfg-panel-tools">
-          <div className="cfg-panel-search">
-            <Search size={13} />
-            <input
-              type="search"
-              placeholder={`Filter ${title.toLowerCase()}…`}
-              value={search}
-              onChange={(e) => onSearch(e.target.value)}
-            />
-          </div>
-          <button type="button" className="btn btn-primary btn-sm" onClick={onAdd}>
-            <Plus size={13} />
-            {addLabel}
-          </button>
-        </div>
-      </div>
-      <div className="cfg-panel-body">
-        {empty ? <div className="empty-state">No matching {title.toLowerCase()}.</div> : children}
-      </div>
-    </section>
   );
 }

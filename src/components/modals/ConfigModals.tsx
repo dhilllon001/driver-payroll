@@ -8,6 +8,7 @@ import {
 import type {
   ConfigStatus,
   CoveragePeriod,
+  PayrollCountry,
   PayrollCurrency,
   PayrollMethod,
   PayrollRegion,
@@ -17,6 +18,8 @@ import type {
 
 export interface RegionForm {
   name: string;
+  country: PayrollCountry;
+  currency: PayrollCurrency;
   coveragePeriod: CoveragePeriod;
   divisions: string[];
   status: ConfigStatus;
@@ -37,6 +40,12 @@ export interface ScheduleForm {
 }
 
 const COVERAGE: CoveragePeriod[] = ['Weekly', 'BiWeekly', 'SemiMonthly', 'Monthly'];
+const COUNTRIES: PayrollCountry[] = ['Canada', 'Mexico', 'USA'];
+const COUNTRY_CURRENCY: Record<PayrollCountry, PayrollCurrency> = {
+  Canada: 'CAD',
+  Mexico: 'Peso',
+  USA: 'USD',
+};
 
 function uid(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -81,6 +90,8 @@ export function RegionModal({
   onSave: (form: RegionForm) => boolean;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
+  const [country, setCountry] = useState<PayrollCountry>(initial?.country ?? 'Canada');
+  const [currency, setCurrency] = useState<PayrollCurrency>(initial?.currency ?? 'CAD');
   const [coveragePeriod, setCoveragePeriod] = useState<CoveragePeriod>(
     initial?.coveragePeriod ?? 'SemiMonthly',
   );
@@ -89,6 +100,14 @@ export function RegionModal({
 
   const toggleDivision = (d: string) => {
     setDivisions((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
+  };
+
+  const onCountryChange = (next: PayrollCountry) => {
+    setCountry(next);
+    setCurrency(COUNTRY_CURRENCY[next]);
+    if (!name.trim() || COUNTRIES.includes(name as PayrollCountry) || name === 'United States') {
+      setName(next === 'USA' ? 'United States' : next);
+    }
   };
 
   return (
@@ -112,6 +131,26 @@ export function RegionModal({
                 placeholder="e.g. Canada"
                 autoFocus
               />
+            </div>
+            <div className="cfg-form-row">
+              <div className="field">
+                <label>Country</label>
+                <select value={country} onChange={(e) => onCountryChange(e.target.value as PayrollCountry)}>
+                  {COUNTRIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>Currency</label>
+                <select value={currency} onChange={(e) => setCurrency(e.target.value as PayrollCurrency)}>
+                  <option value="CAD">CAD</option>
+                  <option value="USD">USD</option>
+                  <option value="Peso">Peso</option>
+                </select>
+              </div>
             </div>
             <div className="field">
               <label>Coverage period</label>
@@ -162,7 +201,7 @@ export function RegionModal({
             type="button"
             className="btn btn-primary"
             disabled={!name.trim()}
-            onClick={() => onSave({ name, coveragePeriod, divisions, status })}
+            onClick={() => onSave({ name, country, currency, coveragePeriod, divisions, status })}
           >
             Save
           </button>

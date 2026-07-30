@@ -260,12 +260,12 @@ export function Sidebar() {
           type="button"
           className={`nav-item ${view === 'config' ? 'active' : ''}`}
           onClick={() => go('config')}
-          title="Configuration"
+          title="Payroll Configuration"
         >
           <span className="nav-ico">
             <Settings size={16} strokeWidth={2} />
           </span>
-          {!sidebarCollapsed && <span>Configuration</span>}
+          {!sidebarCollapsed && <span>Payroll Configuration</span>}
         </button>
       </nav>
 

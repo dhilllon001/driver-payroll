@@ -23,6 +23,8 @@ export const REGIONS: PayrollRegion[] = [
   {
     id: 'r1',
     name: 'Canada',
+    country: 'Canada',
+    currency: 'CAD',
     coveragePeriod: 'SemiMonthly',
     divisions: ['CHARGER LOGISTICS INC', 'CLX CANADA', 'QC DEDICATED'],
     status: 'active',
@@ -30,6 +32,8 @@ export const REGIONS: PayrollRegion[] = [
   {
     id: 'r2',
     name: 'Mexico',
+    country: 'Mexico',
+    currency: 'Peso',
     coveragePeriod: 'Weekly',
     divisions: ['CLX MEXICO', 'TS TRUCKING'],
     status: 'active',
@@ -37,16 +41,38 @@ export const REGIONS: PayrollRegion[] = [
   {
     id: 'r3',
     name: 'United States',
+    country: 'USA',
+    currency: 'USD',
     coveragePeriod: 'BiWeekly',
     divisions: ['CHARGER LOGISTICS INC', 'ROMULUS DISPATCH'],
     status: 'active',
   },
   {
     id: 'r4',
-    name: 'Prairie Test Region',
+    name: 'Prairie Corridor (Canada)',
+    country: 'Canada',
+    currency: 'CAD',
     coveragePeriod: 'Monthly',
     divisions: ['CLX CANADA'],
     status: 'inactive',
+  },
+  {
+    id: 'r5',
+    name: 'Southwest Border (Mexico)',
+    country: 'Mexico',
+    currency: 'Peso',
+    coveragePeriod: 'Weekly',
+    divisions: ['CLX MEXICO'],
+    status: 'inactive',
+  },
+  {
+    id: 'r6',
+    name: 'Great Lakes (USA)',
+    country: 'USA',
+    currency: 'USD',
+    coveragePeriod: 'BiWeekly',
+    divisions: ['ROMULUS DISPATCH'],
+    status: 'active',
   },
 ];
 

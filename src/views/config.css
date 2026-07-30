@@ -1,84 +1,85 @@
 .cfg-page {
-  display: flex;
-  flex-direction: column;
   gap: 12px;
-  height: 100%;
-  min-height: 0;
-  padding: 14px 16px 16px;
-  overflow: hidden;
 }
 
-.cfg-toolbar {
+.cfg-tabs-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
 }
 
-.cfg-sub {
-  margin: 0;
-  font-size: var(--fs-body);
-  color: var(--fg-3);
-  max-width: 460px;
-  line-height: 1.45;
+.cfg-page-tabs {
+  flex: 1;
+  min-width: 280px;
 }
 
-.cfg-stats {
-  display: flex;
+.cfg-page-tabs .tab {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
 }
 
-.cfg-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 72px;
-  padding: 8px 12px;
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-1);
-  border-radius: var(--radius-md);
-}
-
-.cfg-stat-n {
-  font-size: var(--fs-h4);
-  font-weight: 700;
-  color: var(--fg-1);
-  line-height: 1.1;
-}
-
-.cfg-stat-l {
-  font-size: var(--fs-micro);
-  font-weight: 600;
+.cfg-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--grey-bg);
   color: var(--fg-3);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 10px;
+  font-weight: 700;
 }
 
-.cfg-alerts {
+.cfg-page-tabs .tab.active .cfg-tab-count,
+.cfg-country-chip.active .cfg-tab-count {
+  background: rgba(255, 255, 255, 0.18);
+  color: inherit;
+}
+
+.cfg-sub {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--fg-3);
+  max-width: 420px;
+  line-height: 1.4;
+  text-align: right;
+}
+
+.cfg-country-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.cfg-alert-chip {
+.cfg-country-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: var(--radius-pill);
-  font-size: var(--fs-micro);
-  font-weight: 600;
-}
-
-.cfg-alert-chip.warn {
-  background: var(--amber-bg);
-  color: var(--amber);
-}
-
-.cfg-alert-chip.muted {
-  background: var(--grey-bg);
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-1);
   color: var(--fg-2);
+  font-size: var(--fs-small);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.cfg-country-chip:hover {
+  border-color: var(--border-2);
+  color: var(--fg-1);
+}
+
+.cfg-country-chip.active {
+  background: #14171c;
+  border-color: #14171c;
+  color: #fff;
 }
 
 .cfg-confirm-strip {
@@ -108,136 +109,8 @@
   filter: brightness(0.92);
 }
 
-.cfg-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: 14px;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.cfg-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.cfg-panel {
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-1);
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 26, 42, 0.04));
-}
-
-.cfg-stack .cfg-panel {
-  flex: 0 1 auto;
-  max-height: 42%;
-}
-
-.cfg-stack .cfg-panel.is-taller {
-  flex: 1 1 auto;
-  max-height: none;
-}
-
-.cfg-panel.is-fill {
-  height: 100%;
-}
-
-.cfg-panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border-1);
-  background: var(--bg-surface-1);
-}
-
-.cfg-panel-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cfg-panel-title h2 {
-  margin: 0;
-  font-size: var(--fs-h4);
-  font-weight: 700;
-  color: var(--fg-1);
-}
-
-.cfg-panel-count {
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  color: var(--fg-2);
-  background: var(--grey-bg);
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-}
-
-.cfg-panel-tools {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.cfg-panel-search {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-surface-2);
-  border: 1px solid var(--border-1);
-  border-radius: var(--radius-md);
-  padding: 5px 10px;
-  min-width: 160px;
-}
-
-.cfg-panel-search svg {
-  color: var(--fg-4);
-  flex-shrink: 0;
-}
-
-.cfg-panel-search input {
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: var(--fs-small);
-  color: var(--fg-1);
-  width: 140px;
-  min-width: 0;
-}
-
-.cfg-panel-body {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-}
-
 .cfg-table {
-  width: 100%;
-}
-
-.cfg-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #14171c;
-  color: #e8edf3;
-  border-bottom: none;
-}
-
-.cfg-table td,
-.cfg-table th {
-  white-space: nowrap;
+  min-width: 860px;
 }
 
 .cfg-strong {
@@ -268,14 +141,9 @@
   font-weight: 700;
 }
 
-.cfg-col-actions {
-  width: 72px;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.cfg-col-actions .btn-icon {
-  margin-left: 2px;
+.cfg-count-badge.is-muted {
+  background: var(--grey-bg);
+  color: var(--fg-3);
 }
 
 .cfg-status {
@@ -299,12 +167,36 @@
   color: var(--fg-3);
 }
 
-.cfg-currency {
+.cfg-currency-pill,
+.cfg-tax-code,
+.cfg-country-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-weight: 600;
-  font-size: var(--fs-small);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+}
+
+.cfg-currency-pill,
+.cfg-tax-code {
+  background: var(--grey-bg);
+  color: var(--fg-2);
+}
+
+.cfg-country-pill.ca {
+  background: var(--red-bg);
+  color: var(--negative);
+}
+
+.cfg-country-pill.mx {
+  background: var(--green-bg);
+  color: var(--positive);
+}
+
+.cfg-country-pill.us {
+  background: var(--blue-soft);
+  color: var(--action);
 }
 
 .cfg-based-on {
@@ -444,26 +336,12 @@
   min-width: 200px;
 }
 
-@media (max-width: 1100px) {
-  .cfg-grid {
-    grid-template-columns: 1fr;
-    overflow: auto;
-  }
-
-  .cfg-stack .cfg-panel,
-  .cfg-stack .cfg-panel.is-taller,
-  .cfg-panel.is-fill {
-    max-height: none;
-    height: auto;
-    flex: none;
-  }
-
-  .cfg-page {
-    overflow: auto;
-  }
-}
-
 @media (max-width: 700px) {
+  .cfg-sub {
+    text-align: left;
+    max-width: none;
+  }
+
   .cfg-form-row,
   .cfg-inline-form {
     grid-template-columns: 1fr;

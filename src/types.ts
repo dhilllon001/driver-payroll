@@ -177,9 +177,13 @@ export type ConfigStatus = 'active' | 'inactive';
 export type PayrollCurrency = 'CAD' | 'USD' | 'Peso';
 export type CoveragePeriod = 'Weekly' | 'BiWeekly' | 'SemiMonthly' | 'Monthly';
 
+export type PayrollCountry = 'Canada' | 'Mexico' | 'USA';
+
 export interface PayrollRegion {
   id: string;
   name: string;
+  country: PayrollCountry;
+  currency: PayrollCurrency;
   coveragePeriod: CoveragePeriod;
   divisions: string[];
   status: ConfigStatus;
