@@ -42,10 +42,10 @@ function Table({ rows, columns, actions, onAction, minWidth }: {
     <div className="mod-table-shell">
       <div className="mod-table-scroll">
         <table className="data-table mod-table compact" style={minWidth ? { minWidth } : undefined}>
-          <thead><tr>{columns.map((column) => <th key={column.key} className={column.className}>{column.label}</th>)}{actions && <th className="mod-action-col">Action</th>}</tr></thead>
+          <thead><tr>{actions && <th className="mod-action-col">Action</th>}{columns.map((column) => <th key={column.key} className={column.className}>{column.label}</th>)}</tr></thead>
           <tbody>{rows.map((row) => <tr key={row.id}>
-            {columns.map((column) => <td key={column.key} className={column.className}>{column.render ? column.render(row) : row[column.key]}</td>)}
             {actions && <td className="mod-action-col"><RowActionMenu items={actions} onAction={(action) => onAction?.(action, row)} /></td>}
+            {columns.map((column) => <td key={column.key} className={column.className}>{column.render ? column.render(row) : row[column.key]}</td>)}
           </tr>)}</tbody>
         </table>
       </div>
@@ -124,8 +124,8 @@ function IftaReports() {
     </section>
     <section className="mod-table-shell">
       <div className="de-section-title">Requested Reports</div>
-      <div className="mod-table-scroll"><table className="data-table mod-table compact de-report-table"><thead><tr><th>Report</th><th>Parameters</th><th>Status</th><th>Created By</th><th className="mod-action-col">Action</th></tr></thead>
-        <tbody>{rows.map((row) => <tr key={row.id}><td><strong>{row.reportType}</strong><br /><small>{row.id}</small></td><td>{row.fields.join(' · ')}</td><td>{pill(row.status, row.status)}</td><td>{created(row)}</td><td className="mod-action-col"><RowActionMenu items={[{ id: 'download', label: 'Download', icon: Download }, { id: 'retry', label: 'Retry', icon: RefreshCw }, { id: 'delete', label: 'Delete', icon: Trash2, danger: true }]} onAction={(action) => action === 'delete' ? setRows((all) => all.filter((r) => r.id !== row.id)) : toast(`${action === 'retry' ? 'Retrying' : 'Downloading'} ${row.id}`)} /></td></tr>)}</tbody>
+      <div className="mod-table-scroll"><table className="data-table mod-table compact de-report-table"><thead><tr><th className="mod-action-col">Action</th><th>Report</th><th>Parameters</th><th>Status</th><th>Created By</th></tr></thead>
+        <tbody>{rows.map((row) => <tr key={row.id}><td className="mod-action-col"><RowActionMenu items={[{ id: 'download', label: 'Download', icon: Download }, { id: 'retry', label: 'Retry', icon: RefreshCw }, { id: 'delete', label: 'Delete', icon: Trash2, danger: true }]} onAction={(action) => action === 'delete' ? setRows((all) => all.filter((r) => r.id !== row.id)) : toast(`${action === 'retry' ? 'Retrying' : 'Downloading'} ${row.id}`)} /></td><td><strong>{row.reportType}</strong><br /><small>{row.id}</small></td><td>{row.fields.join(' · ')}</td><td>{pill(row.status, row.status)}</td><td>{created(row)}</td></tr>)}</tbody>
       </table></div><Footer count={rows.length} />
     </section>
   </div>;
@@ -223,7 +223,7 @@ function ManageMiles() {
     <label className="mod-filter grow"><span>To Location</span><input value={filters.to} onChange={(e) => set('to', e.target.value)} placeholder="Name or address" /></label>
     <label className="mod-filter"><span>Miles Diff</span><input value={filters.diff} onChange={(e) => set('diff', e.target.value)} placeholder="e.g. +4" /></label>
   </Filters>
-  <div className="mod-table-shell"><div className="mod-table-scroll">{!searched ? <div className="empty-state">Please enter search locations</div> : <table className="data-table mod-table compact de-miles-table"><thead><tr><th colSpan={3}>From Location</th><th colSpan={3}>To Location</th><th colSpan={4}>ALK Miles</th><th rowSpan={2} className="mod-action-col">Action</th></tr><tr><th>Name</th><th>Address</th><th>Verified / Status</th><th>Name</th><th>Address</th><th>Verified / Status</th><th>Postal</th><th>Lat/Long</th><th>Diff</th><th>Address</th></tr></thead><tbody>{rows.map((r) => <tr key={r.id}><td>{r.fromName}</td><td>{r.fromAddress}</td><td>{pill(r.fromVerified ? 'Verified' : r.fromStatus, r.fromVerified ? 'include' : 'failed')}</td><td>{r.toName}</td><td>{r.toAddress}</td><td>{pill(r.toVerified ? 'Verified' : r.toStatus, r.toVerified ? 'include' : 'failed')}</td><td>{r.alkPostal}</td><td>{r.alkLatLong}</td><td>{r.alkDiff}</td><td>{r.alkAddress}</td><td className="mod-action-col"><RowActionMenu items={[{ id: 'review', label: 'Review Route', icon: Search }]} onAction={() => toast(`Opening ${r.id}`)} /></td></tr>)}</tbody></table>}</div><Footer count={rows.length} /></div>
+  <div className="mod-table-shell"><div className="mod-table-scroll">{!searched ? <div className="empty-state">Please enter search locations</div> : <table className="data-table mod-table compact de-miles-table"><thead><tr><th rowSpan={2} className="mod-action-col">Action</th><th colSpan={3}>From Location</th><th colSpan={3}>To Location</th><th colSpan={4}>ALK Miles</th></tr><tr><th>Name</th><th>Address</th><th>Verified / Status</th><th>Name</th><th>Address</th><th>Verified / Status</th><th>Postal</th><th>Lat/Long</th><th>Diff</th><th>Address</th></tr></thead><tbody>{rows.map((r) => <tr key={r.id}><td className="mod-action-col"><RowActionMenu items={[{ id: 'review', label: 'Review Route', icon: Search }]} onAction={() => toast(`Opening ${r.id}`)} /></td><td>{r.fromName}</td><td>{r.fromAddress}</td><td>{pill(r.fromVerified ? 'Verified' : r.fromStatus, r.fromVerified ? 'include' : 'failed')}</td><td>{r.toName}</td><td>{r.toAddress}</td><td>{pill(r.toVerified ? 'Verified' : r.toStatus, r.toVerified ? 'include' : 'failed')}</td><td>{r.alkPostal}</td><td>{r.alkLatLong}</td><td>{r.alkDiff}</td><td>{r.alkAddress}</td></tr>)}</tbody></table>}</div><Footer count={rows.length} /></div>
   </div>;
 }
 

@@ -1,5 +1,5 @@
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Plus, Pencil, Trash2, Users, Wallet } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   AVAILABLE_DRIVERS,
@@ -98,6 +98,9 @@ export function PayrollConfigView() {
     item?: PayrollSchedule;
   } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
+    SEED_SCHEDULES[0]?.id ?? null,
+  );
 
   const globalQ = search.trim().toLowerCase();
   const q = `${globalQ} ${localQ}`.trim().toLowerCase();
@@ -141,6 +144,22 @@ export function PayrollConfigView() {
       );
     });
   }, [schedules, statusFilter, q]);
+
+  useEffect(() => {
+    if (tab !== 'schedules') return;
+    if (filteredSchedules.length === 0) {
+      setSelectedScheduleId(null);
+      return;
+    }
+    if (!selectedScheduleId || !filteredSchedules.some((s) => s.id === selectedScheduleId)) {
+      setSelectedScheduleId(filteredSchedules[0].id);
+    }
+  }, [tab, filteredSchedules, selectedScheduleId]);
+
+  const selectedSchedule =
+    filteredSchedules.find((s) => s.id === selectedScheduleId) ??
+    schedules.find((s) => s.id === selectedScheduleId) ??
+    null;
 
   const methodUsage = useMemo(() => {
     const map = new Map<string, number>();
@@ -249,9 +268,11 @@ export function PayrollConfigView() {
     };
     if (scheduleModal?.mode === 'edit' && scheduleModal.item) {
       setSchedules((prev) => prev.map((s) => (s.id === next.id ? next : s)));
+      setSelectedScheduleId(next.id);
       toast('Schedule updated');
     } else {
       setSchedules((prev) => [next, ...prev]);
+      setSelectedScheduleId(next.id);
       toast('Schedule added');
     }
     setScheduleModal(null);
@@ -399,157 +420,38 @@ export function PayrollConfigView() {
         </div>
       )}
 
-      <div className="mod-table-shell">
-        <div className="mod-table-scroll">
-          {tab === 'regions' && (
-            <table className="data-table mod-table cfg-table">
-              <thead>
-                <tr>
-                  <th>Country</th>
-                  <th>Region</th>
-                  <th>Currency</th>
-                  <th>Divisions</th>
-                  <th>Coverage</th>
-                  <th>Status</th>
-                  <th className="mod-action-col">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRegions.length === 0 ? (
-                  <tr>
-                    <td colSpan={7}>
-                      <div className="empty-state">No regions match this filter.</div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredRegions.map((r) => (
-                    <tr key={r.id}>
-                      <td>
-                        <CountryBadge country={r.country} />
-                      </td>
-                      <td className="cfg-strong">{r.name}</td>
-                      <td>
-                        <CurrencyBadge currency={r.currency} />
-                      </td>
-                      <td>
-                        <span className="cfg-count-badge" title={r.divisions.join(', ')}>
-                          {r.divisions.length}
-                        </span>
-                        <span className="cfg-muted cfg-divisions-preview">
-                          {r.divisions.slice(0, 2).join(', ')}
-                          {r.divisions.length > 2 ? '…' : ''}
-                        </span>
-                      </td>
-                      <td>{r.coveragePeriod}</td>
-                      <td>
-                        <StatusPill status={r.status} />
-                      </td>
-                      <td className="mod-action-col">
-                        <RowActionMenu
-                          items={EDIT_DELETE}
-                          onAction={(action) => {
-                            if (action === 'edit') setRegionModal({ mode: 'edit', item: r });
-                            if (action === 'delete')
-                              setPendingDelete({ kind: 'region', id: r.id, name: r.name });
-                          }}
-                        />
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
-
-          {tab === 'methods' && (
-            <table className="data-table mod-table cfg-table">
-              <thead>
-                <tr>
-                  <th>Method name</th>
-                  <th>Based on</th>
-                  <th>Used in schedules</th>
-                  <th className="mod-action-col">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMethods.length === 0 ? (
-                  <tr>
-                    <td colSpan={4}>
-                      <div className="empty-state">No methods match this search.</div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMethods.map((m) => {
-                    const used = methodUsage.get(m.id) ?? 0;
-                    return (
-                      <tr key={m.id}>
-                        <td className="cfg-strong">{m.name}</td>
-                        <td>
-                          <span className="cfg-based-on">{m.basedOn}</span>
-                        </td>
-                        <td>
-                          <span className={`cfg-count-badge ${used === 0 ? 'is-muted' : ''}`}>
-                            {used}
-                          </span>
-                        </td>
-                        <td className="mod-action-col">
-                          <RowActionMenu
-                            items={EDIT_DELETE}
-                            onAction={(action) => {
-                              if (action === 'edit') setMethodModal({ mode: 'edit', item: m });
-                              if (action === 'delete')
-                                setPendingDelete({ kind: 'method', id: m.id, name: m.name });
-                            }}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          )}
-
-          {tab === 'schedules' && (
-            <table className="data-table mod-table cfg-table">
-              <thead>
-                <tr>
-                  <th>Schedule name</th>
-                  <th>Tax code</th>
-                  <th>Methods</th>
-                  <th>Drivers</th>
-                  <th>Currency</th>
-                  <th>Status</th>
-                  <th className="mod-action-col">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSchedules.length === 0 ? (
-                  <tr>
-                    <td colSpan={7}>
-                      <div className="empty-state">No schedules match this filter.</div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredSchedules.map((s) => (
-                    <tr key={s.id}>
-                      <td className="cfg-strong">{s.name}</td>
-                      <td>
-                        <span className="cfg-tax-code">{s.taxCode}</span>
-                      </td>
-                      <td>
-                        <span className="cfg-count-badge">{s.methods.length}</span>
-                      </td>
-                      <td>
-                        <span className="cfg-count-badge">{s.drivers.length}</span>
-                      </td>
-                      <td>
-                        <CurrencyBadge currency={s.currency} />
-                      </td>
-                      <td>
-                        <StatusPill status={s.status} />
-                      </td>
-                      <td className="mod-action-col">
+      {tab === 'schedules' ? (
+        <div className="cfg-split">
+          <aside className="cfg-split-list" aria-label="Schedules">
+            <div className="cfg-split-list-head">
+              <strong>{filteredSchedules.length}</strong>
+              <span>schedules</span>
+            </div>
+            <div className="cfg-split-list-scroll">
+              {filteredSchedules.length === 0 ? (
+                <div className="empty-state">No schedules match this filter.</div>
+              ) : (
+                filteredSchedules.map((s) => (
+                  <div
+                    key={s.id}
+                    role="button"
+                    tabIndex={0}
+                    className={`cfg-sched-card ${selectedScheduleId === s.id ? 'active' : ''}`}
+                    onClick={() => setSelectedScheduleId(s.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedScheduleId(s.id);
+                      }
+                    }}
+                  >
+                    <div className="cfg-sched-card-top">
+                      <span className="cfg-sched-card-name">{s.name}</span>
+                      <span
+                        className="cfg-sched-card-menu"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      >
                         <RowActionMenu
                           items={EDIT_DELETE}
                           onAction={(action) => {
@@ -558,18 +460,270 @@ export function PayrollConfigView() {
                               setPendingDelete({ kind: 'schedule', id: s.id, name: s.name });
                           }}
                         />
+                      </span>
+                    </div>
+                    <div className="cfg-sched-card-meta">
+                      <StatusPill status={s.status} />
+                      <CurrencyBadge currency={s.currency} />
+                    </div>
+                    <div className="cfg-sched-card-stats">
+                      <span>
+                        <Wallet size={12} /> {s.methods.length} methods
+                      </span>
+                      <span>
+                        <Users size={12} /> {s.drivers.length} drivers
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </aside>
+
+          <section className="cfg-split-detail" aria-live="polite">
+            {!selectedSchedule ? (
+              <div className="cfg-split-empty">
+                <h3>Select a schedule</h3>
+                <p>Choose a card on the left to review methods, drivers, and settings.</p>
+              </div>
+            ) : (
+              <>
+                <div className="cfg-detail-head">
+                  <div>
+                    <div className="cfg-detail-title-row">
+                      <h2>{selectedSchedule.name}</h2>
+                      <StatusPill status={selectedSchedule.status} />
+                    </div>
+                    <p className="cfg-detail-sub">
+                      Tax {selectedSchedule.taxCode} · {selectedSchedule.currency}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => setScheduleModal({ mode: 'edit', item: selectedSchedule })}
+                  >
+                    <Pencil size={13} />
+                    Edit Schedule
+                  </button>
+                </div>
+
+                <div className="cfg-detail-kpis">
+                  <div className="cfg-detail-kpi">
+                    <span className="cfg-detail-kpi-l">Tax code</span>
+                    <span className="cfg-tax-code">{selectedSchedule.taxCode}</span>
+                  </div>
+                  <div className="cfg-detail-kpi">
+                    <span className="cfg-detail-kpi-l">Currency</span>
+                    <CurrencyBadge currency={selectedSchedule.currency} />
+                  </div>
+                  <div className="cfg-detail-kpi">
+                    <span className="cfg-detail-kpi-l">Methods</span>
+                    <strong>{selectedSchedule.methods.length}</strong>
+                  </div>
+                  <div className="cfg-detail-kpi">
+                    <span className="cfg-detail-kpi-l">Drivers</span>
+                    <strong>{selectedSchedule.drivers.length}</strong>
+                  </div>
+                </div>
+
+                <div className="cfg-detail-panels">
+                  <div className="cfg-detail-panel">
+                    <div className="cfg-detail-panel-head">
+                      <h3>Payroll methods</h3>
+                      <span className="cfg-tab-count">{selectedSchedule.methods.length}</span>
+                    </div>
+                    {selectedSchedule.methods.length === 0 ? (
+                      <div className="cfg-detail-empty">No methods linked to this schedule.</div>
+                    ) : (
+                      <div className="cfg-detail-table-wrap">
+                        <table className="data-table cfg-detail-table">
+                          <thead>
+                            <tr>
+                              <th>Method</th>
+                              <th>Based on</th>
+                              <th>Single</th>
+                              <th>Team</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedSchedule.methods.map((m) => (
+                              <tr key={m.id}>
+                                <td className="cfg-strong">{m.methodName}</td>
+                                <td>
+                                  <span className="cfg-based-on">{m.basedOn}</span>
+                                </td>
+                                <td>{m.singleRate}</td>
+                                <td>{m.teamRate}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="cfg-detail-panel">
+                    <div className="cfg-detail-panel-head">
+                      <h3>Assigned drivers</h3>
+                      <span className="cfg-tab-count">{selectedSchedule.drivers.length}</span>
+                    </div>
+                    {selectedSchedule.drivers.length === 0 ? (
+                      <div className="cfg-detail-empty">No drivers assigned.</div>
+                    ) : (
+                      <div className="cfg-detail-table-wrap">
+                        <table className="data-table cfg-detail-table">
+                          <thead>
+                            <tr>
+                              <th>Driver</th>
+                              <th>Category</th>
+                              <th>Division</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedSchedule.drivers.map((d) => (
+                              <tr key={d.id}>
+                                <td>
+                                  <div className="driver-cell">
+                                    <span className="name">{d.name}</span>
+                                    <span className="uid">{d.code}</span>
+                                  </div>
+                                </td>
+                                <td>{d.category}</td>
+                                <td>{d.division}</td>
+                                <td>
+                                  <StatusPill status={d.active ? 'active' : 'inactive'} />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      ) : (
+        <div className="mod-table-shell">
+          <div className="mod-table-scroll">
+            {tab === 'regions' && (
+              <table className="data-table mod-table cfg-table">
+                <thead>
+                  <tr>
+                    <th className="mod-action-col">Action</th>
+                    <th>Country</th>
+                    <th>Region</th>
+                    <th>Currency</th>
+                    <th>Divisions</th>
+                    <th>Coverage</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRegions.length === 0 ? (
+                    <tr>
+                      <td colSpan={7}>
+                        <div className="empty-state">No regions match this filter.</div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
+                  ) : (
+                    filteredRegions.map((r) => (
+                      <tr key={r.id}>
+                        <td className="mod-action-col">
+                          <RowActionMenu
+                            items={EDIT_DELETE}
+                            onAction={(action) => {
+                              if (action === 'edit') setRegionModal({ mode: 'edit', item: r });
+                              if (action === 'delete')
+                                setPendingDelete({ kind: 'region', id: r.id, name: r.name });
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <CountryBadge country={r.country} />
+                        </td>
+                        <td className="cfg-strong">{r.name}</td>
+                        <td>
+                          <CurrencyBadge currency={r.currency} />
+                        </td>
+                        <td>
+                          <span className="cfg-count-badge" title={r.divisions.join(', ')}>
+                            {r.divisions.length}
+                          </span>
+                          <span className="cfg-muted cfg-divisions-preview">
+                            {r.divisions.slice(0, 2).join(', ')}
+                            {r.divisions.length > 2 ? '…' : ''}
+                          </span>
+                        </td>
+                        <td>{r.coveragePeriod}</td>
+                        <td>
+                          <StatusPill status={r.status} />
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {tab === 'methods' && (
+              <table className="data-table mod-table cfg-table">
+                <thead>
+                  <tr>
+                    <th className="mod-action-col">Action</th>
+                    <th>Method name</th>
+                    <th>Based on</th>
+                    <th>Used in schedules</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMethods.length === 0 ? (
+                    <tr>
+                      <td colSpan={4}>
+                        <div className="empty-state">No methods match this search.</div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredMethods.map((m) => {
+                      const used = methodUsage.get(m.id) ?? 0;
+                      return (
+                        <tr key={m.id}>
+                          <td className="mod-action-col">
+                            <RowActionMenu
+                              items={EDIT_DELETE}
+                              onAction={(action) => {
+                                if (action === 'edit') setMethodModal({ mode: 'edit', item: m });
+                                if (action === 'delete')
+                                  setPendingDelete({ kind: 'method', id: m.id, name: m.name });
+                              }}
+                            />
+                          </td>
+                          <td className="cfg-strong">{m.name}</td>
+                          <td>
+                            <span className="cfg-based-on">{m.basedOn}</span>
+                          </td>
+                          <td>
+                            <span className={`cfg-count-badge ${used === 0 ? 'is-muted' : ''}`}>
+                              {used}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <div className="mod-pager">
+            <strong>Total Records: {rowsCount}</strong>
+          </div>
         </div>
-        <div className="mod-pager">
-          <strong>Total Records: {rowsCount}</strong>
-        </div>
-      </div>
+      )}
 
       {regionModal && (
         <RegionModal

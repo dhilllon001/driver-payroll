@@ -409,6 +409,7 @@ export function PayrollManagementView() {
           <table className="data-table pay-table">
             <thead>
               <tr>
+                <th className="pay-col-action">Action</th>
                 <th>Payroll Date</th>
                 <th>Covers From – To</th>
                 <th>Status</th>
@@ -417,7 +418,6 @@ export function PayrollManagementView() {
                 <th>Currency Exchange</th>
                 <th>Created By</th>
                 <th>Last Updated By</th>
-                <th className="pay-col-action">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -430,6 +430,9 @@ export function PayrollManagementView() {
               ) : (
                 pageRows.map((r) => (
                   <tr key={r.id}>
+                    <td className="pay-col-action">
+                      <RowMenu run={r} onAction={onAction} />
+                    </td>
                     <td>
                       <button
                         type="button"
@@ -465,9 +468,6 @@ export function PayrollManagementView() {
                         <strong>{r.updatedBy}</strong>
                         <span>{r.updatedAt}</span>
                       </div>
-                    </td>
-                    <td className="pay-col-action">
-                      <RowMenu run={r} onAction={onAction} />
                     </td>
                   </tr>
                 ))

@@ -156,6 +156,7 @@ export function DeductionsView() {
           <table className="data-table mod-table compact">
             <thead>
               <tr>
+                <th className="mod-action-col">Action</th>
                 <th>Driver</th>
                 <th>Division</th>
                 <th>Eff. Date</th>
@@ -168,7 +169,6 @@ export function DeductionsView() {
                 <th>Comments</th>
                 <th>Created</th>
                 <th>Payroll</th>
-                <th className="mod-action-col">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -181,6 +181,17 @@ export function DeductionsView() {
               ) : (
                 pageRows.map((r) => (
                   <tr key={r.id}>
+                    <td className="mod-action-col">
+                      <RowActionMenu
+                        items={ACTIONS}
+                        onAction={(id) => {
+                          if (id === 'delete') {
+                            setRows((all) => all.filter((x) => x.id !== r.id));
+                            toast('Entry deleted');
+                          } else toast(`Editing ${r.id}`);
+                        }}
+                      />
+                    </td>
                     <td>
                       <div className="driver-cell">
                         <span className="name">{r.driverName}</span>
@@ -231,17 +242,6 @@ export function DeductionsView() {
                       </div>
                     </td>
                     <td>{r.payrollDate}</td>
-                    <td className="mod-action-col">
-                      <RowActionMenu
-                        items={ACTIONS}
-                        onAction={(id) => {
-                          if (id === 'delete') {
-                            setRows((all) => all.filter((x) => x.id !== r.id));
-                            toast('Entry deleted');
-                          } else toast(`Editing ${r.id}`);
-                        }}
-                      />
-                    </td>
                   </tr>
                 ))
               )}

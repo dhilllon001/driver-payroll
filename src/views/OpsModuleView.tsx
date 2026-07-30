@@ -88,6 +88,7 @@ export function OpsModuleView({ id }: { id: ViewId }) {
           <table className="data-table mod-table">
             <thead>
               <tr>
+                <th className="mod-action-col">Action</th>
                 <th>ID</th>
                 <th>Driver</th>
                 <th>Division</th>
@@ -96,12 +97,22 @@ export function OpsModuleView({ id }: { id: ViewId }) {
                 <th>Status</th>
                 <th>Effective</th>
                 <th>Updated</th>
-                <th className="mod-action-col">Action</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((r) => (
                 <tr key={r.id}>
+                  <td className="mod-action-col">
+                    <RowActionMenu
+                      items={ACTIONS}
+                      onAction={(actionId) => {
+                        if (actionId === 'delete') {
+                          setRows((all) => all.filter((x) => x.id !== r.id));
+                          toast('Row deleted');
+                        } else toast(`Editing ${r.id}`);
+                      }}
+                    />
+                  </td>
                   <td>
                     <button type="button" className="mod-link" onClick={() => toast(`Opening ${r.id}`)}>
                       {r.id}
@@ -131,17 +142,6 @@ export function OpsModuleView({ id }: { id: ViewId }) {
                       <span className="name">{r.updatedBy}</span>
                       <span className="uid">{r.updatedAt}</span>
                     </div>
-                  </td>
-                  <td className="mod-action-col">
-                    <RowActionMenu
-                      items={ACTIONS}
-                      onAction={(actionId) => {
-                        if (actionId === 'delete') {
-                          setRows((all) => all.filter((x) => x.id !== r.id));
-                          toast('Row deleted');
-                        } else toast(`Editing ${r.id}`);
-                      }}
-                    />
                   </td>
                 </tr>
               ))}
