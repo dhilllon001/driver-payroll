@@ -86,8 +86,16 @@ function Shell() {
     <IncidentsView />
   ) : view === 'deductions' ? (
     <DeductionsView />
-  ) : view === 'config' ? (
-    <PayrollConfigView />
+  ) : view === 'config' || view.startsWith('config-') ? (
+    <PayrollConfigView
+      section={
+        view === 'config-methods'
+          ? 'methods'
+          : view === 'config-schedules'
+            ? 'schedules'
+            : 'regions'
+      }
+    />
   ) : opsId && (opsId.startsWith('ifta') || opsId.startsWith('de-')) ? (
     <DataEntrySuite id={opsId} />
   ) : opsId ? (

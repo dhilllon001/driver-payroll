@@ -94,6 +94,18 @@ const FOLDERS: NavFolder[] = [
   },
 ];
 
+const CONFIG_FOLDER: NavFolder = {
+  key: 'config',
+  label: 'Payroll Configuration',
+  icon: Settings,
+  defaultId: 'config-regions',
+  children: [
+    { id: 'config-regions', label: 'Regions' },
+    { id: 'config-methods', label: 'Methods' },
+    { id: 'config-schedules', label: 'Schedules' },
+  ],
+};
+
 const SINGLE_OPS: { id: ViewId; label: string; icon: typeof ClipboardList }[] = [
   { id: 'cash-advance', label: 'MX Cash Advance', icon: Banknote },
 ];
@@ -108,7 +120,7 @@ export function Sidebar() {
 
   const initialOpen = useMemo(() => {
     const keys = new Set<string>();
-    for (const f of FOLDERS) {
+    for (const f of [...FOLDERS, CONFIG_FOLDER]) {
       if (folderOpenForView(view, f)) keys.add(f.key);
     }
     // Default expand Trip Expense + Data Entry like legacy screenshots
@@ -117,6 +129,7 @@ export function Sidebar() {
       keys.add('data-entry');
       keys.add('trip-expense');
     }
+    if (view === 'config' || view.startsWith('config-')) keys.add('config');
     return keys;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- seed once
 
@@ -242,11 +255,12 @@ export function Sidebar() {
           [
             ...FOLDERS.map((f) => ({ id: f.defaultId, label: f.label, icon: f.icon })),
             ...SINGLE_OPS,
+            { id: CONFIG_FOLDER.defaultId, label: CONFIG_FOLDER.label, icon: CONFIG_FOLDER.icon },
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               type="button"
-              className={`nav-item ${view === id ? 'active' : ''}`}
+              className={`nav-item ${view === id || (id === 'config-regions' && view.startsWith('config')) ? 'active' : ''}`}
               onClick={() => go(id)}
               title={label}
             >
@@ -256,17 +270,52 @@ export function Sidebar() {
             </button>
           ))}
 
-        <button
-          type="button"
-          className={`nav-item ${view === 'config' ? 'active' : ''}`}
-          onClick={() => go('config')}
-          title="Payroll Configuration"
-        >
-          <span className="nav-ico">
-            <Settings size={16} strokeWidth={2} />
-          </span>
-          {!sidebarCollapsed && <span>Payroll Configuration</span>}
-        </button>
+        {!sidebarCollapsed && (() => {
+          const folder = CONFIG_FOLDER;
+          const Icon = folder.icon;
+          const open = openFolders.has(folder.key) || folderOpenForView(view, folder) || view === 'config';
+          const childActive =
+            folder.children.some((c) => c.id === view) || view === 'config';
+          return (
+            <div className="nav-folder cfg-nav-folder">
+              <button
+                type="button"
+                className={`nav-item nav-folder-btn ${childActive ? 'has-active' : ''}`}
+                onClick={() => {
+                  toggleFolder(folder.key);
+                  if (!open) go(folder.defaultId);
+                }}
+                title={folder.label}
+                aria-expanded={open}
+              >
+                <span className="nav-ico">
+                  <Icon size={16} strokeWidth={2} />
+                </span>
+                <span className="nav-label">{folder.label}</span>
+                <ChevronDown
+                  size={14}
+                  className={`nav-chevron ${open ? 'open' : ''}`}
+                  strokeWidth={2}
+                />
+              </button>
+              {open && (
+                <div className="nav-children">
+                  {folder.children.map((child) => (
+                    <button
+                      key={child.id}
+                      type="button"
+                      className={`nav-item nav-child ${view === child.id || (view === 'config' && child.id === 'config-regions') ? 'active' : ''}`}
+                      onClick={() => go(child.id)}
+                      title={child.label}
+                    >
+                      <span>{child.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </nav>
 
       <div className="sb-user">

@@ -30,7 +30,10 @@ export type ViewId =
   | 'nomilinea'
   | 'nomilinea-payroll'
   | 'nomilinea-concepts'
-  | 'config';
+  | 'config'
+  | 'config-regions'
+  | 'config-methods'
+  | 'config-schedules';
 
 export type PaymentStatus = 'unpaid' | 'pending' | 'paid' | 'exception';
 export type FlagStatus = 'none' | 'flagged';

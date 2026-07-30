@@ -11,6 +11,9 @@ const LABELS: Partial<Record<ViewId, string>> = {
   incidents: 'MX Driver Incident',
   deductions: 'Deductions & Reimbursements',
   config: 'Payroll Configuration',
+  'config-regions': 'Regions',
+  'config-methods': 'Methods',
+  'config-schedules': 'Schedules',
 };
 
 export function PlaceholderView({ id }: { id: ViewId }) {

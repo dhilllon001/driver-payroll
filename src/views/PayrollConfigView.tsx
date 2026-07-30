@@ -1,4 +1,4 @@
-import { Plus, Pencil, Trash2, Users, Wallet } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
@@ -24,13 +24,12 @@ import {
 import {
   ScheduleDetailPanel,
   createEmptySchedule,
-  scheduleInitial,
 } from '../components/config/ScheduleDetailPanel';
 import { RowActionMenu, type RowActionItem } from '../components/ui/RowActionMenu';
 import './modules.css';
 import './config.css';
 
-type ConfigTab = 'regions' | 'methods' | 'schedules';
+export type ConfigSection = 'regions' | 'methods' | 'schedules';
 type CountryFilter = 'all' | PayrollCountry;
 type PendingDelete =
   | { kind: 'region'; id: string; name: string }
@@ -71,9 +70,8 @@ function CountryBadge({ country }: { country: PayrollCountry }) {
   return <span className={`cfg-country-pill ${tone}`}>{country}</span>;
 }
 
-export function PayrollConfigView() {
+export function PayrollConfigView({ section }: { section: ConfigSection }) {
   const { toast, search } = useApp();
-  const [tab, setTab] = useState<ConfigTab>('regions');
   const [countryFilter, setCountryFilter] = useState<CountryFilter>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | ConfigStatus>('all');
   const [localQ, setLocalQ] = useState('');
@@ -102,6 +100,14 @@ export function PayrollConfigView() {
   );
   const [scheduleEditing, setScheduleEditing] = useState(false);
   const [isNewSchedule, setIsNewSchedule] = useState(false);
+
+  useEffect(() => {
+    setLocalQ('');
+    setStatusFilter('all');
+    setCountryFilter('all');
+    setScheduleEditing(false);
+    setIsNewSchedule(false);
+  }, [section]);
 
   const globalQ = search.trim().toLowerCase();
   const q = `${globalQ} ${localQ}`.trim().toLowerCase();
@@ -147,7 +153,7 @@ export function PayrollConfigView() {
   }, [schedules, statusFilter, q]);
 
   useEffect(() => {
-    if (tab !== 'schedules') return;
+    if (section !== 'schedules') return;
     if (isNewSchedule) return;
     if (filteredSchedules.length === 0) {
       setSelectedScheduleId(null);
@@ -158,12 +164,9 @@ export function PayrollConfigView() {
       setSelectedScheduleId(filteredSchedules[0].id);
       setScheduleEditing(false);
     }
-  }, [tab, filteredSchedules, selectedScheduleId, isNewSchedule]);
+  }, [section, filteredSchedules, selectedScheduleId, isNewSchedule]);
 
-  const selectedSchedule =
-    schedules.find((s) => s.id === selectedScheduleId) ??
-    filteredSchedules.find((s) => s.id === selectedScheduleId) ??
-    null;
+  const selectedSchedule = schedules.find((s) => s.id === selectedScheduleId) ?? null;
 
   const methodUsage = useMemo(() => {
     const map = new Map<string, number>();
@@ -269,7 +272,6 @@ export function PayrollConfigView() {
     setSelectedScheduleId(draft.id);
     setIsNewSchedule(true);
     setScheduleEditing(true);
-    setTab('schedules');
   };
 
   const cancelScheduleEdit = () => {
@@ -307,81 +309,44 @@ export function PayrollConfigView() {
     setSelectedScheduleId(id);
   };
 
-  const switchTab = (next: ConfigTab) => {
-    if (scheduleEditing) cancelScheduleEdit();
-    setTab(next);
-    setLocalQ('');
-    setStatusFilter('all');
-    if (next !== 'regions') setCountryFilter('all');
-  };
-
   const addLabel =
-    tab === 'regions' ? 'Add Region' : tab === 'methods' ? 'Add Method' : 'Add Schedule';
+    section === 'regions' ? 'Add Region' : section === 'methods' ? 'Add Method' : 'Add Schedule';
   const onAdd =
-    tab === 'regions'
+    section === 'regions'
       ? () => setRegionModal({ mode: 'add' })
-      : tab === 'methods'
+      : section === 'methods'
         ? () => setMethodModal({ mode: 'add' })
         : beginAddSchedule;
 
   const rowsCount =
-    tab === 'regions'
+    section === 'regions'
       ? filteredRegions.length
-      : tab === 'methods'
+      : section === 'methods'
         ? filteredMethods.length
         : filteredSchedules.length;
 
   return (
     <div className="mod-page cfg-page">
-      <div className="cfg-tabs-row">
-        <div className="tabs cfg-page-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            className={`tab ${tab === 'regions' ? 'active' : ''}`}
-            aria-selected={tab === 'regions'}
-            onClick={() => switchTab('regions')}
-          >
-            Regions
-            <span className="cfg-tab-count">{regions.length}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            className={`tab ${tab === 'methods' ? 'active' : ''}`}
-            aria-selected={tab === 'methods'}
-            onClick={() => switchTab('methods')}
-          >
-            Methods
-            <span className="cfg-tab-count">{methods.length}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            className={`tab ${tab === 'schedules' ? 'active' : ''}`}
-            aria-selected={tab === 'schedules'}
-            onClick={() => switchTab('schedules')}
-          >
-            Schedules
-            <span className="cfg-tab-count">{schedules.length}</span>
-          </button>
+      <div className="cfg-toolbar-clean">
+        <div>
+          <p className="cfg-eyebrow">Payroll Configuration</p>
+          <h2 className="cfg-page-title">
+            {section === 'regions' ? 'Regions' : section === 'methods' ? 'Methods' : 'Schedules'}
+          </h2>
         </div>
         <p className="cfg-sub">
-          {tab === 'regions'
-            ? 'Country and region coverage for Canada, Mexico, and USA.'
-            : tab === 'methods'
+          {section === 'regions'
+            ? 'Country coverage for Canada, Mexico, and USA.'
+            : section === 'methods'
               ? 'Pay methods used when building schedules and trip pay.'
-              : 'Payroll schedules with currency, drivers, and linked methods.'}
+              : 'Select a schedule to review methods, drivers, and rates.'}
         </p>
       </div>
 
-      {tab === 'regions' && (
+      {section === 'regions' && (
         <div className="cfg-country-chips" role="tablist" aria-label="Filter by country">
           {COUNTRY_CHIPS.map((chip) => {
-            const count =
-              chip.id === 'all'
-                ? regions.length
-                : countryCounts[chip.id];
+            const count = chip.id === 'all' ? regions.length : countryCounts[chip.id];
             return (
               <button
                 key={chip.id}
@@ -397,22 +362,22 @@ export function PayrollConfigView() {
         </div>
       )}
 
-      <div className="mod-filters">
+      <div className="mod-filters cfg-filters">
         <label className="mod-filter grow">
           <span>Search</span>
           <input
             value={localQ}
             onChange={(e) => setLocalQ(e.target.value)}
             placeholder={
-              tab === 'regions'
+              section === 'regions'
                 ? 'Search region, division…'
-                : tab === 'methods'
+                : section === 'methods'
                   ? 'Search method…'
                   : 'Search schedule…'
             }
           />
         </label>
-        {(tab === 'regions' || tab === 'schedules') && (
+        {(section === 'regions' || section === 'schedules') && (
           <label className="mod-filter">
             <span>Status</span>
             <select
@@ -449,75 +414,64 @@ export function PayrollConfigView() {
         </div>
       )}
 
-      {tab === 'schedules' ? (
+      {section === 'schedules' ? (
         <div className="cfg-split cfg-split-shell">
           <aside className="cfg-split-list" aria-label="Schedules">
             <div className="cfg-split-list-head">
-              <div>
-                <strong>{filteredSchedules.length}</strong>
-                <span> schedules</span>
-              </div>
-              <span className="cfg-split-list-hint">Select to review</span>
+              <strong>{filteredSchedules.length}</strong>
+              <span> schedules</span>
             </div>
             <div className="cfg-split-list-scroll">
               {filteredSchedules.length === 0 ? (
                 <div className="empty-state">No schedules match this filter.</div>
               ) : (
-                filteredSchedules.map((s) => {
-                  const tone =
-                    s.currency === 'CAD' ? 'cad' : s.currency === 'Peso' ? 'mxn' : 'usd';
-                  return (
-                    <div
-                      key={s.id}
-                      role="button"
-                      tabIndex={0}
-                      className={`cfg-sched-card ${selectedScheduleId === s.id ? 'active' : ''} ${
-                        scheduleEditing && selectedScheduleId === s.id ? 'editing' : ''
-                      }`}
-                      onClick={() => selectScheduleCard(s.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          selectScheduleCard(s.id);
-                        }
-                      }}
-                    >
-                      <div className={`cfg-avatar sm ${tone}`}>{scheduleInitial(s.name || 'S')}</div>
-                      <div className="cfg-sched-card-body">
-                        <div className="cfg-sched-card-top">
-                          <span className="cfg-sched-card-name">{s.name || 'Untitled schedule'}</span>
-                          <span
-                            className="cfg-sched-card-menu"
-                            onClick={(e) => e.stopPropagation()}
-                            onKeyDown={(e) => e.stopPropagation()}
-                          >
-                            <RowActionMenu
-                              items={EDIT_DELETE}
-                              onAction={(action) => {
-                                if (action === 'edit') beginEditSchedule(s.id);
-                                if (action === 'delete')
-                                  setPendingDelete({ kind: 'schedule', id: s.id, name: s.name });
-                              }}
-                            />
-                          </span>
-                        </div>
-                        <div className="cfg-sched-card-meta">
+                <table className="cfg-list-table">
+                  <thead>
+                    <tr>
+                      <th className="mod-action-col">Action</th>
+                      <th>Schedule</th>
+                      <th>Status</th>
+                      <th>Cur</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredSchedules.map((s) => (
+                      <tr
+                        key={s.id}
+                        className={`${selectedScheduleId === s.id ? 'active' : ''} ${
+                          scheduleEditing && selectedScheduleId === s.id ? 'editing' : ''
+                        }`}
+                        onClick={() => selectScheduleCard(s.id)}
+                      >
+                        <td
+                          className="mod-action-col"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <RowActionMenu
+                            items={EDIT_DELETE}
+                            onAction={(action) => {
+                              if (action === 'edit') beginEditSchedule(s.id);
+                              if (action === 'delete')
+                                setPendingDelete({ kind: 'schedule', id: s.id, name: s.name });
+                            }}
+                          />
+                        </td>
+                        <td>
+                          <div className="cfg-list-name">{s.name || 'Untitled'}</div>
+                          <div className="cfg-list-meta">
+                            {s.taxCode} · {s.methods.length} methods · {s.drivers.length} drivers
+                          </div>
+                        </td>
+                        <td>
                           <StatusPill status={s.status} />
+                        </td>
+                        <td>
                           <CurrencyBadge currency={s.currency} />
-                        </div>
-                        <div className="cfg-sched-card-stats">
-                          <span>
-                            <Wallet size={12} /> {s.methods.length}
-                          </span>
-                          <span>
-                            <Users size={12} /> {s.drivers.length}
-                          </span>
-                          <span className="cfg-sched-tax">{s.taxCode}</span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           </aside>
@@ -525,9 +479,8 @@ export function PayrollConfigView() {
           {!selectedSchedule ? (
             <section className="cfg-split-detail">
               <div className="cfg-split-empty">
-                <div className="cfg-avatar usd">SC</div>
                 <h3>Select a schedule</h3>
-                <p>Choose a card on the left to review methods, drivers, and settings.</p>
+                <p>Choose a row on the left to review methods, drivers, and settings.</p>
               </div>
             </section>
           ) : (
@@ -545,7 +498,7 @@ export function PayrollConfigView() {
       ) : (
         <div className="mod-table-shell">
           <div className="mod-table-scroll">
-            {tab === 'regions' && (
+            {section === 'regions' && (
               <table className="data-table mod-table cfg-table">
                 <thead>
                   <tr>
@@ -605,7 +558,7 @@ export function PayrollConfigView() {
               </table>
             )}
 
-            {tab === 'methods' && (
+            {section === 'methods' && (
               <table className="data-table mod-table cfg-table">
                 <thead>
                   <tr>

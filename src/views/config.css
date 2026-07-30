@@ -2,7 +2,7 @@
   gap: 12px;
 }
 
-.cfg-tabs-row {
+.cfg-toolbar-clean {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -10,15 +10,24 @@
   flex-wrap: wrap;
 }
 
-.cfg-page-tabs {
-  flex: 1;
-  min-width: 280px;
+.cfg-eyebrow {
+  margin: 0 0 2px;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b5a2b;
 }
 
-.cfg-page-tabs .tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.cfg-page-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+  color: var(--fg-1);
+}
+
+.cfg-filters {
+  background: #fff;
 }
 
 .cfg-tab-count {
@@ -35,9 +44,8 @@
   font-weight: 700;
 }
 
-.cfg-page-tabs .tab.active .cfg-tab-count,
 .cfg-country-chip.active .cfg-tab-count {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.22);
   color: inherit;
 }
 
@@ -86,14 +94,14 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(260px, 32%) minmax(0, 68%);
+  grid-template-columns: minmax(280px, 34%) minmax(0, 66%);
   gap: 0;
   overflow: hidden;
 }
 
 .cfg-split-shell {
   border: 1px solid var(--border-1);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--bg-surface-1);
   box-shadow: 0 1px 2px rgba(15, 26, 42, 0.04);
 }
@@ -111,39 +119,30 @@
 
 .cfg-split-list {
   border-right: 1px solid var(--border-1);
-  background: #f7f8fa;
+  background: #fff;
 }
 
 .cfg-split-list-head {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 14px 16px;
+  align-items: baseline;
+  gap: 4px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--border-1);
   color: var(--fg-3);
   font-size: var(--fs-small);
-  background: rgba(255, 255, 255, 0.72);
+  background: #fafbfc;
 }
 
 .cfg-split-list-head strong {
   color: var(--fg-1);
-  font-size: 15px;
-}
-
-.cfg-split-list-hint {
-  font-size: 11px;
-  color: var(--fg-4);
+  font-size: 14px;
 }
 
 .cfg-split-list-scroll {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  padding: 0;
   background: transparent;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -155,99 +154,76 @@
   display: none;
 }
 
-.cfg-sched-card {
+.cfg-list-table {
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.cfg-list-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 10px;
+  background: #f4f5f7;
+  color: var(--fg-3);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   text-align: left;
-  padding: 11px 10px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: transparent;
+  border-bottom: 1px solid var(--border-1);
+}
+
+.cfg-list-table tbody tr {
   cursor: pointer;
-  box-sizing: border-box;
-  transition:
-    border-color var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out),
-    background var(--dur-fast) var(--ease-out);
+  border-bottom: 1px solid var(--border-1);
+  transition: background var(--dur-fast) var(--ease-out);
 }
 
-.cfg-sched-card:hover {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: var(--border-1);
+.cfg-list-table tbody tr:hover {
+  background: #f7f8fa;
 }
 
-.cfg-sched-card.active {
-  border-color: rgba(139, 90, 43, 0.28);
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(15, 26, 42, 0.06);
+.cfg-list-table tbody tr.active {
+  background: #fff8f1;
+  box-shadow: inset 3px 0 0 #8b5a2b;
 }
 
-.cfg-sched-card.editing {
-  border-color: rgba(30, 95, 170, 0.35);
-  box-shadow: 0 0 0 2px rgba(30, 95, 170, 0.08);
+.cfg-list-table tbody tr.editing {
+  background: #f3f8ff;
+  box-shadow: inset 3px 0 0 var(--action);
 }
 
-.cfg-sched-card-body {
-  flex: 1;
-  min-width: 0;
+.cfg-list-table td {
+  padding: 10px;
+  vertical-align: middle;
+  font-size: 12px;
 }
 
-.cfg-sched-card-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
+.cfg-list-table .mod-action-col {
+  width: 44px;
+  padding-left: 8px;
+  padding-right: 4px;
 }
 
-.cfg-sched-card-name {
-  flex: 1;
-  min-width: 0;
+.cfg-list-name {
   font-size: 13px;
   font-weight: 700;
   color: var(--fg-1);
-  line-height: 1.35;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.3;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.cfg-sched-card-menu {
-  flex-shrink: 0;
-  margin-top: -4px;
-  margin-right: -4px;
-}
-
-.cfg-sched-card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.cfg-sched-card-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-  color: var(--fg-3);
+.cfg-list-meta {
+  margin-top: 3px;
   font-size: 11px;
-  font-weight: 650;
-}
-
-.cfg-sched-card-stats span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.cfg-sched-tax {
-  margin-left: auto;
-  color: var(--fg-4);
-  letter-spacing: 0.02em;
+  color: var(--fg-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cfg-avatar {

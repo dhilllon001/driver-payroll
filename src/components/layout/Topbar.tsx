@@ -22,6 +22,9 @@ const TITLES: Partial<Record<ViewId, string>> = {
   'nomilinea-payroll': 'Nomilinea Payroll',
   'nomilinea-concepts': 'Nomilinea Concepts',
   config: 'Payroll Configuration',
+  'config-regions': 'Regions',
+  'config-methods': 'Methods',
+  'config-schedules': 'Schedules',
 };
 
 type HeaderAction = {
@@ -105,6 +108,24 @@ const HEADERS: Partial<Record<ViewId, HeaderProfile>> = {
   },
   config: {
     placeholder: 'Search regions, methods, schedules…',
+    showSearch: true,
+    centerSearch: true,
+    actions: [],
+  },
+  'config-regions': {
+    placeholder: 'Search regions, divisions…',
+    showSearch: true,
+    centerSearch: true,
+    actions: [],
+  },
+  'config-methods': {
+    placeholder: 'Search methods…',
+    showSearch: true,
+    centerSearch: true,
+    actions: [],
+  },
+  'config-schedules': {
+    placeholder: 'Search schedules…',
     showSearch: true,
     centerSearch: true,
     actions: [],
