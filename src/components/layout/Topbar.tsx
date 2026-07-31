@@ -1,7 +1,8 @@
-import { Bell, Plus, Search, Upload } from 'lucide-react';
+import { Bell, Search } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { opsTitle } from '../../data/opsSeed';
 import type { ConfigStatus, ViewId } from '../../types';
+import { Tooltip } from '../ui/Tooltip';
 
 const TITLES: Partial<Record<ViewId, string>> = {
   'trip-board': 'Trip Processing Board',
@@ -18,6 +19,10 @@ const TITLES: Partial<Record<ViewId, string>> = {
   'data-entry': 'Data Entry',
   'trip-expense': 'Trip Expense',
   'cash-advance': 'MX Cash Advance',
+  'ca-issue': 'Issue Cash Advance',
+  'ca-board': 'Cash Advances',
+  'ca-history': 'Cash Advance History',
+  'ca-bulk': 'Bulk Issue',
   nomilinea: 'Nomilinea',
   'nomilinea-payroll': 'Nomilinea Payroll',
   'nomilinea-concepts': 'Nomilinea Concepts',
@@ -27,18 +32,9 @@ const TITLES: Partial<Record<ViewId, string>> = {
   'config-schedules': 'Schedules',
 };
 
-type HeaderAction = {
-  id: string;
-  label: string;
-  icon: typeof Search;
-  variant: 'primary' | 'secondary' | 'ghost';
-  toast: string;
-};
-
 type HeaderProfile = {
   placeholder: string;
   showSearch: boolean;
-  actions: HeaderAction[];
   centerSearch?: boolean;
 };
 
@@ -46,89 +42,93 @@ const DEFAULT_OPS: HeaderProfile = {
   placeholder: 'Search records…',
   showSearch: true,
   centerSearch: true,
-  actions: [],
 };
 
 const HEADERS: Partial<Record<ViewId, HeaderProfile>> = {
   'trip-board': {
     placeholder: 'Search trips, drivers, equipment…',
     showSearch: true,
-    actions: [
-      {
-        id: 'adv',
-        label: 'Advanced Search',
-        icon: Search,
-        variant: 'secondary',
-        toast: 'Advanced search coming soon',
-      },
-      { id: 'upload', label: 'Upload Pay', icon: Upload, variant: 'primary', toast: 'Upload Pay started' },
-    ],
+    centerSearch: true,
   },
   payroll: {
     placeholder: 'Search payroll dates, regions, creators…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   settlement: {
     placeholder: 'Search settlements, drivers, divisions…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   audit: {
     placeholder: 'Search audit trips, drivers, descriptions…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   'driver-ledger': {
     placeholder: 'Search ledger drivers, descriptions…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   fuel: {
     placeholder: 'Search receipts, drivers, trucks…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   incidents: {
     placeholder: 'Search incidents by driver code or name…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   deductions: {
     placeholder: 'Search deductions, reimbursements, comments…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
+  },
+  'ca-board': {
+    placeholder: 'Search drivers, amounts, IDs, trip numbers…',
+    showSearch: true,
+    centerSearch: true,
+  },
+  'cash-advance': {
+    placeholder: 'Search drivers, amounts, IDs, trip numbers…',
+    showSearch: true,
+    centerSearch: true,
+  },
+  'ca-history': {
+    placeholder: 'Search drivers, amounts, reference numbers, trip…',
+    showSearch: true,
+    centerSearch: true,
+  },
+  'ca-bulk': {
+    placeholder: 'Search bulk rows…',
+    showSearch: true,
+    centerSearch: true,
+  },
+  'ca-issue': {
+    placeholder: 'Search…',
+    showSearch: false,
+    centerSearch: false,
   },
   config: {
     placeholder: 'Search regions, methods, schedules…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   'config-regions': {
     placeholder: 'Search regions, divisions…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   'config-methods': {
     placeholder: 'Search methods…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
   'config-schedules': {
     placeholder: 'Search schedules…',
     showSearch: true,
     centerSearch: true,
-    actions: [],
   },
 };
 
@@ -140,46 +140,47 @@ function profileFor(view: ViewId): HeaderProfile {
   return HEADERS[view] || DEFAULT_OPS;
 }
 
-function isConfigView(view: ViewId) {
-  return view === 'config' || view.startsWith('config-');
-}
-
 export function Topbar() {
   const {
     view,
     search,
     setSearch,
-    toast,
     selectedTripId,
     configStatusFilter,
     setConfigStatusFilter,
-    configHeader,
+    pageHeader,
   } = useApp();
   const profile = profileFor(view);
   const title = selectedTripId ? 'Trip Detail' : titleFor(view);
   const centered = profile.centerSearch && !selectedTripId;
-  const showConfigTools = isConfigView(view) && !!configHeader && !selectedTripId;
+  const actions = !selectedTripId && pageHeader ? pageHeader.actions : [];
+  const showStatus = !selectedTripId && !!pageHeader?.showStatus;
 
   return (
     <header className={`topbar ${centered ? 'topbar-centered' : ''}`}>
       <h1 className="topbar-title">{title}</h1>
 
       {profile.showSearch && (
-        <div className={`searchbar ${centered ? 'searchbar-center' : ''}`}>
-          <Search size={14} strokeWidth={2} />
-          <input
-            type="search"
-            placeholder={profile.placeholder}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label={profile.placeholder}
-          />
+        <div className={`topbar-search-cluster ${centered ? 'is-centered' : ''}`}>
+          <div className={`searchbar ${centered ? 'searchbar-center' : ''}`}>
+            <Search size={14} strokeWidth={2} />
+            <input
+              type="search"
+              placeholder={profile.placeholder}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label={profile.placeholder}
+            />
+          </div>
+          <div id="topbar-inline-filters" className="topbar-inline-filters" />
         </div>
       )}
 
+      {!profile.showSearch && <div id="topbar-inline-filters" className="topbar-inline-filters" />}
+
       <div className="topbar-right">
-        {showConfigTools && configHeader.showStatus && (
-          <label className="topbar-status">
+        {showStatus && (
+          <label className="topbar-status" data-tooltip="Filter by status" data-tooltip-side="bottom">
             <span className="sr-only">Status</span>
             <select
               value={configStatusFilter}
@@ -193,36 +194,27 @@ export function Topbar() {
           </label>
         )}
 
-        {profile.actions.map((action) => {
+        {actions.map((action) => {
           const Icon = action.icon;
           return (
             <button
               key={action.id}
               type="button"
-              className={`btn btn-${action.variant} btn-sm`}
-              onClick={() => toast(action.toast)}
+              className={`topbar-btn ${action.primary ? 'topbar-btn-primary' : 'topbar-btn-secondary'}`}
+              disabled={action.disabled}
+              onClick={action.onClick}
             >
-              <Icon size={13} />
-              {action.label}
+              <Icon size={13} strokeWidth={2.25} />
+              <span>{action.label}</span>
             </button>
           );
         })}
 
-        {showConfigTools && (
-          <button
-            type="button"
-            className="tico tico-add"
-            aria-label={configHeader.addLabel}
-            title={configHeader.addLabel}
-            onClick={configHeader.onAdd}
-          >
-            <Plus size={15} />
+        <Tooltip label="Notifications" side="bottom">
+          <button type="button" className="tico" aria-label="Notifications">
+            <Bell size={15} />
           </button>
-        )}
-
-        <button type="button" className="tico" aria-label="Notifications">
-          <Bell size={15} />
-        </button>
+        </Tooltip>
       </div>
     </header>
   );

@@ -1,8 +1,10 @@
 import { Download, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { HeaderFilters } from '../components/layout/HeaderFilters';
 import { BonusModal, CoverageDateModal, DriverRateModal, LoyaltyRateModal } from '../components/modals/DataEntryModals';
 import { RowActionMenu, type RowActionItem } from '../components/ui/RowActionMenu';
 import { useApp } from '../context/AppContext';
+import { usePageHeader } from '../hooks/usePageHeader';
 import {
   CANADA_LOYALTY, CA_PAY_RECORDS, IFTA_REPORT_REQUESTS, IFTA_TAX_RATES, MANAGE_MILES,
   MONTREAL_BONUS, MX_BASE_PAY, REDUCED_RATES, USA_LOYALTY, USA_LOYALTY_RATES, US_OTR_BONUS,
@@ -27,12 +29,10 @@ function Footer({ count, label }: { count: number; label?: string }) {
   return <div className="mod-pager"><strong>Total Records: {count}</strong><span className="mod-pager-nav">{label}</span></div>;
 }
 
-function Filters({ children, action }: { children?: ReactNode; action: ReactNode }) {
-  return <div className="mod-filters">{children}<div className="mod-filters-actions">{action}</div></div>;
-}
-
-function SearchField({ value, onChange, label = 'Search' }: { value: string; onChange: (value: string) => void; label?: string }) {
-  return <label className="mod-filter grow"><span>{label}</span><input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Search records…" /></label>;
+function Filters({ children, inline }: { children?: ReactNode; inline?: boolean }) {
+  if (!children) return null;
+  if (inline) return <HeaderFilters>{children}</HeaderFilters>;
+  return <div className="mod-filters">{children}</div>;
 }
 
 function Table({ rows, columns, actions, onAction, minWidth }: {
@@ -76,11 +76,15 @@ function SimpleRecordModal({ kind, onClose, onSave }: { kind: 'tax' | 'californi
 }
 
 function IftaTaxRate() {
-  const { search, setSearch, toast } = useApp();
+  const { search, toast } = useApp();
   const [rows, setRows] = useState<Row[]>(IFTA_TAX_RATES);
   const [active, setActive] = useState('all');
   const [modal, setModal] = useState<ModalState>(null);
   const filtered = rows.filter((r) => (active === 'all' || String(r.active) === active) && `${r.jurisdiction} ${r.createdBy}`.toLowerCase().includes(search.toLowerCase()));
+  usePageHeader([
+    { id: 'coverage', label: 'Save Coverage Date', icon: RefreshCw, onClick: () => setModal({ kind: 'coverage' }) },
+    { id: 'add-rate', label: 'Add Rate', icon: Plus, primary: true, onClick: () => setModal({ kind: 'tax' }) },
+  ]);
   const save = (value: Row) => {
     if (modal?.kind === 'coverage') {
       setRows((all) => all.map((r) => ({ ...r, coverageFrom: value.coverageFrom, coverageTo: value.coverageTo })));
@@ -92,8 +96,7 @@ function IftaTaxRate() {
     setModal(null);
   };
   return <div className="mod-page">
-    <Filters action={<><button className="btn btn-secondary btn-sm" onClick={() => setModal({ kind: 'coverage' })}>Save Coverage Date</button><button className="btn btn-primary btn-sm" onClick={() => setModal({ kind: 'tax' })}><Plus size={13} />Add Rate</button></>}>
-      <SearchField value={search} onChange={setSearch} />
+    <Filters inline>
       <label className="mod-filter"><span>Status</span><select value={active} onChange={(e) => setActive(e.target.value)}><option value="all">All</option><option value="true">Active</option><option value="false">Inactive</option></select></label>
     </Filters>
     <Table rows={filtered} columns={[
@@ -116,11 +119,13 @@ function IftaReports() {
   const [tab, setTab] = useState<'IFTA Report' | 'Road Tax' | 'Truck Mileage'>('IFTA Report');
   const [rows, setRows] = useState<Row[]>(IFTA_REPORT_REQUESTS);
   const fields = tab === 'IFTA Report' ? ['Quarter', 'Fleet', 'Jurisdictions'] : tab === 'Road Tax' ? ['Month', 'Country', 'Division'] : ['From Date', 'To Date', 'Truck'];
+  usePageHeader([
+    { id: 'generate', label: 'Generate Report', icon: Plus, primary: true, onClick: () => toast(`${tab} request submitted`) },
+  ]);
   return <div className="mod-page de-report-grid">
     <section className="de-report-builder">
       <div className="tabs">{(['IFTA Report', 'Road Tax', 'Truck Mileage'] as const).map((name) => <button key={name} className={`tab ${tab === name ? 'active' : ''}`} onClick={() => setTab(name)}>{name}</button>)}</div>
       <div className="de-report-form">{fields.map((field, i) => <div className="field" key={field}><label>{field}</label>{i === 0 && tab !== 'Truck Mileage' ? <select><option>{tab === 'IFTA Report' ? 'Q3 2026' : 'July 2026'}</option></select> : <input type={tab === 'Truck Mileage' && i < 2 ? 'date' : 'text'} placeholder={`Select ${field.toLowerCase()}`} />}</div>)}</div>
-      <div className="de-report-submit"><button className="btn btn-primary" onClick={() => toast(`${tab} request submitted`)}>Generate Report</button></div>
     </section>
     <section className="mod-table-shell">
       <div className="de-section-title">Requested Reports</div>
@@ -132,7 +137,7 @@ function IftaReports() {
 }
 
 function ReducedRate() {
-  const { search, setSearch, toast } = useApp();
+  const { search, toast } = useApp();
   const [rows, setRows] = useState<Row[]>(REDUCED_RATES);
   const [modal, setModal] = useState<ModalState>(null);
   const filtered = rows.filter((r) => `${r.driverCode} ${r.driverName} ${r.region} ${r.drivesFor}`.toLowerCase().includes(search.toLowerCase()));
@@ -141,7 +146,8 @@ function ReducedRate() {
     else setRows((all) => [{ id: `RR-${Date.now()}`, drivesFor: 'Bison Transport', region: 'Canada West', createdBy: 'You', createdAt: 'Just now', ...value }, ...all]);
     setModal(null); toast('Reduced rate saved');
   };
-  return <div className="mod-page"><Filters action={<button className="btn btn-primary btn-sm" onClick={() => setModal({ kind: 'rate', mode: 'add' })}><Plus size={13} />Add Reduced Rate</button>}><SearchField value={search} onChange={setSearch} /></Filters>
+  usePageHeader([{ id: 'add', label: 'Add Reduced Rate', icon: Plus, primary: true, onClick: () => setModal({ kind: 'rate', mode: 'add' }) }]);
+  return <div className="mod-page">
     <Table rows={filtered} minWidth={1250} columns={[
       { key: 'driver', label: 'Driver', render: (r) => <div className="driver-cell"><span className="name">{r.driverName}</span><span className="uid">{r.driverCode}</span></div> },
       { key: 'drivesFor', label: 'Drives For' }, { key: 'region', label: 'Region' }, { key: 'deductMiles', label: 'Deduct Miles' }, { key: 'deductHour', label: 'Deduct Hour' },
@@ -158,7 +164,8 @@ function CaliforniaPay() {
   const [date, setDate] = useState('');
   const [open, setOpen] = useState(false);
   const filtered = rows.filter((r) => !date || r.payrollDate === date);
-  return <div className="mod-page"><Filters action={<button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}><Plus size={13} />Add</button>}><label className="mod-filter"><span>Payroll Date</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label></Filters>
+  usePageHeader([{ id: 'add', label: 'Add', icon: Plus, primary: true, onClick: () => setOpen(true) }]);
+  return <div className="mod-page"><Filters inline><label className="mod-filter"><span>Payroll Date</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label></Filters>
     <Table rows={filtered} columns={[{ key: 'tripNo', label: 'Trip No.' }, { key: 'hours', label: 'Hours' }, { key: 'amount', label: 'Amount', render: (r) => money(r.amount) }, { key: 'payrollDate', label: 'Payroll Date' }]} actions={[{ id: 'delete', label: 'Delete', icon: Trash2, danger: true }]} onAction={(_, row) => { setRows((all) => all.filter((r) => r.id !== row.id)); toast('Pay record deleted'); }} />
     {open && <SimpleRecordModal kind="california" onClose={() => setOpen(false)} onSave={(row) => { setRows((all) => [{ id: `CAP-${Date.now()}`, ...row }, ...all]); setOpen(false); toast('California pay added'); }} />}
   </div>;
@@ -167,7 +174,7 @@ function CaliforniaPay() {
 function BonusScreen({ kind }: { kind: 'montreal' | 'usa' | 'canada' | 'otr' }) {
   const source = kind === 'montreal' ? MONTREAL_BONUS : kind === 'usa' ? USA_LOYALTY : kind === 'canada' ? CANADA_LOYALTY : US_OTR_BONUS;
   const title = kind === 'montreal' ? 'Montreal Bonus' : kind === 'usa' ? 'USA Loyalty' : kind === 'canada' ? 'Canada Loyalty' : 'US OTR Bonus';
-  const { search, setSearch, toast } = useApp();
+  const { search, toast } = useApp();
   const [rows, setRows] = useState<Row[]>(source);
   const [modal, setModal] = useState<ModalState>(null);
   useEffect(() => setRows(source), [kind]);
@@ -187,7 +194,8 @@ function BonusScreen({ kind }: { kind: 'montreal' | 'usa' | 'canada' | 'otr' }) 
     else setRows((all) => [{ id: `${kind}-${Date.now()}`, createdBy: 'You', createdAt: 'Just now', modifiedBy: 'You', modifiedAt: 'Just now', ...normalized }, ...all]);
     setModal(null); toast(`${title} saved`);
   };
-  return <div className="mod-page"><Filters action={<button className="btn btn-primary btn-sm" onClick={() => setModal({ kind, mode: 'add' })}><Plus size={13} />Add</button>}><SearchField value={search} onChange={setSearch} /></Filters>
+  usePageHeader([{ id: 'add', label: 'Add', icon: Plus, primary: true, onClick: () => setModal({ kind, mode: 'add' }) }]);
+  return <div className="mod-page">
     <Table rows={filtered} columns={columns} actions={EDIT_DELETE} onAction={(action, row) => action === 'delete' ? (setRows((all) => all.filter((r) => r.id !== row.id)), toast(`${title} deleted`)) : setModal({ kind, mode: 'edit', row })} />
     {modal && <BonusModal title={title} mode={modal.mode!} fields={kind} initial={modal.row} onClose={() => setModal(null)} onSave={save} />}
   </div>;
@@ -202,7 +210,8 @@ function LoyaltyRates() {
     else setRows((all) => [{ id: `ULR-${Date.now()}`, ...value }, ...all]);
     setModal(null); toast('Loyalty rate saved');
   };
-  return <div className="mod-page"><Filters action={<button className="btn btn-primary btn-sm" onClick={() => setModal({ kind: 'loyalty-rate', mode: 'add' })}><Plus size={13} />Add Rate</button>} />
+  usePageHeader([{ id: 'add', label: 'Add Rate', icon: Plus, primary: true, onClick: () => setModal({ kind: 'loyalty-rate', mode: 'add' }) }]);
+  return <div className="mod-page">
     <Table rows={rows} columns={[
       { key: 'role', label: 'Role', render: (r) => pill(r.role, 'soft teal') }, { key: 'type', label: 'Type', render: (r) => pill(r.type, 'soft purple') },
       { key: 'driverClass', label: 'Driver Class', render: (r) => pill(r.driverClass, 'soft') }, { key: 'paidBy', label: 'Paid By', render: (r) => pill(r.paidBy, 'soft teal') },
@@ -218,7 +227,8 @@ function ManageMiles() {
   const [filters, setFilters] = useState({ from: '', to: '', diff: '' });
   const set = (key: keyof typeof filters, value: string) => setFilters((old) => ({ ...old, [key]: value }));
   const rows = useMemo(() => searched ? MANAGE_MILES.filter((r) => `${r.fromName} ${r.fromAddress}`.toLowerCase().includes(filters.from.toLowerCase()) && `${r.toName} ${r.toAddress}`.toLowerCase().includes(filters.to.toLowerCase()) && (!filters.diff || r.alkDiff.includes(filters.diff))) : [], [searched, filters]);
-  return <div className="mod-page"><Filters action={<button className="btn btn-primary btn-sm" onClick={() => setSearched(true)}><Search size={13} />Search</button>}>
+  usePageHeader([{ id: 'search', label: 'Search', icon: Search, primary: true, onClick: () => setSearched(true) }]);
+  return <div className="mod-page"><Filters>
     <label className="mod-filter grow"><span>From Location</span><input value={filters.from} onChange={(e) => set('from', e.target.value)} placeholder="Name or address" /></label>
     <label className="mod-filter grow"><span>To Location</span><input value={filters.to} onChange={(e) => set('to', e.target.value)} placeholder="Name or address" /></label>
     <label className="mod-filter"><span>Miles Diff</span><input value={filters.diff} onChange={(e) => set('diff', e.target.value)} placeholder="e.g. +4" /></label>
@@ -228,12 +238,13 @@ function ManageMiles() {
 }
 
 function MexicoBasePay() {
-  const { search, setSearch, toast } = useApp();
+  const { search, toast } = useApp();
   const [rows, setRows] = useState<Row[]>(MX_BASE_PAY);
   const [status, setStatus] = useState('all');
   const [open, setOpen] = useState(false);
   const filtered = rows.filter((r) => (status === 'all' || r.status === status) && `${r.driverCode} ${r.driverName}`.toLowerCase().includes(search.toLowerCase()));
-  return <div className="mod-page"><Filters action={<button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}><Plus size={13} />Add</button>}><SearchField value={search} onChange={setSearch} /><label className="mod-filter"><span>Status</span><select value={status} onChange={(e) => setStatus(e.target.value)}><option value="all">All</option><option>active</option><option>inactive</option></select></label></Filters>
+  usePageHeader([{ id: 'add', label: 'Add', icon: Plus, primary: true, onClick: () => setOpen(true) }]);
+  return <div className="mod-page"><Filters inline><label className="mod-filter"><span>Status</span><select value={status} onChange={(e) => setStatus(e.target.value)}><option value="all">All</option><option>active</option><option>inactive</option></select></label></Filters>
     <Table rows={filtered} columns={[
       { key: 'driver', label: 'Driver', render: (r) => <div className="driver-cell"><span className="name">{r.driverName}</span><span className="uid">{r.driverCode}</span></div> },
       { key: 'basePay', label: 'Base Pay', render: (r) => money(r.basePay, 'MXN') }, { key: 'currency', label: 'Currency' }, { key: 'status', label: 'Status', render: (r) => pill(r.status) }, { key: 'effectiveFrom', label: 'Effective From' }, { key: 'updated', label: 'Updated', render: (r) => <div className="driver-cell"><span className="name">{r.updatedBy}</span><span className="uid">{r.updatedAt}</span></div> },

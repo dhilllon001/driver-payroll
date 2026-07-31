@@ -14,6 +14,7 @@ import { IncidentsView } from './views/IncidentsView';
 import { DeductionsView } from './views/DeductionsView';
 import { OpsModuleView } from './views/OpsModuleView';
 import { DataEntrySuite } from './views/DataEntrySuite';
+import { CashAdvanceSuite } from './views/CashAdvanceSuite';
 import { PlaceholderView } from './views/PlaceholderView';
 import type { ViewId } from './types';
 import './styles/global.css';
@@ -40,17 +41,23 @@ const OPS_VIEWS = new Set<ViewId>([
   'te-reimbursements',
   'te-history',
   'te-bulk-uploads',
-  'cash-advance',
   'nomilinea',
   'nomilinea-payroll',
   'nomilinea-concepts',
 ]);
+
+const CA_VIEWS = new Set<ViewId>(['cash-advance', 'ca-issue', 'ca-board', 'ca-history', 'ca-bulk']);
 
 function resolveOpsView(view: ViewId): ViewId {
   if (view === 'ifta') return 'ifta-tax-rate';
   if (view === 'data-entry') return 'de-driver-reduced-rate';
   if (view === 'trip-expense') return 'te-assigned';
   if (view === 'nomilinea') return 'nomilinea-concepts';
+  return view;
+}
+
+function resolveCashAdvanceView(view: ViewId): ViewId {
+  if (view === 'cash-advance') return 'ca-board';
   return view;
 }
 
@@ -67,6 +74,7 @@ function Shell() {
   const showBoard = view === 'trip-board' && !selectedTripId;
   const showDetail = view === 'trip-board' && !!selectedTripId;
   const opsId = OPS_VIEWS.has(view) ? resolveOpsView(view) : null;
+  const caId = CA_VIEWS.has(view) ? resolveCashAdvanceView(view) : null;
 
   const mainView = showBoard ? (
     <TripBoardView />
@@ -96,6 +104,8 @@ function Shell() {
             : 'regions'
       }
     />
+  ) : caId ? (
+    <CashAdvanceSuite id={caId} />
   ) : opsId && (opsId.startsWith('ifta') || opsId.startsWith('de-')) ? (
     <DataEntrySuite id={opsId} />
   ) : opsId ? (

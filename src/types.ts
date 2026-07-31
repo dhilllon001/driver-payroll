@@ -27,6 +27,10 @@ export type ViewId =
   | 'te-history'
   | 'te-bulk-uploads'
   | 'cash-advance'
+  | 'ca-issue'
+  | 'ca-board'
+  | 'ca-history'
+  | 'ca-bulk'
   | 'nomilinea'
   | 'nomilinea-payroll'
   | 'nomilinea-concepts'
@@ -376,5 +380,64 @@ export interface OpsCatalogRow {
   effectiveDate: string;
   updatedBy: string;
   updatedAt: string;
+}
+
+export type CashAdvanceStatus =
+  | 'open'
+  | 'scheduled'
+  | 'approved'
+  | 'rejected'
+  | 'disbursement-in-progress'
+  | 'disbursement-failed'
+  | 'funds-disbursed';
+
+export interface CashAdvanceNote {
+  id: string;
+  text: string;
+  at: string;
+  by: string;
+}
+
+export interface CashAdvanceRow {
+  id: string;
+  driverName: string;
+  driverCode: string;
+  division: string;
+  tripNumber: string;
+  truck: string;
+  trailer: string;
+  probill: string;
+  customer: string;
+  amount: number;
+  currency: 'MXN' | 'USD';
+  type: string;
+  subCategory: string;
+  status: CashAdvanceStatus;
+  doNotPay: boolean;
+  comments: string;
+  createdBy: string;
+  createdOn: string;
+  issuedBy: string;
+  issuedOn: string;
+  authorizedBy: string;
+  referenceNumber: string;
+  reasonCode: string;
+  weeklyTotal: number;
+  notes: CashAdvanceNote[];
+}
+
+export interface CashAdvanceHistoryItem {
+  id: string;
+  at: string;
+  amount: number;
+  weeklyTotal: number;
+  status: 'pending' | 'posted' | 'cancelled';
+  reference: string;
+  tripNumber: string;
+  reasonCode: string;
+  company: string;
+  driverName: string;
+  driverCode: string;
+  paymentType: 'QCHECK' | 'COMMCHECK' | 'CASHADV';
 }
 

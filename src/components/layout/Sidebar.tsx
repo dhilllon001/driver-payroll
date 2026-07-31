@@ -83,6 +83,18 @@ const FOLDERS: NavFolder[] = [
     ],
   },
   {
+    key: 'cash-advance',
+    label: 'MX Cash Advance',
+    icon: Banknote,
+    defaultId: 'ca-board',
+    children: [
+      { id: 'ca-issue', label: 'Issue Cash Advance' },
+      { id: 'ca-board', label: 'Cash Advances' },
+      { id: 'ca-history', label: 'History' },
+      { id: 'ca-bulk', label: 'Bulk Issue' },
+    ],
+  },
+  {
     key: 'nomilinea',
     label: 'Nomilinea',
     icon: Ticket,
@@ -106,12 +118,12 @@ const CONFIG_FOLDER: NavFolder = {
   ],
 };
 
-const SINGLE_OPS: { id: ViewId; label: string; icon: typeof ClipboardList }[] = [
-  { id: 'cash-advance', label: 'MX Cash Advance', icon: Banknote },
-];
-
 function folderOpenForView(view: ViewId, folder: NavFolder) {
-  return folder.children.some((c) => c.id === view) || view === folder.key;
+  return (
+    folder.children.some((c) => c.id === view) ||
+    view === folder.key ||
+    (folder.key === 'cash-advance' && (view === 'cash-advance' || view.startsWith('ca-')))
+  );
 }
 
 export function Sidebar() {
@@ -157,6 +169,8 @@ export function Sidebar() {
           type="button"
           className="sb-toggle"
           aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          data-tooltip={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          data-tooltip-side="bottom"
           onClick={() => setSidebarCollapsed((c) => !c)}
         >
           {sidebarCollapsed ? <PanelLeft size={18} /> : <PanelLeftClose size={18} />}
@@ -233,28 +247,12 @@ export function Sidebar() {
                 </div>
               );
             })}
-
-            {SINGLE_OPS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                className={`nav-item ${view === id ? 'active' : ''}`}
-                onClick={() => go(id)}
-                title={label}
-              >
-                <span className="nav-ico">
-                  <Icon size={16} strokeWidth={2} />
-                </span>
-                <span>{label}</span>
-              </button>
-            ))}
           </div>
         )}
 
         {sidebarCollapsed &&
           [
             ...FOLDERS.map((f) => ({ id: f.defaultId, label: f.label, icon: f.icon })),
-            ...SINGLE_OPS,
             { id: CONFIG_FOLDER.defaultId, label: CONFIG_FOLDER.label, icon: CONFIG_FOLDER.icon },
           ].map(({ id, label, icon: Icon }) => (
             <button
@@ -326,7 +324,12 @@ export function Sidebar() {
               <div className="sb-user-name">Sukhdeep Profile</div>
               <div className="sb-user-role">Payroll Ops</div>
             </div>
-            <button type="button" className="sb-logout" title="Logout" aria-label="Logout">
+            <button
+              type="button"
+              className="sb-logout"
+              data-tooltip="Logout"
+              aria-label="Logout"
+            >
               <LogOut size={16} />
             </button>
           </>

@@ -6,13 +6,22 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { TRIPS } from '../data/seed';
 import type { ConfigStatus, DetailTab, NotesSubTab, Trip, ViewId } from '../types';
 
-export type ConfigHeaderControls = {
-  showStatus: boolean;
-  addLabel: string;
-  onAdd: () => void;
+export type PageHeaderAction = {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  primary?: boolean;
+  disabled?: boolean;
+};
+
+export type PageHeaderControls = {
+  showStatus?: boolean;
+  actions: PageHeaderAction[];
 } | null;
 
 interface AppState {
@@ -50,8 +59,8 @@ interface AppState {
   setShowExceptionModal: (v: boolean) => void;
   configStatusFilter: 'all' | ConfigStatus;
   setConfigStatusFilter: (s: 'all' | ConfigStatus) => void;
-  configHeader: ConfigHeaderControls;
-  setConfigHeader: (h: ConfigHeaderControls) => void;
+  pageHeader: PageHeaderControls;
+  setPageHeader: (h: PageHeaderControls) => void;
   toast: (msg: string) => void;
   toastMsg: string;
   toastShow: boolean;
@@ -77,7 +86,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showExceptionModal, setShowExceptionModal] = useState(false);
   const [configStatusFilter, setConfigStatusFilter] = useState<'all' | ConfigStatus>('all');
-  const [configHeader, setConfigHeader] = useState<ConfigHeaderControls>(null);
+  const [pageHeader, setPageHeader] = useState<PageHeaderControls>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [toastShow, setToastShow] = useState(false);
 
@@ -123,8 +132,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setShowExceptionModal,
       configStatusFilter,
       setConfigStatusFilter,
-      configHeader,
-      setConfigHeader,
+      pageHeader,
+      setPageHeader,
       toast,
       toastMsg,
       toastShow,
@@ -147,7 +156,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       showPaymentModal,
       showExceptionModal,
       configStatusFilter,
-      configHeader,
+      pageHeader,
       toast,
       toastMsg,
       toastShow,

@@ -1,0 +1,876 @@
+/* MX Cash Advance — Apple / SwiftUI-aligned */
+
+.ca-page {
+  gap: 10px;
+}
+
+.ca-stage-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px;
+  scrollbar-width: thin;
+}
+
+.ca-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: max-content;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--fg-2);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.ca-stage:hover {
+  background: var(--bg-surface-2);
+}
+
+.ca-stage:active {
+  transform: scale(0.98);
+}
+
+.ca-stage.active {
+  background: var(--blue-soft);
+  border-color: rgba(0, 113, 227, 0.35);
+  color: var(--action);
+  box-shadow: none;
+}
+
+.ca-stage-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.ca-stage-count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--grey-bg);
+  color: var(--fg-2);
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ca-stage.active .ca-stage-count {
+  background: #fff;
+  color: var(--action);
+}
+
+.ca-stage.tone-rejected .ca-stage-count,
+.ca-stage.tone-disbursement-failed .ca-stage-count {
+  background: var(--red-bg);
+  color: var(--negative);
+}
+
+.ca-stage.tone-approved .ca-stage-count,
+.ca-stage.tone-funds-disbursed .ca-stage-count {
+  background: var(--green-bg);
+  color: var(--positive);
+}
+
+.ca-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ca-view-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: #f2f2f7;
+  gap: 2px;
+}
+
+.ca-view-toggle button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--fg-3);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.ca-view-toggle button.active {
+  background: #fff;
+  color: var(--fg-1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.ca-toolbar-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-3);
+  font-size: 12px;
+}
+
+.ca-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ca-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  overflow: auto;
+  min-height: 0;
+  padding-bottom: 4px;
+}
+
+.ca-board-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ca-board-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.ca-board-card header strong {
+  display: block;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+.ca-board-card header span {
+  display: block;
+  font-size: 11px;
+  color: var(--fg-3);
+  margin-top: 2px;
+}
+
+.ca-board-amount {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--positive);
+}
+
+.ca-board-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--fg-3);
+}
+
+.ca-board-card footer {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.ca-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: var(--grey-bg);
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+
+.ca-status-pill.open,
+.ca-status-pill.pending {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+
+.ca-status-pill.approved,
+.ca-status-pill.posted,
+.ca-status-pill.funds-disbursed {
+  background: var(--blue-soft);
+  color: var(--action);
+}
+
+.ca-status-pill.rejected,
+.ca-status-pill.cancelled,
+.ca-status-pill.disbursement-failed {
+  background: var(--red-bg);
+  color: var(--negative);
+}
+
+.ca-status-pill.scheduled,
+.ca-status-pill.disbursement-in-progress {
+  background: var(--teal-bg);
+  color: var(--teal);
+}
+
+/* Issue form */
+.ca-issue-page {
+  overflow: auto;
+}
+
+.ca-issue-intro h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+.ca-issue-intro p {
+  margin: 4px 0 0;
+  color: var(--fg-3);
+  font-size: 13px;
+}
+
+.ca-issue-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ca-panel {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ca-panel-full {
+  grid-column: 1 / -1;
+}
+
+.ca-panel-head {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--fg-1);
+}
+
+.ca-type-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ca-type-card {
+  position: relative;
+  text-align: left;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--bg-surface-2);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.ca-type-card strong {
+  font-size: 15px;
+  letter-spacing: -0.02em;
+}
+
+.ca-type-card span {
+  font-size: 12px;
+  color: var(--fg-3);
+}
+
+.ca-type-card.active {
+  background: var(--blue-soft);
+  border-color: rgba(0, 113, 227, 0.45);
+}
+
+.ca-type-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: var(--action);
+}
+
+.ca-recipient-tabs {
+  display: inline-flex;
+  background: #f2f2f7;
+  border-radius: 10px;
+  padding: 3px;
+  width: fit-content;
+}
+
+.ca-recipient-tabs button {
+  border: 0;
+  background: #fff;
+  color: var(--fg-1);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ca-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.ca-form-grid.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.ca-form-grid.three {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.ca-form-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.ca-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--fg-2);
+  align-self: end;
+  padding-bottom: 8px;
+}
+
+.ca-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-2);
+}
+
+.ca-switch {
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  border: 0;
+  background: #d1d1d6;
+  position: relative;
+  flex-shrink: 0;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.ca-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.ca-switch.on {
+  background: #34c759;
+}
+
+.ca-switch.on::after {
+  transform: translateX(18px);
+}
+
+.ca-dropzone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  border: 1.5px dashed rgba(0, 113, 227, 0.35);
+  border-radius: 14px;
+  background: rgba(0, 113, 227, 0.03);
+  color: var(--fg-3);
+}
+
+.ca-dropzone strong {
+  display: block;
+  color: var(--action);
+  font-size: 13px;
+}
+
+.ca-dropzone span {
+  font-size: 12px;
+}
+
+.ca-issue-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+/* History timeline */
+.ca-history-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ca-history-head h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.ca-history-head span {
+  font-size: 12px;
+  color: var(--fg-3);
+}
+
+.ca-timeline {
+  overflow: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 4px 0 12px;
+}
+
+.ca-timeline-item {
+  display: grid;
+  grid-template-columns: 150px 16px 1fr;
+  gap: 12px;
+  align-items: stretch;
+  position: relative;
+  padding: 8px 0;
+}
+
+.ca-timeline-item time {
+  font-size: 12px;
+  color: var(--fg-3);
+  padding-top: 18px;
+  text-align: right;
+}
+
+.ca-timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--action);
+  margin-top: 22px;
+  justify-self: center;
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+  z-index: 1;
+}
+
+.ca-timeline-item.pending .ca-timeline-dot {
+  background: var(--amber);
+  box-shadow: 0 0 0 4px rgba(154, 103, 0, 0.15);
+}
+
+.ca-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: calc(150px + 12px + 7px);
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.ca-timeline-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.ca-timeline-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ca-timeline-amount strong {
+  font-size: 20px;
+  letter-spacing: -0.03em;
+  color: var(--positive);
+}
+
+.ca-timeline-amount > span:first-of-type {
+  font-size: 11px;
+  color: var(--positive);
+  opacity: 0.8;
+}
+
+.ca-timeline-mid .mono {
+  font-size: 12px;
+  color: var(--fg-3);
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.ca-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ca-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ca-tag.soft {
+  background: var(--blue-soft);
+  color: var(--action);
+}
+
+.ca-tag.amber {
+  background: #fff1e0;
+  color: #b15c00;
+}
+
+.ca-timeline-driver {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: right;
+}
+
+.ca-timeline-driver strong {
+  display: block;
+  font-size: 12px;
+  max-width: 180px;
+}
+
+.ca-timeline-driver span {
+  font-size: 11px;
+  color: var(--fg-3);
+}
+
+.ca-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--action);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ca-bulk-bar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Modals / drawer extras */
+.modal-xl {
+  max-width: 980px;
+}
+
+.ca-detail-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f0f6fc 0%, #fff 100%);
+  margin-bottom: 14px;
+}
+
+.ca-eyebrow {
+  display: block;
+  font-size: 11px;
+  color: var(--fg-3);
+  margin-bottom: 2px;
+}
+
+.ca-hero-amount {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--positive);
+}
+
+.ca-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.ca-detail-card {
+  background: var(--bg-surface-2);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ca-detail-card.flat {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.ca-detail-card h4 {
+  margin: 0 0 2px;
+  font-size: 13px;
+  letter-spacing: -0.02em;
+}
+
+.ca-kv {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.ca-kv > span:first-child {
+  color: var(--fg-3);
+  flex-shrink: 0;
+}
+
+.ca-kv strong,
+.ca-kv .money {
+  text-align: right;
+  font-weight: 600;
+  color: var(--fg-1);
+  word-break: break-word;
+}
+
+.ca-kv .money {
+  color: var(--positive);
+}
+
+.ca-kv.editable {
+  align-items: center;
+}
+
+.ca-kv.editable input,
+.ca-kv.editable textarea {
+  width: min(220px, 100%);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: #f2f2f7;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.ca-kv.stacked {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ca-kv.stacked textarea {
+  width: 100%;
+}
+
+.ca-kv-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ca-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  z-index: 80;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.18s var(--ease-out);
+}
+
+.ca-drawer {
+  width: min(400px, 100%);
+  height: 100%;
+  background: #fff;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.22s var(--ease-out);
+}
+
+.ca-drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border-1);
+}
+
+.ca-drawer-head h3 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+.ca-drawer-head p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--fg-3);
+}
+
+.ca-drawer-body {
+  padding: 16px 18px 24px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ca-section-label {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  margin-bottom: 10px;
+}
+
+.ca-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ca-note-card {
+  background: #fff8e8;
+  border-left: 3px solid #f5a524;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.ca-note-card p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.ca-note-card small {
+  display: block;
+  margin-top: 6px;
+  color: var(--fg-3);
+  font-size: 11px;
+}
+
+.ca-note-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ca-note-compose textarea {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: #f2f2f7;
+  padding: 10px;
+  resize: vertical;
+  font-size: 13px;
+}
+
+.empty-state.soft {
+  padding: 16px;
+  background: var(--bg-surface-2);
+  border-radius: 12px;
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(16px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 980px) {
+  .ca-issue-grid,
+  .ca-detail-grid,
+  .ca-form-grid.three,
+  .ca-timeline-card {
+    grid-template-columns: 1fr;
+  }
+
+  .ca-timeline-item {
+    grid-template-columns: 12px 1fr;
+  }
+
+  .ca-timeline-item time {
+    grid-column: 2;
+    text-align: left;
+    padding-top: 0;
+  }
+
+  .ca-timeline-item::before {
+    left: 5px;
+  }
+
+  .ca-type-cards {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,94 +1,100 @@
 :root {
   /* Surfaces */
-  --bg-app: #e0e4ea;
+  --bg-app: #e8eaed;
   --bg-surface-1: #ffffff;
-  --bg-surface-2: #f4f5f7;
-  --bg-surface-3: #d4d9e1;
+  --bg-surface-2: #f5f5f7;
+  --bg-surface-3: #d2d5db;
 
   /* Text */
-  --fg-1: #0f1a2a;
-  --fg-2: #3d4a5c;
-  --fg-3: #6b7685;
-  --fg-4: #a4adba;
+  --fg-1: #1d1d1f;
+  --fg-2: #3a3a3c;
+  --fg-3: #6e6e73;
+  --fg-4: #aeaeb2;
 
   /* Borders */
-  --border-1: #dde1e8;
-  --border-2: #cdd3dc;
-  --border-3: #b8bfc9;
+  --border-1: rgba(0, 0, 0, 0.08);
+  --border-2: rgba(0, 0, 0, 0.12);
+  --border-3: rgba(0, 0, 0, 0.18);
 
   /* Actions */
-  --action: #1e5faa;
-  --action-hover: #184e8d;
-  --focus-ring: #5795e3;
-  --positive: #1f7a43;
-  --negative: #a32b22;
-  --amber: #9a6b1a;
+  --action: #0071e3;
+  --action-hover: #0077ed;
+  --focus-ring: #64b5ff;
+  --positive: #248a3d;
+  --negative: #d70015;
+  --amber: #9a6700;
 
   /* Soft fills */
-  --amber-bg: #fbf3e4;
-  --green-bg: #e8f5ee;
-  --red-bg: #fcebec;
+  --amber-bg: #fff6e0;
+  --green-bg: #eaf8ee;
+  --red-bg: #ffecec;
   --purple: #5b4b9e;
-  --purple-bg: #eeeaf8;
-  --teal: #1e7e82;
-  --teal-bg: #e6f5f6;
-  --blue-soft: #e8f1fb;
-  --grey-bg: #eef0f3;
+  --purple-bg: #f1eef9;
+  --teal: #0d7c7c;
+  --teal-bg: #e6f6f6;
+  --blue-soft: #e8f2fc;
+  --grey-bg: #f2f2f7;
 
   /* Tables */
-  --table-row-alt: #f7f8fa;
-  --table-row-hover: #eef0f4;
-  --table-row-selected: #ebf3fc;
+  --table-row-alt: #fbfbfd;
+  --table-row-hover: #f0f4f8;
+  --table-row-selected: #e8f2fc;
 
   /* Chrome */
-  --topbar-bg: #ffffff;
-  --topbar-fg: #0f1a2a;
-  --topbar-muted: #6b7685;
-  --topbar-input: #f4f5f7;
-  --sidebar-bg: #1a1d24;
-  --sidebar-fg: #e8edf3;
-  --sidebar-fg-2: #b4bfcd;
-  --sidebar-fg-3: #7c8898;
-  --sidebar-divider: rgba(255, 255, 255, 0.06);
-  --sidebar-hover: rgba(255, 255, 255, 0.06);
-  --sidebar-active: rgba(87, 149, 227, 0.14);
-  --drawer-header: #0f1a2a;
+  --topbar-bg: rgba(255, 255, 255, 0.86);
+  --topbar-fg: #1d1d1f;
+  --topbar-muted: #6e6e73;
+  --topbar-input: #f2f2f7;
+  --sidebar-bg: #1c1c1e;
+  --sidebar-fg: #f5f5f7;
+  --sidebar-fg-2: #c7c7cc;
+  --sidebar-fg-3: #8e8e93;
+  --sidebar-divider: rgba(255, 255, 255, 0.08);
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-active: rgba(10, 132, 255, 0.22);
+  --drawer-header: #1c1c1e;
 
   /* Category accents */
-  --cat-detention: #1e5faa;
-  --cat-detention-bg: #e8f1fb;
+  --cat-detention: #0071e3;
+  --cat-detention-bg: #e8f2fc;
   --cat-lumper: #5b4b9e;
-  --cat-lumper-bg: #eeeaf8;
-  --cat-layover: #1e7e82;
-  --cat-layover-bg: #e6f5f6;
-  --cat-tonu: #9a6b1a;
-  --cat-tonu-bg: #fbf3e4;
-  --cat-storage: #5b6472;
-  --cat-storage-bg: #eef0f3;
+  --cat-lumper-bg: #f1eef9;
+  --cat-layover: #0d7c7c;
+  --cat-layover-bg: #e6f6f6;
+  --cat-tonu: #9a6700;
+  --cat-tonu-bg: #fff6e0;
+  --cat-storage: #636366;
+  --cat-storage-bg: #f2f2f7;
 
-  /* Typography */
-  --font-body: Inter, 'Helvetica Neue', Arial, sans-serif;
+  /* Typography — Apple-like system stack */
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Inter, Helvetica, Arial,
+    sans-serif;
   --fs-display: 32px;
   --fs-h1: 24px;
   --fs-h2: 20px;
-  --fs-h3: 16px;
-  --fs-h4: 14px;
+  --fs-h3: 17px;
+  --fs-h4: 15px;
   --fs-body: 13px;
   --fs-small: 12px;
   --fs-micro: 11px;
   --fs-eyebrow: 10px;
 
-  /* Shape */
-  --radius-sm: 3px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
+  /* Shape — SwiftUI sheet radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-pill: 999px;
-  --shadow-popover: 0 12px 32px rgba(15, 23, 42, 0.14);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-popover: 0 4px 16px rgba(0, 0, 0, 0.08), 0 12px 40px rgba(0, 0, 0, 0.12);
+  --shadow-sheet: 0 8px 28px rgba(0, 0, 0, 0.12), 0 24px 64px rgba(0, 0, 0, 0.16);
+  --blur-sheet: saturate(180%) blur(20px);
 
   /* Motion */
-  --dur-fast: 100ms;
-  --dur-base: 160ms;
-  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Spacing */
   --space-1: 4px;

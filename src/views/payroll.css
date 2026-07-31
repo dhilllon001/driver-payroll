@@ -12,11 +12,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-1);
-  border-radius: var(--radius-md);
+  gap: 12px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: none;
 }
 
 .pay-filters-add {
@@ -27,26 +28,58 @@
 .pay-filter {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 120px;
+  gap: 5px;
+  min-width: 124px;
 }
 
 .pay-filter span {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #8b5a2b;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--fg-3);
+}
+
+.pay-filter select,
+.pay-filter input {
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background-color: #f2f2f7;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--fg-1);
+  box-shadow: none;
+  outline: none;
+  min-height: 34px;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .pay-filter select {
-  border: 1px solid var(--border-1);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface-2);
-  padding: 6px 10px;
-  font-size: var(--fs-small);
-  color: var(--fg-1);
-  min-height: 32px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  padding-right: 30px;
+}
+
+.pay-filter select:hover,
+.pay-filter input:hover {
+  background-color: #ebebf0;
+}
+
+.pay-filter select:focus,
+.pay-filter input:focus {
+  background-color: #fff;
+  border-color: rgba(0, 113, 227, 0.45);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.14);
 }
 
 .pay-confirm-strip {

@@ -115,7 +115,7 @@ export function RegionModal({
       <div className="modal modal-sm" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal>
         <div className="modal-head">
           <h3>{mode === 'edit' ? 'Edit Region' : 'Add Region'}</h3>
-          <button type="button" className="modal-close" aria-label="Close" onClick={onClose}>
+          <button type="button" className="modal-close" aria-label="Close" data-tooltip="Close" data-tooltip-side="bottom" onClick={onClose}>
             <X size={14} />
           </button>
         </div>
@@ -230,7 +230,7 @@ export function MethodModal({
       <div className="modal modal-sm" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal>
         <div className="modal-head">
           <h3>{mode === 'edit' ? 'Edit Method' : 'Add Method'}</h3>
-          <button type="button" className="modal-close" aria-label="Close" onClick={onClose}>
+          <button type="button" className="modal-close" aria-label="Close" data-tooltip="Close" data-tooltip-side="bottom" onClick={onClose}>
             <X size={14} />
           </button>
         </div>
@@ -380,7 +380,7 @@ export function ScheduleModal({
       >
         <div className="modal-head">
           <h3>{mode === 'edit' ? 'Edit Payroll Schedule' : 'Add Payroll Schedule'}</h3>
-          <button type="button" className="modal-close" aria-label="Close" onClick={onClose}>
+          <button type="button" className="modal-close" aria-label="Close" data-tooltip="Close" data-tooltip-side="bottom" onClick={onClose}>
             <X size={14} />
           </button>
         </div>

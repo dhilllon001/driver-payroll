@@ -5,7 +5,18 @@ type SaveValue = Record<string, string | number | boolean>;
 type ModalBase = { onClose: () => void; onSave: (value: SaveValue) => void };
 
 function Close({ onClose }: { onClose: () => void }) {
-  return <button type="button" className="modal-close" aria-label="Close" onClick={onClose}><X size={15} /></button>;
+  return (
+    <button
+      type="button"
+      className="modal-close"
+      aria-label="Close"
+      data-tooltip="Close"
+      data-tooltip-side="bottom"
+      onClick={onClose}
+    >
+      <X size={15} />
+    </button>
+  );
 }
 
 function Frame({ title, valid, onClose, onSave, children }: { title: string; valid: boolean; children: React.ReactNode; onClose: () => void; onSave: () => void }) {

@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
@@ -11,6 +11,7 @@ import {
 } from '../data/configSeed';
 import type {
   ConfigStatus,
+  CoveragePeriod,
   PayrollCurrency,
   PayrollMethod,
   PayrollRegion,
@@ -29,6 +30,9 @@ import {
 import { RowActionMenu, type RowActionItem } from '../components/ui/RowActionMenu';
 import './modules.css';
 import './config.css';
+
+const COVERAGE_OPTIONS: CoveragePeriod[] = ['Weekly', 'BiWeekly', 'SemiMonthly', 'Monthly'];
+const CURRENCY_OPTIONS: PayrollCurrency[] = ['CAD', 'USD', 'Peso'];
 
 export type ConfigSection = 'regions' | 'methods' | 'schedules';
 type PendingDelete =
@@ -75,7 +79,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
     search,
     configStatusFilter,
     setConfigStatusFilter,
-    setConfigHeader,
+    setPageHeader,
   } = useApp();
 
   const [regions, setRegions] = useState<PayrollRegion[]>(() =>
@@ -98,19 +102,30 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   );
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null);
   const [selectedRegionId, setSelectedRegionId] = useState<string | null>(SEED_REGIONS[0]?.id ?? null);
+  const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(SEED_METHODS[0]?.id ?? null);
+  const [selectedUsage, setSelectedUsage] = useState<string | null>(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
     SEED_SCHEDULES[0]?.id ?? null,
   );
   const [scheduleEditing, setScheduleEditing] = useState(false);
   const [isNewSchedule, setIsNewSchedule] = useState(false);
   const [methodDraft, setMethodDraft] = useState<{ name: string; basedOn: string } | null>(null);
+  const [regionDraft, setRegionDraft] = useState<{
+    name: string;
+    currency: PayrollCurrency;
+    coveragePeriod: CoveragePeriod;
+    status: ConfigStatus;
+  } | null>(null);
 
   useEffect(() => {
     setConfigStatusFilter('all');
     setScheduleEditing(false);
     setIsNewSchedule(false);
     setMethodDraft(null);
+    setRegionDraft(null);
+    setSelectedDivision(null);
+    setSelectedUsage(null);
   }, [section, setConfigStatusFilter]);
 
   const q = search.trim().toLowerCase();
@@ -151,10 +166,14 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
     if (section !== 'regions') return;
     if (filteredRegions.length === 0) {
       setSelectedRegionId(null);
+      setSelectedDivision(null);
+      setRegionDraft(null);
       return;
     }
     if (!selectedRegionId || !filteredRegions.some((r) => r.id === selectedRegionId)) {
       setSelectedRegionId(filteredRegions[0].id);
+      setSelectedDivision(null);
+      setRegionDraft(null);
     }
   }, [section, filteredRegions, selectedRegionId]);
 
@@ -163,11 +182,13 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
     if (filteredMethods.length === 0) {
       setSelectedMethodId(null);
       setMethodDraft(null);
+      setSelectedUsage(null);
       return;
     }
     if (!selectedMethodId || !filteredMethods.some((m) => m.id === selectedMethodId)) {
       setSelectedMethodId(filteredMethods[0].id);
       setMethodDraft(null);
+      setSelectedUsage(null);
     }
   }, [section, filteredMethods, selectedMethodId]);
 
@@ -188,6 +209,28 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   const selectedRegion = regions.find((r) => r.id === selectedRegionId) ?? null;
   const selectedMethod = methods.find((m) => m.id === selectedMethodId) ?? null;
   const selectedSchedule = schedules.find((s) => s.id === selectedScheduleId) ?? null;
+
+  useEffect(() => {
+    if (!selectedRegion) {
+      setRegionDraft(null);
+      return;
+    }
+    setRegionDraft({
+      name: selectedRegion.name,
+      currency: selectedRegion.currency,
+      coveragePeriod: selectedRegion.coveragePeriod,
+      status: selectedRegion.status,
+    });
+  }, [selectedRegionId]); // eslint-disable-line react-hooks/exhaustive-deps -- sync draft when region changes
+
+  useEffect(() => {
+    if (!selectedMethod) {
+      setMethodDraft(null);
+      return;
+    }
+    setMethodDraft({ name: selectedMethod.name, basedOn: selectedMethod.basedOn });
+    setSelectedUsage(null);
+  }, [selectedMethodId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const methodUsage = useMemo(() => {
     const map = new Map<string, number>();
@@ -219,14 +262,21 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
   }, [section, beginAddSchedule]);
 
   useEffect(() => {
-    setConfigHeader({
+    setPageHeader({
       showStatus: section === 'regions' || section === 'schedules',
-      addLabel:
-        section === 'regions' ? 'Add Region' : section === 'methods' ? 'Add Method' : 'Add Schedule',
-      onAdd,
+      actions: [
+        {
+          id: 'add',
+          label:
+            section === 'regions' ? 'Add Region' : section === 'methods' ? 'Add Method' : 'Add Schedule',
+          icon: Plus,
+          primary: true,
+          onClick: onAdd,
+        },
+      ],
     });
-    return () => setConfigHeader(null);
-  }, [section, onAdd, setConfigHeader]);
+    return () => setPageHeader(null);
+  }, [section, onAdd, setPageHeader]);
 
   const confirmDelete = () => {
     if (!pendingDelete) return;
@@ -298,6 +348,33 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
     );
   };
 
+  const selectRegion = (id: string) => {
+    setSelectedRegionId(id);
+    setSelectedDivision(null);
+  };
+
+  const saveRegionInline = () => {
+    if (!selectedRegion || !regionDraft) return;
+    if (!regionDraft.name.trim()) {
+      toast('Region name is required');
+      return;
+    }
+    setRegions((prev) =>
+      prev.map((r) =>
+        r.id === selectedRegion.id
+          ? {
+              ...r,
+              name: regionDraft.name.trim(),
+              currency: regionDraft.currency,
+              coveragePeriod: regionDraft.coveragePeriod,
+              status: regionDraft.status,
+            }
+          : r,
+      ),
+    );
+    toast('Region updated');
+  };
+
   const saveMethod = (form: MethodForm) => {
     if (!form.name.trim()) {
       toast('Method name is required');
@@ -319,13 +396,7 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
       toast('Method added');
     }
     setMethodModal(null);
-    setMethodDraft(null);
     return true;
-  };
-
-  const startMethodEdit = () => {
-    if (!selectedMethod) return;
-    setMethodDraft({ name: selectedMethod.name, basedOn: selectedMethod.basedOn });
   };
 
   const saveMethodInline = () => {
@@ -341,7 +412,6 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
           : m,
       ),
     );
-    setMethodDraft(null);
     toast('Method updated');
   };
 
@@ -388,11 +458,13 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
 
   const selectMethodRow = (id: string) => {
     setSelectedMethodId(id);
-    setMethodDraft(null);
+    setSelectedUsage(null);
   };
 
   const usedCount = selectedMethod ? methodUsage.counts.get(selectedMethod.id) ?? 0 : 0;
   const usedIn = selectedMethod ? methodUsage.schedules.get(selectedMethod.id) ?? [] : [];
+  const divisionAssigned =
+    !!selectedRegion && !!selectedDivision && selectedRegion.divisions.includes(selectedDivision);
 
   return (
     <div className="mod-page cfg-page">
@@ -413,8 +485,12 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
       )}
 
       {section === 'regions' && (
-        <div className="cfg-split cfg-split-shell cfg-split-narrow">
-          <aside className="cfg-split-list" aria-label="Regions">
+        <div className="cfg-split cfg-split-shell cfg-split-triple">
+          <aside className="cfg-split-list cfg-col-regions" aria-label="Regions">
+            <div className="cfg-pane-head">
+              <strong>Regions</strong>
+              <span className="cfg-tab-count">{filteredRegions.length}</span>
+            </div>
             <div className="cfg-split-list-scroll">
               {filteredRegions.length === 0 ? (
                 <div className="empty-state">No regions match this filter.</div>
@@ -425,16 +501,16 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
                       <button
                         type="button"
                         className={`cfg-nav-item ${selectedRegionId === r.id ? 'active' : ''}`}
-                        onClick={() => setSelectedRegionId(r.id)}
+                        onClick={() => selectRegion(r.id)}
                       >
-                        <span className={`cfg-nav-flag cfg-country-pill ${countryCode(r.country).toLowerCase()}`}>
+                        <span
+                          className={`cfg-nav-flag cfg-country-pill ${countryCode(r.country).toLowerCase()}`}
+                        >
                           {countryCode(r.country)}
                         </span>
                         <span className="cfg-nav-copy">
                           <strong>{regionLabel(r)}</strong>
-                          <span>
-                            {r.divisions.length} divisions · {r.status === 'active' ? 'Active' : 'Inactive'}
-                          </span>
+                          <span>{r.divisions.length} divisions</span>
                         </span>
                       </button>
                       <div className="cfg-nav-actions">
@@ -454,11 +530,46 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
             </div>
           </aside>
 
-          <section className="cfg-split-detail">
-            {!selectedRegion ? (
+          <aside className="cfg-split-list cfg-col-mid" aria-label="Divisions">
+            <div className="cfg-pane-head">
+              <strong>Divisions</strong>
+              <span className="cfg-tab-count">
+                {selectedRegion ? selectedRegion.divisions.length : 0}
+              </span>
+            </div>
+            <div className="cfg-split-list-scroll">
+              {!selectedRegion ? (
+                <div className="cfg-pane-empty">Select a region</div>
+              ) : (
+                <ul className="cfg-mid-list">
+                  {DIVISIONS.map((d) => {
+                    const on = selectedRegion.divisions.includes(d);
+                    return (
+                      <li key={d}>
+                        <button
+                          type="button"
+                          className={`cfg-mid-item ${selectedDivision === d ? 'active' : ''} ${on ? 'assigned' : ''}`}
+                          onClick={() => setSelectedDivision(d)}
+                        >
+                          <span className="cfg-division-check">{on ? '✓' : ''}</span>
+                          <span className="cfg-mid-copy">
+                            <strong>{d}</strong>
+                            <span>{on ? 'Assigned' : 'Available'}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </aside>
+
+          <section className="cfg-split-detail cfg-col-edit">
+            {!selectedRegion || !regionDraft ? (
               <div className="cfg-split-empty">
                 <h3>Select a region</h3>
-                <p>Choose Canada, United States, or Mexico to manage divisions.</p>
+                <p>Choose Canada, United States, or Mexico, then pick a division to edit.</p>
               </div>
             ) : (
               <>
@@ -466,45 +577,119 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
                   <div>
                     <div className="cfg-detail-title-row">
                       <h2>{regionLabel(selectedRegion)}</h2>
-                      <StatusPill status={selectedRegion.status} />
+                      <StatusPill status={regionDraft.status} />
                     </div>
                     <p className="cfg-detail-sub">
-                      {selectedRegion.currency} · {selectedRegion.coveragePeriod} ·{' '}
-                      {selectedRegion.divisions.length} of {DIVISIONS.length} divisions
+                      {selectedDivision
+                        ? `Editing division · ${selectedDivision}`
+                        : 'Select a division in the middle list to manage assignment'}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => setRegionModal({ mode: 'edit', item: selectedRegion })}
-                  >
-                    <Pencil size={13} />
-                    Edit
+                  <button type="button" className="btn btn-primary btn-sm" onClick={saveRegionInline}>
+                    Save
                   </button>
                 </div>
-                <div className="cfg-region-detail">
-                  <div className="cfg-region-detail-head">
-                    <h3>Divisions</h3>
-                    <span className="cfg-tab-count">{selectedRegion.divisions.length}</span>
+
+                <div className="cfg-edit-pane">
+                  <div className="cfg-edit-grid">
+                    <label className="field">
+                      <span>Region name</span>
+                      <input
+                        value={regionDraft.name}
+                        onChange={(e) =>
+                          setRegionDraft((prev) => (prev ? { ...prev, name: e.target.value } : prev))
+                        }
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Country</span>
+                      <input value={regionLabel(selectedRegion)} disabled />
+                    </label>
+                    <label className="field">
+                      <span>Currency</span>
+                      <select
+                        value={regionDraft.currency}
+                        onChange={(e) =>
+                          setRegionDraft((prev) =>
+                            prev
+                              ? { ...prev, currency: e.target.value as PayrollCurrency }
+                              : prev,
+                          )
+                        }
+                      >
+                        {CURRENCY_OPTIONS.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>Coverage period</span>
+                      <select
+                        value={regionDraft.coveragePeriod}
+                        onChange={(e) =>
+                          setRegionDraft((prev) =>
+                            prev
+                              ? { ...prev, coveragePeriod: e.target.value as CoveragePeriod }
+                              : prev,
+                          )
+                        }
+                      >
+                        {COVERAGE_OPTIONS.map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>Status</span>
+                      <select
+                        value={regionDraft.status}
+                        onChange={(e) =>
+                          setRegionDraft((prev) =>
+                            prev ? { ...prev, status: e.target.value as ConfigStatus } : prev,
+                          )
+                        }
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </label>
                   </div>
-                  <ul className="cfg-division-list">
-                    {DIVISIONS.map((d) => {
-                      const on = selectedRegion.divisions.includes(d);
-                      return (
-                        <li key={d}>
-                          <button
-                            type="button"
-                            className={`cfg-division-row ${on ? 'on' : ''}`}
-                            onClick={() => toggleDivision(d)}
-                          >
-                            <span className="cfg-division-check">{on ? '✓' : ''}</span>
-                            <span className="cfg-division-name">{d}</span>
-                            <span className="cfg-division-state">{on ? 'Assigned' : 'Available'}</span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
+
+                  <div className={`cfg-edit-unit ${selectedDivision ? 'has-unit' : ''}`}>
+                    <div className="cfg-region-detail-head">
+                      <h3>Division</h3>
+                      {selectedDivision && (
+                        <span className={`cfg-status ${divisionAssigned ? 'is-active' : 'is-inactive'}`}>
+                          {divisionAssigned ? 'Assigned' : 'Available'}
+                        </span>
+                      )}
+                    </div>
+                    {!selectedDivision ? (
+                      <div className="cfg-pane-empty soft">
+                        Click a division in the middle list to assign or review it here.
+                      </div>
+                    ) : (
+                      <div className="cfg-unit-card">
+                        <strong>{selectedDivision}</strong>
+                        <p>
+                          {divisionAssigned
+                            ? `Assigned to ${regionLabel(selectedRegion)}.`
+                            : `Not assigned to ${regionLabel(selectedRegion)} yet.`}
+                        </p>
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${divisionAssigned ? 'btn-ghost' : 'btn-primary'}`}
+                          onClick={() => toggleDivision(selectedDivision)}
+                        >
+                          {divisionAssigned ? 'Remove from region' : 'Assign to region'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </>
             )}
@@ -513,8 +698,12 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
       )}
 
       {section === 'methods' && (
-        <div className="cfg-split cfg-split-shell cfg-split-narrow">
-          <aside className="cfg-split-list" aria-label="Methods">
+        <div className="cfg-split cfg-split-shell cfg-split-triple">
+          <aside className="cfg-split-list cfg-col-regions" aria-label="Methods">
+            <div className="cfg-pane-head">
+              <strong>Methods</strong>
+              <span className="cfg-tab-count">{filteredMethods.length}</span>
+            </div>
             <div className="cfg-split-list-scroll">
               {filteredMethods.length === 0 ? (
                 <div className="empty-state">No methods match this search.</div>
@@ -532,18 +721,15 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
                           <span className="cfg-nav-copy">
                             <strong>{m.name}</strong>
                             <span>
-                              {m.basedOn} · {used} schedules
+                              {m.basedOn} · {used}
                             </span>
                           </span>
                         </button>
-                        <div className="cfg-nav-actions" onClick={(e) => e.stopPropagation()}>
+                        <div className="cfg-nav-actions">
                           <RowActionMenu
                             items={EDIT_DELETE}
                             onAction={(action) => {
-                              if (action === 'edit') {
-                                setSelectedMethodId(m.id);
-                                setMethodDraft({ name: m.name, basedOn: m.basedOn });
-                              }
+                              if (action === 'edit') setSelectedMethodId(m.id);
                               if (action === 'delete')
                                 setPendingDelete({ kind: 'method', id: m.id, name: m.name });
                             }}
@@ -557,11 +743,42 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
             </div>
           </aside>
 
-          <section className="cfg-split-detail">
-            {!selectedMethod ? (
+          <aside className="cfg-split-list cfg-col-mid" aria-label="Schedules using method">
+            <div className="cfg-pane-head">
+              <strong>Schedules</strong>
+              <span className="cfg-tab-count">{usedCount}</span>
+            </div>
+            <div className="cfg-split-list-scroll">
+              {!selectedMethod ? (
+                <div className="cfg-pane-empty">Select a method</div>
+              ) : usedIn.length === 0 ? (
+                <div className="cfg-pane-empty">Not used in any schedule</div>
+              ) : (
+                <ul className="cfg-mid-list">
+                  {usedIn.map((name) => (
+                    <li key={name}>
+                      <button
+                        type="button"
+                        className={`cfg-mid-item ${selectedUsage === name ? 'active' : ''}`}
+                        onClick={() => setSelectedUsage(name)}
+                      >
+                        <span className="cfg-mid-copy">
+                          <strong>{name}</strong>
+                          <span>Linked schedule</span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </aside>
+
+          <section className="cfg-split-detail cfg-col-edit">
+            {!selectedMethod || !methodDraft ? (
               <div className="cfg-split-empty">
                 <h3>Select a method</h3>
-                <p>Choose a payment method on the left to review and edit details.</p>
+                <p>Choose a method, review linked schedules, then edit details on the right.</p>
               </div>
             ) : (
               <>
@@ -571,83 +788,66 @@ export function PayrollConfigView({ section }: { section: ConfigSection }) {
                       <h2>{selectedMethod.name}</h2>
                     </div>
                     <p className="cfg-detail-sub">
-                      Based on {selectedMethod.basedOn} · Used in {usedCount} schedules
+                      {selectedUsage
+                        ? `Linked to · ${selectedUsage}`
+                        : `Used in ${usedCount} schedules`}
                     </p>
                   </div>
-                  <div className="cfg-detail-actions">
-                    {methodDraft ? (
-                      <>
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => setMethodDraft(null)}
-                        >
-                          Cancel
-                        </button>
-                        <button type="button" className="btn btn-primary btn-sm" onClick={saveMethodInline}>
-                          Save
-                        </button>
-                      </>
-                    ) : (
-                      <button type="button" className="btn btn-primary btn-sm" onClick={startMethodEdit}>
-                        <Pencil size={13} />
-                        Edit
-                      </button>
-                    )}
-                  </div>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={saveMethodInline}>
+                    Save
+                  </button>
                 </div>
 
-                <div className="cfg-method-detail">
-                  <div className="cfg-method-fields">
+                <div className="cfg-edit-pane">
+                  <div className="cfg-edit-grid">
                     <label className="field">
                       <span>Method name</span>
-                      {methodDraft ? (
-                        <input
-                          value={methodDraft.name}
-                          onChange={(e) =>
-                            setMethodDraft((prev) => (prev ? { ...prev, name: e.target.value } : prev))
-                          }
-                        />
-                      ) : (
-                        <strong>{selectedMethod.name}</strong>
-                      )}
+                      <input
+                        value={methodDraft.name}
+                        onChange={(e) =>
+                          setMethodDraft((prev) => (prev ? { ...prev, name: e.target.value } : prev))
+                        }
+                      />
                     </label>
                     <label className="field">
                       <span>Based on</span>
-                      {methodDraft ? (
-                        <select
-                          value={methodDraft.basedOn}
-                          onChange={(e) =>
-                            setMethodDraft((prev) =>
-                              prev ? { ...prev, basedOn: e.target.value } : prev,
-                            )
-                          }
-                        >
-                          {BASED_ON_OPTIONS.map((o) => (
-                            <option key={o} value={o}>
-                              {o}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span className="cfg-based-on">{selectedMethod.basedOn}</span>
-                      )}
+                      <select
+                        value={methodDraft.basedOn}
+                        onChange={(e) =>
+                          setMethodDraft((prev) =>
+                            prev ? { ...prev, basedOn: e.target.value } : prev,
+                          )
+                        }
+                      >
+                        {BASED_ON_OPTIONS.map((o) => (
+                          <option key={o} value={o}>
+                            {o}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span>Schedule usage</span>
+                      <input value={`${usedCount} schedule${usedCount === 1 ? '' : 's'}`} disabled />
                     </label>
                   </div>
 
-                  <div className="cfg-method-usage">
+                  <div className={`cfg-edit-unit ${selectedUsage ? 'has-unit' : ''}`}>
                     <div className="cfg-region-detail-head">
-                      <h3>Used in schedules</h3>
-                      <span className="cfg-tab-count">{usedCount}</span>
+                      <h3>Schedule link</h3>
                     </div>
-                    {usedIn.length === 0 ? (
-                      <div className="cfg-detail-empty">Not assigned to any schedule yet.</div>
+                    {!selectedUsage ? (
+                      <div className="cfg-pane-empty soft">
+                        Click a schedule in the middle list to inspect the link here.
+                      </div>
                     ) : (
-                      <ul className="cfg-usage-list">
-                        {usedIn.map((name) => (
-                          <li key={name}>{name}</li>
-                        ))}
-                      </ul>
+                      <div className="cfg-unit-card">
+                        <strong>{selectedUsage}</strong>
+                        <p>
+                          This method is assigned to {selectedUsage} and can be managed from
+                          Schedules.
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>

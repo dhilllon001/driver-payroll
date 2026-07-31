@@ -4,7 +4,18 @@ import { CATEGORIES, DIVISIONS, INCIDENT_STATUSES, INCIDENT_TYPES } from '../../
 import type { FuelRow, IncidentNote, IncidentRow, IncidentStatus } from '../../types';
 
 function Close({ onClose }: { onClose: () => void }) {
-  return <button type="button" className="modal-close" aria-label="Close" onClick={onClose}><X size={14} /></button>;
+  return (
+    <button
+      type="button"
+      className="modal-close"
+      aria-label="Close"
+      data-tooltip="Close"
+      data-tooltip-side="bottom"
+      onClick={onClose}
+    >
+      <X size={14} />
+    </button>
+  );
 }
 
 export function FuelAdjustmentModal({ receipt, onClose, onSave }: { receipt: FuelRow; onClose: () => void; onSave: (receipt: FuelRow) => void }) {

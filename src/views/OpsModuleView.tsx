@@ -1,8 +1,10 @@
 import { Download, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { HeaderFilters } from '../components/layout/HeaderFilters';
 import { RowActionMenu } from '../components/ui/RowActionMenu';
 import { useApp } from '../context/AppContext';
 import { buildOpsRows, opsTitle } from '../data/opsSeed';
+import { usePageHeader } from '../hooks/usePageHeader';
 import type { OpsCatalogRow, ViewId } from '../types';
 import './modules.css';
 
@@ -42,9 +44,25 @@ export function OpsModuleView({ id }: { id: ViewId }) {
 
   const title = opsTitle(id);
 
+  usePageHeader([
+    {
+      id: 'export',
+      label: 'Export',
+      icon: Download,
+      onClick: () => toast(`Exported ${filtered.length} ${title} rows`),
+    },
+    {
+      id: 'add',
+      label: 'Add Entry',
+      icon: Plus,
+      primary: true,
+      onClick: () => toast(`Add ${title} entry`),
+    },
+  ]);
+
   return (
     <div className="mod-page">
-      <div className="mod-filters">
+      <HeaderFilters>
         <label className="mod-filter">
           <span>Status</span>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -63,25 +81,7 @@ export function OpsModuleView({ id }: { id: ViewId }) {
             ))}
           </select>
         </label>
-        <div className="mod-filters-actions">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => toast(`Exported ${filtered.length} ${title} rows`)}
-          >
-            <Download size={13} />
-            Export
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={() => toast(`Add ${title} entry`)}
-          >
-            <Plus size={13} />
-            Add Entry
-          </button>
-        </div>
-      </div>
+      </HeaderFilters>
 
       <div className="mod-table-shell">
         <div className="mod-table-scroll">

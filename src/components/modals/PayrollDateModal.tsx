@@ -84,7 +84,7 @@ export function PayrollDateModal({
       >
         <div className="modal-head">
           <h3>{mode === 'edit' ? 'Edit Payroll Date' : 'Add Payroll Date'}</h3>
-          <button type="button" className="modal-close" aria-label="Close" onClick={onClose}>
+          <button type="button" className="modal-close" aria-label="Close" data-tooltip="Close" data-tooltip-side="bottom" onClick={onClose}>
             <X size={14} />
           </button>
         </div>

@@ -75,6 +75,10 @@ const OPS_TITLES: Record<string, string> = {
   'te-history': 'Trip Expense · History',
   'te-bulk-uploads': 'Trip Expense · Bulk Uploads',
   'cash-advance': 'MX Cash Advance',
+  'ca-issue': 'Issue Cash Advance',
+  'ca-board': 'Cash Advances',
+  'ca-history': 'Cash Advance History',
+  'ca-bulk': 'Bulk Issue',
   'nomilinea-payroll': 'Nomilinea Payroll',
   'nomilinea-concepts': 'Nomilinea Concepts',
 };

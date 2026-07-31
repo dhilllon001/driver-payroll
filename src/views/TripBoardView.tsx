@@ -6,12 +6,15 @@ import {
   Flag,
   MessageCircle,
   MoreVertical,
+  Search,
+  Upload,
   Wallet,
   X,
 } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '../context/AppContext';
+import { usePageHeader } from '../hooks/usePageHeader';
 import type { Trip, TripRole } from '../types';
 import './views.css';
 
@@ -194,6 +197,22 @@ export function TripBoardView() {
   } = useApp();
 
   const [menuId, setMenuId] = useState<string | null>(null);
+
+  usePageHeader([
+    {
+      id: 'adv-search',
+      label: 'Advanced Search',
+      icon: Search,
+      onClick: () => toast('Advanced search coming soon'),
+    },
+    {
+      id: 'upload-pay',
+      label: 'Upload Pay',
+      icon: Upload,
+      primary: true,
+      onClick: () => toast('Upload Pay started'),
+    },
+  ]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

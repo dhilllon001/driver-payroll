@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { RowActionMenu } from '../components/ui/RowActionMenu';
 import { useApp } from '../context/AppContext';
 import { DEDUCTION_ROWS } from '../data/opsSeed';
+import { usePageHeader } from '../hooks/usePageHeader';
 import type { DeductionRow } from '../types';
 import './modules.css';
 
@@ -26,7 +27,6 @@ export function DeductionsView() {
   const [payment, setPayment] = useState('all');
   const [division, setDivision] = useState('all');
   const [type, setType] = useState('all');
-  const [driver, setDriver] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 20;
 
@@ -36,7 +36,7 @@ export function DeductionsView() {
   );
 
   const filtered = useMemo(() => {
-    const q = `${search} ${driver}`.trim().toLowerCase();
+    const q = search.trim().toLowerCase();
     return rows.filter((r) => {
       if (region !== 'all' && r.region !== region) return false;
       if (status !== 'all' && r.status !== status) return false;
@@ -49,7 +49,7 @@ export function DeductionsView() {
       }
       return true;
     });
-  }, [rows, region, status, payment, division, type, payrollType, search, driver]);
+  }, [rows, region, status, payment, division, type, payrollType, search]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage = Math.min(page, totalPages);
@@ -62,9 +62,30 @@ export function DeductionsView() {
     setPayment('all');
     setDivision('all');
     setType('all');
-    setDriver('');
     setPage(1);
   };
+
+  usePageHeader([
+    {
+      id: 'reset',
+      label: 'Reset filters',
+      icon: RotateCcw,
+      onClick: reset,
+    },
+    {
+      id: 'export',
+      label: 'Export',
+      icon: Download,
+      onClick: () => toast(`Exported ${filtered.length} records`),
+    },
+    {
+      id: 'add',
+      label: 'Add Entry',
+      icon: Plus,
+      primary: true,
+      onClick: () => toast('Add deduction coming soon'),
+    },
+  ]);
 
   return (
     <div className="mod-page">
@@ -85,14 +106,6 @@ export function DeductionsView() {
             <option value="all">All</option>
             <option value="closed">Closed</option>
           </select>
-        </label>
-        <label className="mod-filter grow">
-          <span>Driver Code</span>
-          <input
-            value={driver}
-            onChange={(e) => { setDriver(e.target.value); setPage(1); }}
-            placeholder="Search driver"
-          />
         </label>
         <label className="mod-filter">
           <span>Division</span>
@@ -127,28 +140,6 @@ export function DeductionsView() {
             <option value="installment">Installment</option>
           </select>
         </label>
-        <div className="mod-filters-actions">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={reset}>
-            <RotateCcw size={13} />
-            Reset
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => toast(`Exported ${filtered.length} records`)}
-          >
-            <Download size={13} />
-            Export
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={() => toast('Add deduction coming soon')}
-          >
-            <Plus size={13} />
-            Add Entry
-          </button>
-        </div>
       </div>
 
       <div className="mod-table-shell">

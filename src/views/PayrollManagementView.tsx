@@ -17,6 +17,7 @@ import {
   type PayrollDateForm,
 } from '../components/modals/PayrollDateModal';
 import { useApp } from '../context/AppContext';
+import { usePageHeader } from '../hooks/usePageHeader';
 import {
   DRIVER_CLASSES,
   PAYROLL_REGIONS,
@@ -181,6 +182,16 @@ export function PayrollManagementView() {
   const [perPage, setPerPage] = useState(20);
   const [modal, setModal] = useState<{ mode: 'add' | 'edit'; item?: PayrollRun } | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PayrollRun | null>(null);
+
+  usePageHeader([
+    {
+      id: 'add-payroll',
+      label: 'Add Payroll Date',
+      icon: Plus,
+      primary: true,
+      onClick: () => setModal({ mode: 'add' }),
+    },
+  ]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -370,14 +381,6 @@ export function PayrollManagementView() {
             ))}
           </select>
         </label>
-        <button
-          type="button"
-          className="btn btn-primary btn-sm pay-filters-add"
-          onClick={() => setModal({ mode: 'add' })}
-        >
-          <Plus size={14} />
-          Add Payroll Date
-        </button>
       </div>
 
       {pendingDelete && (

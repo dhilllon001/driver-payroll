@@ -90,6 +90,7 @@ export function AddPaymentModal() {
             type="button"
             className="modal-close"
             aria-label="Close"
+            data-tooltip="Close" data-tooltip-side="bottom"
             onClick={() => setShowPaymentModal(false)}
           >
             <X size={14} />
@@ -271,6 +272,7 @@ export function ExceptionModal() {
             type="button"
             className="modal-close"
             aria-label="Close"
+            data-tooltip="Close" data-tooltip-side="bottom"
             onClick={() => setShowExceptionModal(false)}
           >
             <X size={14} />
