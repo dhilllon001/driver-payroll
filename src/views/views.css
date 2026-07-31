@@ -650,35 +650,48 @@
 .trip-hover-wrap {
   position: relative;
   display: inline-flex;
+  max-width: 100%;
 }
 .trip-hover-portal {
   position: fixed;
   z-index: 1300;
   pointer-events: none;
+  width: min(300px, calc(100vw - 16px));
 }
 .trip-hover-card {
-  width: 280px;
-  background: rgba(255, 255, 255, 0.96);
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   box-shadow: var(--shadow-popover);
-  padding: 12px 14px;
+  padding: 14px 14px 12px;
+  overflow: hidden;
   animation: menuIn var(--dur-fast) var(--ease-out);
 }
 .trip-hover-card header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
-.trip-hover-card header strong {
+.trip-hover-title {
+  min-width: 0;
+}
+.trip-hover-title strong {
   display: block;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: -0.02em;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+.trip-hover-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 .trip-hover-flag {
   display: inline-flex;
@@ -692,52 +705,89 @@
   padding: 3px 7px;
   white-space: nowrap;
 }
-.trip-hover-card dl {
-  margin: 0;
-  display: grid;
-  gap: 7px;
-}
-.trip-hover-card dl > div {
-  display: grid;
-  grid-template-columns: 78px 1fr;
-  gap: 8px;
-  font-size: 12px;
-}
-.trip-hover-card dt {
-  margin: 0;
-  color: var(--fg-3);
-}
-.trip-hover-card dd {
-  margin: 0;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.trip-hover-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   min-width: 0;
 }
-.trip-hover-card dd small {
+.trip-hover-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+.trip-hover-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.trip-hover-row.stacked {
+  grid-column: 1 / -1;
+}
+.trip-hover-label {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.trip-hover-value {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg-1);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+.trip-hover-value small {
   display: block;
+  margin-top: 2px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--fg-3);
-  margin-top: 1px;
+}
+.trip-hover-dates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+.trip-hover-arrow {
+  color: var(--fg-4);
+  font-weight: 500;
+  flex-shrink: 0;
 }
 .trip-hover-exception {
-  margin-top: 10px;
+  margin-top: 12px;
   display: flex;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 9px 10px;
   border-radius: 10px;
   background: var(--red-bg);
   color: var(--negative);
   font-size: 12px;
+  min-width: 0;
+}
+.trip-hover-exception > div {
+  min-width: 0;
+  flex: 1;
 }
 .trip-hover-exception strong {
   display: block;
   letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
 }
 .trip-hover-exception span {
   display: block;
   margin-top: 2px;
   color: var(--fg-2);
   font-weight: 500;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .board-alert-banner {

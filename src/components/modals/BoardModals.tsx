@@ -208,60 +208,81 @@ export function UploadPayModal({
 
 export function TripHoverCard({ trip }: { trip: Trip }) {
   const exception = trip.exceptions[0];
+  const exceptionText =
+    exception?.errorException?.trim() ||
+    exception?.customNote?.trim() ||
+    exception?.ruleName?.trim() ||
+    '';
+  const showException = !!exception && (exceptionText || exception.ruleName);
+
   return (
     <div className="trip-hover-card">
       <header>
-        <div>
+        <div className="trip-hover-title">
           <strong>{trip.tripNo}</strong>
-          <span className={`pay-status-pill ${trip.paymentStatus}`}>{trip.paymentStatus}</span>
+          <div className="trip-hover-badges">
+            <span className={`pay-status-pill ${trip.paymentStatus}`}>{trip.paymentStatus}</span>
+            {trip.flagged && (
+              <span className="trip-hover-flag">
+                <Flag size={11} fill="currentColor" /> Flagged
+              </span>
+            )}
+          </div>
         </div>
-        {trip.flagged && (
-          <span className="trip-hover-flag">
-            <Flag size={12} fill="currentColor" /> Flagged
-          </span>
-        )}
       </header>
-      <dl>
-        <div>
-          <dt>Lead driver</dt>
-          <dd>
+
+      <div className="trip-hover-body">
+        <div className="trip-hover-row stacked">
+          <span className="trip-hover-label">Lead driver</span>
+          <span className="trip-hover-value">
             {trip.leadDriver}
             <small>{trip.leadDriverId}</small>
-          </dd>
+          </span>
         </div>
-        <div>
-          <dt>Category</dt>
-          <dd>{trip.tripCategory}</dd>
+        <div className="trip-hover-grid">
+          <div className="trip-hover-row">
+            <span className="trip-hover-label">Category</span>
+            <span className="trip-hover-value">{trip.tripCategory}</span>
+          </div>
+          <div className="trip-hover-row">
+            <span className="trip-hover-label">Role</span>
+            <span className="trip-hover-value">{trip.tripRole}</span>
+          </div>
+          <div className="trip-hover-row">
+            <span className="trip-hover-label">Pay miles</span>
+            <span className="trip-hover-value tnum">{trip.payMiles.toFixed(1)}</span>
+          </div>
         </div>
-        <div>
-          <dt>Role</dt>
-          <dd>{trip.tripRole}</dd>
-        </div>
-        <div>
-          <dt>Pay miles</dt>
-          <dd className="tnum">{trip.payMiles.toFixed(1)}</dd>
-        </div>
-        <div>
-          <dt>Dates</dt>
-          <dd className="tnum">
-            {trip.dateOut} → {trip.dateIn}
-          </dd>
+        <div className="trip-hover-row stacked">
+          <span className="trip-hover-label">Dates</span>
+          <span className="trip-hover-value trip-hover-dates tnum">
+            <span>{trip.dateOut}</span>
+            <span className="trip-hover-arrow">→</span>
+            <span>{trip.dateIn}</span>
+          </span>
         </div>
         {(trip.origin || trip.destination) && (
-          <div>
-            <dt>Route</dt>
-            <dd>
-              {trip.origin || '—'} → {trip.destination || '—'}
-            </dd>
+          <div className="trip-hover-row stacked">
+            <span className="trip-hover-label">Route</span>
+            <span className="trip-hover-value trip-hover-dates">
+              <span>{trip.origin || '—'}</span>
+              <span className="trip-hover-arrow">→</span>
+              <span>{trip.destination || '—'}</span>
+            </span>
           </div>
         )}
-      </dl>
-      {exception && (
+      </div>
+
+      {showException && (
         <div className="trip-hover-exception">
           <AlertTriangle size={13} />
           <div>
             <strong>{exception.ruleName || 'Exception'}</strong>
-            <span>{exception.errorException || exception.customNote || 'Needs review'}</span>
+            {exceptionText && exceptionText !== exception.ruleName ? (
+              <span>{exceptionText}</span>
+            ) : (
+              <span>Needs review</span>
+            )}
           </div>
         </div>
       )}
@@ -278,10 +299,13 @@ export function TripHoverWrap({ trip, children }: { trip: Trip; children: ReactN
       className="trip-hover-wrap"
       onMouseEnter={(e) => {
         const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-        const width = 280;
+        const width = 300;
+        const estHeight = 280;
         let left = r.left;
+        let top = r.bottom + 8;
         if (left + width > window.innerWidth - 12) left = window.innerWidth - width - 12;
-        setPos({ top: r.bottom + 8, left: Math.max(8, left) });
+        if (top + estHeight > window.innerHeight - 12) top = Math.max(8, r.top - estHeight - 8);
+        setPos({ top, left: Math.max(8, left) });
         setOpen(true);
       }}
       onMouseLeave={() => setOpen(false)}
