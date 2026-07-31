@@ -24,6 +24,8 @@ export type PageHeaderControls = {
   actions: PageHeaderAction[];
 } | null;
 
+export type ToastTone = 'default' | 'success' | 'info' | 'warn' | 'error';
+
 interface AppState {
   view: ViewId;
   setView: (v: ViewId) => void;
@@ -61,9 +63,10 @@ interface AppState {
   setConfigStatusFilter: (s: 'all' | ConfigStatus) => void;
   pageHeader: PageHeaderControls;
   setPageHeader: (h: PageHeaderControls) => void;
-  toast: (msg: string) => void;
+  toast: (msg: string, tone?: ToastTone) => void;
   toastMsg: string;
   toastShow: boolean;
+  toastTone: ToastTone;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -89,11 +92,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [pageHeader, setPageHeader] = useState<PageHeaderControls>(null);
   const [toastMsg, setToastMsg] = useState('');
   const [toastShow, setToastShow] = useState(false);
+  const [toastTone, setToastTone] = useState<ToastTone>('default');
 
-  const toast = useCallback((msg: string) => {
+  const toast = useCallback((msg: string, tone: ToastTone = 'default') => {
     setToastMsg(msg);
+    setToastTone(tone);
     setToastShow(true);
-    window.setTimeout(() => setToastShow(false), 2600);
+    window.setTimeout(() => setToastShow(false), 2800);
   }, []);
 
   const value = useMemo(
@@ -137,6 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast,
       toastMsg,
       toastShow,
+      toastTone,
     }),
     [
       view,
@@ -160,6 +166,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast,
       toastMsg,
       toastShow,
+      toastTone,
     ],
   );
 

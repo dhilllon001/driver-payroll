@@ -617,6 +617,9 @@
 }
 
 .row-menu-pop button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border: none;
   background: transparent;
   text-align: left;
@@ -628,7 +631,7 @@
   width: 100%;
 }
 .row-menu-pop button:hover {
-  background: var(--bg-surface-2);
+  background: var(--blue-soft);
   color: var(--action);
 }
 
@@ -641,6 +644,173 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Trip hover detail card */
+.trip-hover-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.trip-hover-portal {
+  position: fixed;
+  z-index: 1300;
+  pointer-events: none;
+}
+.trip-hover-card {
+  width: 280px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: var(--shadow-popover);
+  padding: 12px 14px;
+  animation: menuIn var(--dur-fast) var(--ease-out);
+}
+.trip-hover-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.trip-hover-card header strong {
+  display: block;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.trip-hover-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--amber);
+  background: var(--amber-bg);
+  border-radius: 999px;
+  padding: 3px 7px;
+  white-space: nowrap;
+}
+.trip-hover-card dl {
+  margin: 0;
+  display: grid;
+  gap: 7px;
+}
+.trip-hover-card dl > div {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  gap: 8px;
+  font-size: 12px;
+}
+.trip-hover-card dt {
+  margin: 0;
+  color: var(--fg-3);
+}
+.trip-hover-card dd {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  min-width: 0;
+}
+.trip-hover-card dd small {
+  display: block;
+  font-weight: 500;
+  color: var(--fg-3);
+  margin-top: 1px;
+}
+.trip-hover-exception {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--red-bg);
+  color: var(--negative);
+  font-size: 12px;
+}
+.trip-hover-exception strong {
+  display: block;
+  letter-spacing: -0.01em;
+}
+.trip-hover-exception span {
+  display: block;
+  margin-top: 2px;
+  color: var(--fg-2);
+  font-weight: 500;
+}
+
+.board-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--blue-soft);
+  color: var(--action);
+  margin-bottom: 14px;
+}
+.board-alert-banner p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--fg-2);
+}
+.board-alert-banner.success {
+  background: var(--green-bg);
+  color: var(--positive);
+}
+.board-alert-banner.danger {
+  background: var(--red-bg);
+  color: var(--negative);
+}
+.board-alert-banner.default {
+  background: var(--grey-bg);
+  color: var(--fg-2);
+}
+.board-modal-grid {
+  display: grid;
+  gap: 12px;
+}
+.board-upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 140px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1.5px dashed rgba(0, 113, 227, 0.35);
+  background: rgba(0, 113, 227, 0.04);
+  color: var(--fg-3);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+.board-upload-zone:hover,
+.board-upload-zone.dragging {
+  border-color: rgba(0, 113, 227, 0.55);
+  background: rgba(0, 113, 227, 0.08);
+}
+.board-upload-zone.has-file {
+  border-style: solid;
+  background: var(--green-bg);
+  border-color: rgba(36, 138, 61, 0.35);
+  color: var(--positive);
+}
+.board-upload-zone strong {
+  font-size: 14px;
+  color: var(--fg-1);
+  letter-spacing: -0.02em;
+}
+.board-upload-zone.has-file strong {
+  color: var(--positive);
+}
+.board-upload-zone span {
+  font-size: 12px;
 }
 
 .board-footer {
@@ -695,26 +865,6 @@
   background: #0f1a2a;
   border-color: #0f1a2a;
   color: #fff;
-}
-
-.help-fab {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-pill);
-  background: var(--positive);
-  color: #fff;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-popover);
-  z-index: 50;
-}
-.help-fab:hover {
-  filter: brightness(1.05);
 }
 
 /* ── Trip Detail (layout inspired by tracking shell) ── */

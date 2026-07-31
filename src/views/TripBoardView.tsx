@@ -3,8 +3,9 @@ import {
   ChevronLast,
   ChevronLeft,
   ChevronRight,
+  Download,
+  Eye,
   Flag,
-  MessageCircle,
   MoreVertical,
   Search,
   Upload,
@@ -13,6 +14,13 @@ import {
 } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import {
+  AdvancedSearchModal,
+  ConfirmActionModal,
+  TripHoverWrap,
+  UploadPayModal,
+  type BoardConfirm,
+} from '../components/modals/BoardModals';
 import { useApp } from '../context/AppContext';
 import { usePageHeader } from '../hooks/usePageHeader';
 import type { Trip, TripRole } from '../types';
@@ -38,20 +46,15 @@ function RowMenu({
   open,
   onToggle,
   onClose,
+  onConfirm,
 }: {
   trip: Trip;
   open: boolean;
   onToggle: () => void;
   onClose: () => void;
+  onConfirm: (action: NonNullable<BoardConfirm>) => void;
 }) {
-  const {
-    setSelectedTripId,
-    setShowPaymentModal,
-    setShowExceptionModal,
-    setTrips,
-    setDetailTab,
-    toast,
-  } = useApp();
+  const { setSelectedTripId, setShowPaymentModal, setShowExceptionModal, setDetailTab } = useApp();
   const btnRef = useRef<HTMLButtonElement>(null);
   const popRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -60,8 +63,8 @@ function RowMenu({
     if (!open || !btnRef.current) return;
     const place = () => {
       const rect = btnRef.current!.getBoundingClientRect();
-      const menuW = 180;
-      const menuH = 220;
+      const menuW = 200;
+      const menuH = 240;
       let left = rect.left;
       let top = rect.bottom + 6;
       if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
@@ -88,12 +91,6 @@ function RowMenu({
     return () => document.removeEventListener('mousedown', onDoc);
   }, [open, onClose]);
 
-  const openTrip = () => {
-    setSelectedTripId(trip.id);
-    setDetailTab('payment');
-    onClose();
-  };
-
   return (
     <div className="row-menu" onClick={(e) => e.stopPropagation()}>
       <button
@@ -114,8 +111,15 @@ function RowMenu({
             role="menu"
             style={{ top: pos.top, left: pos.left }}
           >
-            <button type="button" role="menuitem" onClick={openTrip}>
-              Open trip
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onClose();
+                onConfirm({ kind: 'open', trip });
+              }}
+            >
+              <Eye size={14} /> Open trip
             </button>
             <button
               type="button"
@@ -126,7 +130,7 @@ function RowMenu({
                 onClose();
               }}
             >
-              Add payment
+              <Wallet size={14} /> Add payment
             </button>
             {trip.exceptions.length > 0 && (
               <button
@@ -134,6 +138,7 @@ function RowMenu({
                 role="menuitem"
                 onClick={() => {
                   setSelectedTripId(trip.id);
+                  setDetailTab('payment');
                   setShowExceptionModal(true);
                   onClose();
                 }}
@@ -145,24 +150,21 @@ function RowMenu({
               type="button"
               role="menuitem"
               onClick={() => {
-                setTrips((prev) =>
-                  prev.map((t) => (t.id === trip.id ? { ...t, flagged: !t.flagged } : t)),
-                );
-                toast(trip.flagged ? 'Flag cleared' : 'Trip flagged');
                 onClose();
+                onConfirm({ kind: 'flag', trip });
               }}
             >
-              {trip.flagged ? 'Clear flag' : 'Flag trip'}
+              <Flag size={14} /> {trip.flagged ? 'Clear flag' : 'Flag trip'}
             </button>
             <button
               type="button"
               role="menuitem"
               onClick={() => {
-                toast(`Exported ${trip.tripNo}`);
                 onClose();
+                onConfirm({ kind: 'export', trip });
               }}
             >
-              Export trip
+              <Download size={14} /> Export trip
             </button>
           </div>,
           document.body,
@@ -197,20 +199,23 @@ export function TripBoardView() {
   } = useApp();
 
   const [menuId, setMenuId] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [confirm, setConfirm] = useState<BoardConfirm>(null);
 
   usePageHeader([
     {
       id: 'adv-search',
       label: 'Advanced Search',
       icon: Search,
-      onClick: () => toast('Advanced search coming soon'),
+      onClick: () => setShowAdvanced(true),
     },
     {
       id: 'upload-pay',
       label: 'Upload Pay',
       icon: Upload,
       primary: true,
-      onClick: () => toast('Upload Pay started'),
+      onClick: () => setShowUpload(true),
     },
   ]);
 
@@ -269,11 +274,8 @@ export function TripBoardView() {
   const toggleAll = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      if (pageSelected) {
-        pageRows.forEach((t) => next.delete(t.id));
-      } else {
-        pageRows.forEach((t) => next.add(t.id));
-      }
+      if (pageSelected) pageRows.forEach((t) => next.delete(t.id));
+      else pageRows.forEach((t) => next.add(t.id));
       return next;
     });
   };
@@ -322,24 +324,12 @@ export function TripBoardView() {
       });
     });
     if (flagFilter === 'flagged') {
-      chips.push({
-        key: 'flag',
-        label: 'Flagged only',
-        clear: () => setFlagFilter('all'),
-      });
+      chips.push({ key: 'flag', label: 'Flagged only', clear: () => setFlagFilter('all') });
     } else if (flagFilter === 'clear') {
-      chips.push({
-        key: 'flag',
-        label: 'Not flagged',
-        clear: () => setFlagFilter('all'),
-      });
+      chips.push({ key: 'flag', label: 'Not flagged', clear: () => setFlagFilter('all') });
     }
     if (roleFilter !== 'all') {
-      chips.push({
-        key: 'role',
-        label: `Role: ${roleFilter}`,
-        clear: () => setRoleFilter('all'),
-      });
+      chips.push({ key: 'role', label: `Role: ${roleFilter}`, clear: () => setRoleFilter('all') });
     }
     if (tagFilter.trim()) {
       chips.push({
@@ -382,7 +372,29 @@ export function TripBoardView() {
   };
 
   const noFilters =
-    paymentFilters.length === 0 && flagFilter === 'all' && !search.trim() && roleFilter === 'all' && !tagFilter.trim();
+    paymentFilters.length === 0 &&
+    flagFilter === 'all' &&
+    !search.trim() &&
+    roleFilter === 'all' &&
+    !tagFilter.trim();
+
+  const runConfirm = () => {
+    if (!confirm) return;
+    const { trip, kind } = confirm;
+    if (kind === 'open') {
+      openTrip(trip.id);
+      toast(`Opened trip ${trip.tripNo}`, 'info');
+      return;
+    }
+    if (kind === 'flag') {
+      setTrips((prev) =>
+        prev.map((t) => (t.id === trip.id ? { ...t, flagged: !t.flagged } : t)),
+      );
+      toast(trip.flagged ? `Flag cleared on ${trip.tripNo}` : `Flagged trip ${trip.tripNo}`, 'success');
+      return;
+    }
+    toast(`Exported ${trip.tripNo} successfully`, 'success');
+  };
 
   return (
     <div className="board">
@@ -410,7 +422,10 @@ export function TripBoardView() {
               type="button"
               className="btn board-generate-pay"
               onClick={() => {
-                toast(`Generate Pay started for ${selectedIds.size} trip${selectedIds.size === 1 ? '' : 's'}`);
+                toast(
+                  `Generate Pay started for ${selectedIds.size} trip${selectedIds.size === 1 ? '' : 's'}`,
+                  'success',
+                );
                 setSelectedIds(new Set());
               }}
             >
@@ -500,7 +515,12 @@ export function TripBoardView() {
           <thead>
             <tr>
               <th className="col-check">
-                <input type="checkbox" checked={pageSelected} onChange={toggleAll} aria-label="Select page" />
+                <input
+                  type="checkbox"
+                  checked={pageSelected}
+                  onChange={toggleAll}
+                  aria-label="Select page"
+                />
               </th>
               <th className="col-menu" aria-label="Actions" />
               <th className="col-status">Status</th>
@@ -544,10 +564,13 @@ export function TripBoardView() {
                       open={menuId === t.id}
                       onToggle={() => setMenuId((id) => (id === t.id ? null : t.id))}
                       onClose={() => setMenuId(null)}
+                      onConfirm={setConfirm}
                     />
                   </td>
-                  <td className="col-status">
-                    <PaymentIcon status={t.paymentStatus} />
+                  <td className="col-status" onClick={(e) => e.stopPropagation()}>
+                    <TripHoverWrap trip={t}>
+                      <PaymentIcon status={t.paymentStatus} />
+                    </TripHoverWrap>
                   </td>
                   <td className="col-flag" onClick={(e) => e.stopPropagation()}>
                     <button
@@ -555,29 +578,21 @@ export function TripBoardView() {
                       className={`flag-icon-btn ${t.flagged ? 'on' : ''}`}
                       title={t.flagged ? 'Clear flag' : 'Flag trip'}
                       aria-label={t.flagged ? 'Clear flag' : 'Flag trip'}
-                      onClick={() => {
-                        setTrips((prev) =>
-                          prev.map((row) =>
-                            row.id === t.id ? { ...row, flagged: !row.flagged } : row,
-                          ),
-                        );
-                        toast(t.flagged ? 'Flag cleared' : 'Trip flagged');
-                      }}
+                      onClick={() => setConfirm({ kind: 'flag', trip: t })}
                     >
                       <Flag size={14} fill={t.flagged ? 'currentColor' : 'none'} strokeWidth={2} />
                     </button>
                   </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="trip-link"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openTrip(t.id);
-                      }}
-                    >
-                      {t.tripNo}
-                    </button>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <TripHoverWrap trip={t}>
+                      <button
+                        type="button"
+                        className="trip-link"
+                        onClick={() => setConfirm({ kind: 'open', trip: t })}
+                      >
+                        {t.tripNo}
+                      </button>
+                    </TripHoverWrap>
                   </td>
                   <td className="tnum">{t.subTrip}</td>
                   <td>
@@ -619,11 +634,8 @@ export function TripBoardView() {
           Showing <strong className="tnum">{rangeStart}</strong>–
           <strong className="tnum">{rangeEnd}</strong> of{' '}
           <strong className="tnum">{filtered.length.toLocaleString()}</strong>
-          {selectedIds.size > 0 && (
-            <span className="muted-inline">{selectedIds.size} selected</span>
-          )}
         </span>
-        <label className="meta per-page">
+        <label className="per-page">
           Rows
           <select
             className="filter-select"
@@ -633,10 +645,11 @@ export function TripBoardView() {
               setPage(1);
             }}
           >
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
+            {[10, 25, 50, 100].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
           </select>
         </label>
         <div className="pager">
@@ -689,9 +702,70 @@ export function TripBoardView() {
         </div>
       </div>
 
-      <button type="button" className="help-fab" aria-label="Help" onClick={() => toast('Help center')}>
-        <MessageCircle size={20} />
-      </button>
+      {showAdvanced && (
+        <AdvancedSearchModal
+          initial={{
+            search,
+            role: roleFilter,
+            tag: tagFilter,
+            status: paymentFilters[0] || 'all',
+          }}
+          onClose={() => setShowAdvanced(false)}
+          onApply={(next) => {
+            setSearch(next.search);
+            setRoleFilter(next.role);
+            setTagFilter(next.tag);
+            setPaymentFilters(next.status === 'all' ? [] : [next.status]);
+            setShowAdvanced(false);
+            toast('Advanced search filters applied', 'info');
+          }}
+        />
+      )}
+
+      {showUpload && (
+        <UploadPayModal
+          onClose={() => setShowUpload(false)}
+          onUpload={(fileName) => {
+            setShowUpload(false);
+            toast(`Upload started · ${fileName}`, 'success');
+          }}
+        />
+      )}
+
+      {confirm && (
+        <ConfirmActionModal
+          title={
+            confirm.kind === 'flag'
+              ? confirm.trip.flagged
+                ? 'Clear flag'
+                : 'Flag trip'
+              : confirm.kind === 'export'
+                ? 'Export trip'
+                : 'Open trip'
+          }
+          message={
+            confirm.kind === 'flag'
+              ? confirm.trip.flagged
+                ? `Remove the flag from ${confirm.trip.tripNo}?`
+                : `Flag ${confirm.trip.tripNo} for follow-up review?`
+              : confirm.kind === 'export'
+                ? `Export trip ${confirm.trip.tripNo} as a CSV package?`
+                : `Open trip details for ${confirm.trip.tripNo}?`
+          }
+          confirmLabel={
+            confirm.kind === 'flag'
+              ? confirm.trip.flagged
+                ? 'Clear flag'
+                : 'Flag trip'
+              : confirm.kind === 'export'
+                ? 'Export'
+                : 'Open'
+          }
+          tone={confirm.kind === 'flag' && !confirm.trip.flagged ? 'default' : 'success'}
+          onConfirm={runConfirm}
+          onClose={() => setConfirm(null)}
+        />
+      )}
     </div>
   );
 }

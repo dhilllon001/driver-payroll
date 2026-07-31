@@ -69,6 +69,7 @@ function Shell() {
     showExceptionModal,
     toastMsg,
     toastShow,
+    toastTone,
   } = useApp();
 
   const showBoard = view === 'trip-board' && !selectedTripId;
@@ -125,7 +126,7 @@ function Shell() {
       </div>
       {showPaymentModal && <AddPaymentModal />}
       {showExceptionModal && <ExceptionModal />}
-      <div className={`toast ${toastShow ? 'show' : ''}`}>{toastMsg}</div>
+      <div className={`toast toast-${toastTone} ${toastShow ? 'show' : ''}`}>{toastMsg}</div>
     </>
   );
 }
