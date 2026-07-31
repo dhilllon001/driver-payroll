@@ -28,7 +28,7 @@ const PRIMARY: { id: ViewId; label: string; icon: typeof ClipboardList }[] = [
   { id: 'driver-ledger', label: 'Driver Ledger', icon: FileText },
   { id: 'fuel', label: 'Fuel Management', icon: Fuel },
   { id: 'incidents', label: 'MX Driver Incident', icon: ShieldAlert },
-  { id: 'deductions', label: 'Deductions & Reimbursements', icon: Banknote },
+  { id: 'deductions', label: 'Deductions', icon: Banknote },
 ];
 
 type NavChild = { id: ViewId; label: string };

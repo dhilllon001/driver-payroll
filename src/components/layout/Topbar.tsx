@@ -12,7 +12,7 @@ const TITLES: Partial<Record<ViewId, string>> = {
   'driver-ledger': 'Driver Ledger',
   fuel: 'Fuel Management',
   incidents: 'MX Driver Incident',
-  deductions: 'Deductions & Reimbursements',
+  deductions: 'Deductions',
   ifta: 'IFTA',
   'ifta-tax-rate': 'IFTA Tax Rate',
   'ifta-reports': 'IFTA Reports',

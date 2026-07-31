@@ -9,7 +9,7 @@ const LABELS: Partial<Record<ViewId, string>> = {
   'driver-ledger': 'Driver Ledger',
   fuel: 'Fuel Management',
   incidents: 'MX Driver Incident',
-  deductions: 'Deductions & Reimbursements',
+  deductions: 'Deductions',
   config: 'Payroll Configuration',
   'config-regions': 'Regions',
   'config-methods': 'Methods',

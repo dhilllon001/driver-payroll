@@ -253,36 +253,66 @@
 }
 
 .ca-issue-hero {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 20px;
-  border-radius: 18px;
+  padding: 20px 22px;
+  border-radius: 20px;
+  overflow: hidden;
+  color: #f5f5f7;
   background:
-    radial-gradient(120% 80% at 0% 0%, rgba(0, 113, 227, 0.1), transparent 55%),
-    linear-gradient(180deg, #fff 0%, #f7f9fc 100%);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+    radial-gradient(90% 120% at 100% 0%, rgba(10, 132, 255, 0.38), transparent 52%),
+    radial-gradient(70% 90% at 0% 100%, rgba(52, 199, 89, 0.12), transparent 50%),
+    linear-gradient(145deg, #141416 0%, #0a0a0c 55%, #111214 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.ca-issue-hero::before {
+  content: '';
+  position: absolute;
+  inset: auto -20% -40% auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 68%);
+  pointer-events: none;
+}
+
+.ca-issue-hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #0a84ff, rgba(10, 132, 255, 0.1));
+  pointer-events: none;
 }
 
 .ca-issue-kicker {
   margin: 0 0 4px;
   font-size: 11px;
   font-weight: 650;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--action);
+  color: #64b5ff;
 }
 
 .ca-issue-hero h2 {
   margin: 0;
   font-size: 22px;
   letter-spacing: -0.04em;
+  color: #fff;
 }
 
 .ca-issue-hero p:last-child {
   margin: 4px 0 0;
-  color: var(--fg-3);
+  color: rgba(245, 245, 247, 0.62);
   font-size: 13px;
 }
 
@@ -291,10 +321,12 @@
   display: inline-flex;
   padding: 3px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   gap: 2px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .ca-pay-seg button,
@@ -304,7 +336,7 @@
   gap: 6px;
   border: 0;
   background: transparent;
-  color: var(--fg-3);
+  color: rgba(245, 245, 247, 0.55);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -318,11 +350,35 @@
 
 .ca-pay-seg button:hover,
 .ca-currency-seg button:hover {
-  color: var(--fg-1);
+  color: #fff;
 }
 
 .ca-pay-seg button.active,
 .ca-currency-seg button.active {
+  background: #0a84ff;
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(10, 132, 255, 0.35);
+}
+
+/* Light-surface currency seg (inside white form blocks) */
+.ca-currency-field .ca-currency-seg,
+.ca-amount-row .ca-currency-seg {
+  background: #f2f2f7;
+  border-color: transparent;
+}
+
+.ca-currency-field .ca-currency-seg button,
+.ca-amount-row .ca-currency-seg button {
+  color: var(--fg-3);
+}
+
+.ca-currency-field .ca-currency-seg button:hover,
+.ca-amount-row .ca-currency-seg button:hover {
+  color: var(--fg-1);
+}
+
+.ca-currency-field .ca-currency-seg button.active,
+.ca-amount-row .ca-currency-seg button.active {
   background: var(--action);
   color: #fff;
   box-shadow: 0 4px 12px rgba(0, 113, 227, 0.28);
@@ -414,20 +470,18 @@
   color: var(--fg-4);
 }
 
-.ca-currency-seg {
+.ca-currency-field .ca-currency-seg {
   width: 100%;
+  height: 56px;
+  align-items: stretch;
   background: #f2f2f7;
+  border-color: transparent;
 }
 
-.ca-currency-seg button {
+.ca-currency-field .ca-currency-seg button {
   flex: 1;
   justify-content: center;
   padding: 10px 8px;
-}
-
-.ca-currency-field .ca-currency-seg {
-  height: 56px;
-  align-items: stretch;
 }
 
 .ca-toggle-inline {
