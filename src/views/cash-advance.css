@@ -234,24 +234,221 @@
 /* Issue form */
 .ca-issue-page {
   overflow: auto;
+  padding-bottom: 20px;
 }
 
-.ca-issue-intro h2 {
+.ca-issue-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
+  min-height: 0;
+}
+
+.ca-issue-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ca-issue-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(0, 113, 227, 0.1), transparent 55%),
+    linear-gradient(180deg, #fff 0%, #f7f9fc 100%);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.ca-issue-kicker {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--action);
+}
+
+.ca-issue-hero h2 {
   margin: 0;
-  font-size: 20px;
-  letter-spacing: -0.03em;
+  font-size: 22px;
+  letter-spacing: -0.04em;
 }
 
-.ca-issue-intro p {
+.ca-issue-hero p:last-child {
   margin: 4px 0 0;
   color: var(--fg-3);
   font-size: 13px;
 }
 
-.ca-issue-grid {
+.ca-pay-seg,
+.ca-currency-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.ca-pay-seg button,
+.ca-currency-seg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--fg-3);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 8px 12px;
+  border-radius: 10px;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.ca-pay-seg button:hover,
+.ca-currency-seg button:hover {
+  color: var(--fg-1);
+}
+
+.ca-pay-seg button.active,
+.ca-currency-seg button.active {
+  background: var(--action);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.28);
+}
+
+.ca-issue-block {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ca-issue-block-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-2);
+}
+
+.ca-issue-block-head h3 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+}
+
+.ca-amount-block {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.ca-amount-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 14px;
+  align-items: end;
+}
+
+.ca-amount-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: #f2f2f7;
+  border: 1px solid transparent;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.ca-amount-input:focus-within {
+  background: #fff;
+  border-color: rgba(0, 113, 227, 0.45);
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+}
+
+.ca-currency-chip {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--action);
+  background: var(--blue-soft);
+  border-radius: 8px;
+  padding: 4px 8px;
+  letter-spacing: 0.02em;
+}
+
+.ca-amount-input input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  padding: 0;
+  height: auto;
+  box-shadow: none;
+}
+
+.ca-amount-input input::placeholder {
+  color: var(--fg-4);
+}
+
+.ca-currency-seg {
+  width: 100%;
+  background: #f2f2f7;
+}
+
+.ca-currency-seg button {
+  flex: 1;
+  justify-content: center;
+  padding: 10px 8px;
+}
+
+.ca-currency-field .ca-currency-seg {
+  height: 56px;
+  align-items: stretch;
+}
+
+.ca-toggle-inline {
+  margin-top: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg-surface-2);
+}
+
+.ca-toggle-inline strong {
+  display: block;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+.ca-toggle-inline span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--fg-3);
 }
 
 .ca-panel {
@@ -273,69 +470,6 @@
   font-weight: 650;
   letter-spacing: -0.02em;
   color: var(--fg-1);
-}
-
-.ca-type-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.ca-type-card {
-  position: relative;
-  text-align: left;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: var(--bg-surface-2);
-  border-radius: 14px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  transition:
-    border-color var(--dur-fast) var(--ease-out),
-    background var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
-}
-
-.ca-type-card strong {
-  font-size: 15px;
-  letter-spacing: -0.02em;
-}
-
-.ca-type-card span {
-  font-size: 12px;
-  color: var(--fg-3);
-}
-
-.ca-type-card.active {
-  background: var(--blue-soft);
-  border-color: rgba(0, 113, 227, 0.45);
-}
-
-.ca-type-check {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  color: var(--action);
-}
-
-.ca-recipient-tabs {
-  display: inline-flex;
-  background: #f2f2f7;
-  border-radius: 10px;
-  padding: 3px;
-  width: fit-content;
-}
-
-.ca-recipient-tabs button {
-  border: 0;
-  background: #fff;
-  color: var(--fg-1);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .ca-form-grid {
@@ -412,28 +546,144 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 18px;
-  border: 1.5px dashed rgba(0, 113, 227, 0.35);
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  border: 1.5px dashed rgba(0, 113, 227, 0.28);
   border-radius: 14px;
   background: rgba(0, 113, 227, 0.03);
   color: var(--fg-3);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
 }
 
-.ca-dropzone strong {
-  display: block;
+.ca-dropzone:hover {
+  border-color: rgba(0, 113, 227, 0.5);
+  background: rgba(0, 113, 227, 0.05);
+}
+
+.ca-drop-ico {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #fff;
   color: var(--action);
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.ca-dropzone span {
+.ca-drop-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.ca-drop-copy strong {
+  display: block;
+  color: var(--fg-1);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+.ca-drop-copy span {
   font-size: 12px;
 }
 
-.ca-issue-foot {
+.ca-issue-preview {
+  position: sticky;
+  top: 0;
+}
+
+.ca-preview-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  padding: 18px;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+.ca-preview-amount {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  color: var(--positive);
+  line-height: 1.1;
+}
+
+.ca-preview-driver {
+  display: flex;
+  align-items: center;
   gap: 10px;
-  padding-bottom: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--bg-surface-2);
+}
+
+.ca-preview-driver strong {
+  display: block;
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.ca-preview-driver span {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--fg-3);
+}
+
+.ca-preview-meta {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.ca-preview-meta > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.ca-preview-meta dt {
+  margin: 0;
+  color: var(--fg-3);
+}
+
+.ca-preview-meta dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+  letter-spacing: -0.01em;
+}
+
+.ca-preview-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff8e8;
+  border-left: 3px solid #f5a524;
+  font-size: 12px;
+  color: var(--fg-2);
+  line-height: 1.4;
+}
+
+.ca-preview-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ca-preview-actions .btn {
+  width: 100%;
 }
 
 /* History timeline */
@@ -824,8 +1074,10 @@
 
 .mono {
   font-variant-numeric: tabular-nums;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 11px;
+  font-feature-settings: 'tnum' 1;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: -0.01em;
 }
 
 @keyframes fadeIn {
@@ -849,11 +1101,25 @@
 }
 
 @media (max-width: 980px) {
-  .ca-issue-grid,
+  .ca-issue-shell,
   .ca-detail-grid,
   .ca-form-grid.three,
+  .ca-form-grid.two,
+  .ca-amount-row,
   .ca-timeline-card {
     grid-template-columns: 1fr;
+  }
+
+  .ca-issue-hero {
+    flex-direction: column;
+  }
+
+  .ca-issue-preview {
+    position: static;
+  }
+
+  .ca-preview-actions {
+    flex-direction: row;
   }
 
   .ca-timeline-item {
@@ -868,9 +1134,5 @@
 
   .ca-timeline-item::before {
     left: 5px;
-  }
-
-  .ca-type-cards {
-    grid-template-columns: 1fr;
   }
 }

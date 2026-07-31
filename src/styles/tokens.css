@@ -66,9 +66,9 @@
   --cat-storage: #636366;
   --cat-storage-bg: #f2f2f7;
 
-  /* Typography — Apple-like system stack */
-  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Inter, Helvetica, Arial,
-    sans-serif;
+  /* Typography — Inter everywhere (text + numbers) */
+  --font-body: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   --fs-display: 32px;
   --fs-h1: 24px;
   --fs-h2: 20px;

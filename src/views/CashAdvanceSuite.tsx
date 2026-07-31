@@ -1,4 +1,5 @@
 import {
+  Banknote,
   Check,
   Download,
   Eye,
@@ -10,7 +11,9 @@ import {
   RefreshCw,
   Table2,
   Upload,
+  UserRound,
   X,
+  Zap,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { HeaderFilters } from '../components/layout/HeaderFilters';
@@ -365,199 +368,276 @@ function IssueView() {
   const [invoiceNo, setInvoiceNo] = useState('');
   const [invoiceDate, setInvoiceDate] = useState('');
   const valid = Number(amount) > 0 && !!driverCode && !!authorizedBy && !!reason;
+  const driver = CA_DRIVERS.find((d) => d.code === driverCode) ?? CA_DRIVERS[0];
+  const previewAmount = Number(amount) > 0 ? fmt(Number(amount), currency) : `${currency} 0.00`;
+  const reasonLabel =
+    reason === 'CASHADV'
+      ? 'Cash Advance'
+      : reason === 'PENSION'
+        ? 'Pension'
+        : reason === 'EMERGENCY'
+          ? 'Emergency'
+          : reason;
 
   usePageHeader([]);
 
   return (
     <div className="mod-page ca-page ca-issue-page">
-      <div className="ca-issue-intro">
-        <h2>Issue cash advance</h2>
-        <p>Create and issue payment requests for MX drivers</p>
-      </div>
+      <div className="ca-issue-shell">
+        <div className="ca-issue-main">
+          <header className="ca-issue-hero">
+            <div>
+              <p className="ca-issue-kicker">New payment</p>
+              <h2>Issue cash advance</h2>
+              <p>Create and issue payment requests for MX drivers</p>
+            </div>
+            <div className="ca-pay-seg" role="group" aria-label="Payment type">
+              <button
+                type="button"
+                className={paymentType === 'qcheck' ? 'active' : ''}
+                onClick={() => setPaymentType('qcheck')}
+              >
+                <Zap size={14} strokeWidth={2.25} />
+                QCheck
+              </button>
+              <button
+                type="button"
+                className={paymentType === 'commcheck' ? 'active' : ''}
+                onClick={() => setPaymentType('commcheck')}
+              >
+                <Banknote size={14} strokeWidth={2.25} />
+                CommCheck
+              </button>
+            </div>
+          </header>
 
-      <div className="ca-issue-grid">
-        <section className="ca-panel">
-          <header className="ca-panel-head">Payment type</header>
-          <div className="ca-type-cards">
-            <button
-              type="button"
-              className={`ca-type-card ${paymentType === 'qcheck' ? 'active' : ''}`}
-              onClick={() => setPaymentType('qcheck')}
-            >
-              <strong>QCheck</strong>
-              <span>Quick payment method</span>
-              {paymentType === 'qcheck' && <Check size={16} className="ca-type-check" />}
-            </button>
-            <button
-              type="button"
-              className={`ca-type-card ${paymentType === 'commcheck' ? 'active' : ''}`}
-              onClick={() => setPaymentType('commcheck')}
-            >
-              <strong>CommCheck</strong>
-              <span>Commercial check payment</span>
-              {paymentType === 'commcheck' && <Check size={16} className="ca-type-check" />}
-            </button>
-          </div>
-        </section>
+          <section className="ca-issue-block ca-amount-block">
+            <div className="ca-amount-row">
+              <div className="field ca-amount-field">
+                <label>
+                  Amount <span className="req">*</span>
+                </label>
+                <div className="ca-amount-input">
+                  <span className="ca-currency-chip">{currency}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="tnum"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.00"
+                    aria-label="Amount"
+                  />
+                </div>
+              </div>
+              <div className="field ca-currency-field">
+                <label>
+                  Currency <span className="req">*</span>
+                </label>
+                <div className="ca-currency-seg" role="group" aria-label="Currency">
+                  {(['MXN', 'USD'] as const).map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={currency === c ? 'active' : ''}
+                      onClick={() => setCurrency(c)}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
 
-        <section className="ca-panel">
-          <header className="ca-panel-head">Payment details</header>
-          <div className="ca-form-grid two">
-            <div className="field">
-              <label>
-                Amount <span className="req">*</span>
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+          <section className="ca-issue-block">
+            <div className="ca-issue-block-head">
+              <UserRound size={15} strokeWidth={2.25} />
+              <h3>Recipient</h3>
+            </div>
+            <div className="ca-form-grid two">
+              <div className="field">
+                <label>
+                  Division <span className="req">*</span>
+                </label>
+                <select value={division} onChange={(e) => setDivision(e.target.value)}>
+                  {CA_DIVISIONS.map((d) => (
+                    <option key={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>
+                  Driver <span className="req">*</span>
+                </label>
+                <select value={driverCode} onChange={(e) => setDriverCode(e.target.value)}>
+                  {CA_DRIVERS.map((d) => (
+                    <option key={d.code} value={d.code}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section className="ca-issue-block">
+            <div className="ca-issue-block-head">
+              <FileText size={15} strokeWidth={2.25} />
+              <h3>Details</h3>
+            </div>
+            <div className="ca-form-grid two">
+              <div className="field">
+                <label>
+                  Reason <span className="req">*</span>
+                </label>
+                <select value={reason} onChange={(e) => setReason(e.target.value)}>
+                  <option value="CASHADV">Cash Advance</option>
+                  <option value="PENSION">Pension</option>
+                  <option value="EMERGENCY">Emergency</option>
+                  {CA_TYPES.map((t) => (
+                    <option key={t} value={t.toUpperCase()}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="field">
+                <label>
+                  Authorized By <span className="req">*</span>
+                </label>
+                <select value={authorizedBy} onChange={(e) => setAuthorizedBy(e.target.value)}>
+                  <option>Michelle Serrano</option>
+                  <option>Sukhdeep Dhillon</option>
+                  <option>Ops Supervisor</option>
+                </select>
+              </div>
+              <div className="field">
+                <label>Trip Number</label>
+                <input
+                  className="tnum"
+                  value={tripNumber}
+                  onChange={(e) => setTripNumber(e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="field">
+                <label>Invoice Number</label>
+                <input
+                  value={invoiceNo}
+                  onChange={(e) => setInvoiceNo(e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="field">
+                <label>Invoice Date</label>
+                <input
+                  type="datetime-local"
+                  value={invoiceDate}
+                  onChange={(e) => setInvoiceDate(e.target.value)}
+                />
+              </div>
+              <div className="field wide">
+                <label>Comments</label>
+                <textarea
+                  rows={3}
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                  placeholder="Enter any additional comments or notes."
+                />
+              </div>
+            </div>
+
+            <label className="ca-toggle-row ca-toggle-inline">
+              <div>
+                <strong>Deduct from payroll</strong>
+                <span>Apply this amount against the driver’s next settlement</span>
+              </div>
+              <button
+                type="button"
+                className={`ca-switch ${deductible ? 'on' : ''}`}
+                role="switch"
+                aria-checked={deductible}
+                onClick={() => setDeductible((v) => !v)}
               />
-            </div>
-            <div className="field">
-              <label>
-                Currency <span className="req">*</span>
-              </label>
-              <select value={currency} onChange={(e) => setCurrency(e.target.value as 'USD' | 'MXN')}>
-                <option value="MXN">MXN</option>
-                <option value="USD">USD</option>
-              </select>
-            </div>
-            <div className="field">
-              <label>
-                Authorized By <span className="req">*</span>
-              </label>
-              <select value={authorizedBy} onChange={(e) => setAuthorizedBy(e.target.value)}>
-                <option>Michelle Serrano</option>
-                <option>Sukhdeep Dhillon</option>
-                <option>Ops Supervisor</option>
-              </select>
-            </div>
-            <div className="field">
-              <label>Trip Number</label>
-              <input value={tripNumber} onChange={(e) => setTripNumber(e.target.value)} />
-            </div>
-            <div className="field wide">
-              <label>Comments</label>
-              <textarea
-                rows={3}
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                placeholder="Enter any additional comments or notes."
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="ca-panel">
-          <header className="ca-panel-head">Recipient</header>
-          <div className="ca-recipient-tabs">
-            <button type="button" className="active">
-              Driver
-            </button>
-          </div>
-          <div className="ca-form-grid">
-            <div className="field">
-              <label>
-                Division <span className="req">*</span>
-              </label>
-              <select value={division} onChange={(e) => setDivision(e.target.value)}>
-                {CA_DIVISIONS.map((d) => (
-                  <option key={d}>{d}</option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label>
-                Driver <span className="req">*</span>
-              </label>
-              <select value={driverCode} onChange={(e) => setDriverCode(e.target.value)}>
-                {CA_DRIVERS.map((d) => (
-                  <option key={d.code} value={d.code}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </section>
-
-        <section className="ca-panel">
-          <header className="ca-panel-head">Reason & details</header>
-          <div className="field">
-            <label>
-              Reason <span className="req">*</span>
             </label>
-            <select value={reason} onChange={(e) => setReason(e.target.value)}>
-              <option value="CASHADV">Cash Advance</option>
-              <option value="PENSION">Pension</option>
-              <option value="EMERGENCY">Emergency</option>
-              {CA_TYPES.map((t) => (
-                <option key={t} value={t.toUpperCase()}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </div>
-        </section>
-      </div>
 
-      <section className="ca-panel ca-panel-full">
-        <label className="ca-toggle-row">
-          <span>Make this amount deductible from payroll</span>
-          <button
-            type="button"
-            className={`ca-switch ${deductible ? 'on' : ''}`}
-            role="switch"
-            aria-checked={deductible}
-            onClick={() => setDeductible((v) => !v)}
-          />
-        </label>
-      </section>
-
-      <section className="ca-panel ca-panel-full">
-        <header className="ca-panel-head">Invoice & attachments</header>
-        <div className="ca-form-grid two">
-          <div className="field">
-            <label>Invoice Number</label>
-            <input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Invoice Date</label>
-            <input
-              type="datetime-local"
-              value={invoiceDate}
-              onChange={(e) => setInvoiceDate(e.target.value)}
-            />
-          </div>
+            <button
+              type="button"
+              className="ca-dropzone"
+              onClick={() => toast('File picker opened')}
+            >
+              <span className="ca-drop-ico">
+                <Upload size={18} />
+              </span>
+              <span className="ca-drop-copy">
+                <strong>Add invoice or supporting files</strong>
+                <span>PDF, DOC, XLS, or images</span>
+              </span>
+              <span className="btn btn-secondary btn-sm">Browse</span>
+            </button>
+          </section>
         </div>
-        <div className="ca-dropzone">
-          <Upload size={18} />
-          <div>
-            <strong>Choose files</strong>
-            <span>Supported: PDF, DOC, XLS, Images</span>
-          </div>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => toast('File picker opened')}>
-            Browse
-          </button>
-        </div>
-      </section>
 
-      <div className="ca-issue-foot">
-        <button type="button" className="btn btn-ghost" onClick={() => toast('Cancelled')}>
-          <X size={14} />
-          Cancel
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          disabled={!valid}
-          onClick={() => toast(`${paymentType === 'qcheck' ? 'QCheck' : 'CommCheck'} issued`)}
-        >
-          <Check size={14} />
-          Issue payment
-        </button>
+        <aside className="ca-issue-preview">
+          <div className="ca-preview-card">
+            <p className="ca-issue-kicker">Preview</p>
+            <div className="ca-preview-amount tnum">{previewAmount}</div>
+            <span className={`ca-status-pill ${paymentType === 'qcheck' ? 'approved' : 'scheduled'}`}>
+              {paymentType === 'qcheck' ? 'QCheck' : 'CommCheck'}
+            </span>
+
+            <div className="ca-preview-driver">
+              <div className="ca-avatar">{initials(driver.name)}</div>
+              <div>
+                <strong>{driver.name}</strong>
+                <span>
+                  {driver.code} · {division}
+                </span>
+              </div>
+            </div>
+
+            <dl className="ca-preview-meta">
+              <div>
+                <dt>Reason</dt>
+                <dd>{reasonLabel}</dd>
+              </div>
+              <div>
+                <dt>Authorized</dt>
+                <dd>{authorizedBy}</dd>
+              </div>
+              <div>
+                <dt>Trip</dt>
+                <dd className="tnum">{tripNumber || '—'}</dd>
+              </div>
+              <div>
+                <dt>Payroll</dt>
+                <dd>{deductible ? 'Deductible' : 'Not deducted'}</dd>
+              </div>
+            </dl>
+
+            {comments.trim() ? <p className="ca-preview-note">{comments}</p> : null}
+
+            <div className="ca-preview-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => toast('Cancelled')}>
+                <X size={14} />
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={!valid}
+                onClick={() =>
+                  toast(`${paymentType === 'qcheck' ? 'QCheck' : 'CommCheck'} issued`)
+                }
+              >
+                <Check size={14} />
+                Issue payment
+              </button>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );
