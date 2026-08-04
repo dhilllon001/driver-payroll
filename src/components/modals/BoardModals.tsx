@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, Flag, Search, Upload } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ClipboardList, FileSpreadsheet, Flag, Search, Upload } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import type { Trip } from '../../types';
 
@@ -150,55 +150,324 @@ export function UploadPayModal({
 }) {
   const [fileName, setFileName] = useState('');
   const [dragging, setDragging] = useState(false);
+  const [createdBy, setCreatedBy] = useState('');
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [searched, setSearched] = useState(false);
+  const [perPage, setPerPage] = useState(100);
+
+  const sampleRows = [
+    {
+      role: 'TEAM',
+      trip: '10656970',
+      sub: '1',
+      inTime: '7/27/2026 11:24:00 AM',
+      outTime: '7/28/2026 12:45:00 AM',
+      drv: 'JORGEL',
+      qty: '790.2',
+      method: 'Mileage',
+      reason: '',
+    },
+    {
+      role: 'TEAM',
+      trip: '10656970',
+      sub: '1',
+      inTime: '7/27/2026 11:24:00 AM',
+      outTime: '7/28/2026 12:45:00 AM',
+      drv: 'EDUARDOR',
+      qty: '790.2',
+      method: 'Mileage',
+      reason: '',
+    },
+    {
+      role: 'SINGLE',
+      trip: '10656971',
+      sub: '1',
+      inTime: '7/27/2026 10:00:00 AM',
+      outTime: '7/27/2026 6:00:00 PM',
+      drv: 'ERNESTO1',
+      qty: '136.6',
+      method: 'Mileage',
+      reason: 'Adjustment',
+    },
+  ];
+
+  const [logs, setLogs] = useState([
+    {
+      id: '1',
+      fileName: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890_pay_upload.xlsx',
+      status: 'Completed' as const,
+      message: 'Processed with 1 validation error(s). 0 row(s) updated.',
+      createdBy: 'michelle.serrano@charger.com',
+      createdAt: 'Aug 4, 2026, 10:05:40 AM',
+    },
+    {
+      id: '2',
+      fileName: 'f9e8d7c6-b5a4-3210-fedc-ba0987654321_team_pay.xlsx',
+      status: 'Failed' as const,
+      message:
+        'Column validation failed. The following required column(s) are missing: PayrollMethod, Reason.',
+      createdBy: 'sukhdeep.dhillon@charger.com',
+      createdAt: 'Aug 3, 2026, 3:22:11 PM',
+    },
+    {
+      id: '3',
+      fileName: '11223344-5566-7788-99aa-bbccddeeff00_local_miles.xlsx',
+      status: 'Completed' as const,
+      message: 'Processed successfully. 24 row(s) updated.',
+      createdBy: 'ops.desk@charger.com',
+      createdAt: 'Aug 2, 2026, 9:18:02 AM',
+    },
+  ]);
+
+  const filteredLogs = logs.filter((log) => {
+    if (!searched && !createdBy && !from && !to) return true;
+    if (createdBy && !log.createdBy.toLowerCase().includes(createdBy.toLowerCase())) return false;
+    return true;
+  });
+
+  const pickFile = (file?: File | null) => {
+    if (file) setFileName(file.name);
+  };
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal modal-sm" role="dialog" aria-modal onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal modal-xl upload-pay-modal"
+        role="dialog"
+        aria-modal
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-head">
-          <h3>Upload pay file</h3>
+          <div>
+            <h3>Upload Pay</h3>
+            <p className="upload-pay-sub">Import Excel pay adjustments and review processing history</p>
+          </div>
           <Close onClose={onClose} />
         </div>
-        <div className="modal-body">
-          <div className="board-alert-banner info">
-            <Upload size={16} />
-            <p>Upload a payroll CSV or XLS file. You’ll get a confirmation once processing starts.</p>
+
+        <div className="modal-body upload-pay-body">
+          <div className="upload-pay-top">
+            <section className="upload-pay-panel">
+              <header className="upload-pay-panel-head">
+                <Upload size={15} strokeWidth={2.25} />
+                <h4>Upload file</h4>
+              </header>
+              <label
+                className={`board-upload-zone upload-pay-drop ${dragging ? 'dragging' : ''} ${fileName ? 'has-file' : ''}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragging(false);
+                  pickFile(e.dataTransfer.files?.[0]);
+                }}
+              >
+                <input
+                  type="file"
+                  accept=".xls,.xlsx"
+                  className="sr-only"
+                  onChange={(e) => pickFile(e.target.files?.[0])}
+                />
+                <span className="upload-pay-drop-ico">
+                  <Upload size={22} />
+                </span>
+                <strong>
+                  {fileName || 'Drag & drop your Excel file here'}
+                </strong>
+                <span className="upload-pay-or">or</span>
+                <span className="btn btn-secondary btn-sm">Browse File</span>
+              </label>
+              <p className="upload-pay-formats">Supported formats: .xls, .xlsx</p>
+              <button
+                type="button"
+                className="btn btn-primary upload-pay-submit"
+                disabled={!fileName}
+                onClick={() => {
+                  const id = String(Date.now());
+                  setLogs((prev) => [
+                    {
+                      id,
+                      fileName,
+                      status: 'Completed',
+                      message: 'Processed successfully. 12 row(s) updated.',
+                      createdBy: 'you@charger.com',
+                      createdAt: 'Just now',
+                    },
+                    ...prev,
+                  ]);
+                  onUpload(fileName);
+                  setFileName('');
+                }}
+              >
+                Upload & process
+              </button>
+            </section>
+
+            <section className="upload-pay-panel">
+              <header className="upload-pay-panel-head">
+                <FileSpreadsheet size={15} strokeWidth={2.25} />
+                <h4>Excel sample</h4>
+              </header>
+              <div className="upload-pay-sample-scroll">
+                <table className="upload-pay-sample-table">
+                  <thead>
+                    <tr>
+                      <th>DriverRole</th>
+                      <th>TripNumber</th>
+                      <th>SubTripNumber</th>
+                      <th>InTime</th>
+                      <th>OutTime</th>
+                      <th>DrvCode</th>
+                      <th>Qty</th>
+                      <th>PayrollMethod</th>
+                      <th>Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sampleRows.map((row, i) => (
+                      <tr key={i}>
+                        <td>{row.role}</td>
+                        <td>{row.trip}</td>
+                        <td>{row.sub}</td>
+                        <td>{row.inTime}</td>
+                        <td>{row.outTime}</td>
+                        <td>{row.drv}</td>
+                        <td>{row.qty}</td>
+                        <td>{row.method}</td>
+                        <td>{row.reason || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
-          <label
-            className={`board-upload-zone ${dragging ? 'dragging' : ''} ${fileName ? 'has-file' : ''}`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragging(true);
-            }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragging(false);
-              const file = e.dataTransfer.files?.[0];
-              if (file) setFileName(file.name);
-            }}
-          >
-            <input
-              type="file"
-              accept=".csv,.xls,.xlsx"
-              className="sr-only"
-              onChange={(e) => setFileName(e.target.files?.[0]?.name || '')}
-            />
-            <Upload size={22} />
-            <strong>{fileName || 'Drop pay file here'}</strong>
-            <span>{fileName ? 'Ready to upload' : 'CSV, XLS, or XLSX · click to browse'}</span>
-          </label>
+
+          <section className="upload-pay-panel upload-pay-logs">
+            <header className="upload-pay-panel-head">
+              <ClipboardList size={15} strokeWidth={2.25} />
+              <h4>Processing audit logs</h4>
+            </header>
+
+            <div className="upload-pay-filters">
+              <div className="field">
+                <label htmlFor="upload-created-by">Created By</label>
+                <input
+                  id="upload-created-by"
+                  value={createdBy}
+                  onChange={(e) => setCreatedBy(e.target.value)}
+                  placeholder="Name or email"
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="upload-from">Upload Date From</label>
+                <input
+                  id="upload-from"
+                  type="date"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="upload-to">Upload Date To</label>
+                <input
+                  id="upload-to"
+                  type="date"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+              </div>
+              <div className="upload-pay-filter-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={() => setSearched(true)}
+                >
+                  Search
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => {
+                    setCreatedBy('');
+                    setFrom('');
+                    setTo('');
+                    setSearched(false);
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div className="upload-pay-table-wrap">
+              <table className="upload-pay-audit-table">
+                <thead>
+                  <tr>
+                    <th>File Name</th>
+                    <th>Status</th>
+                    <th>Message</th>
+                    <th>Created By</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLogs.slice(0, perPage).map((log) => (
+                    <tr key={log.id}>
+                      <td>
+                        <button type="button" className="upload-pay-file-link" title={log.fileName}>
+                          {log.fileName}
+                        </button>
+                      </td>
+                      <td>
+                        <span className={`upload-pay-status ${log.status.toLowerCase()}`}>
+                          {log.status}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="upload-pay-msg" title={log.message}>
+                          {log.message}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="upload-pay-created">
+                          <strong>{log.createdBy}</strong>
+                          <span>{log.createdAt}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {!filteredLogs.length && (
+                    <tr>
+                      <td colSpan={4}>
+                        <div className="empty-state soft">No audit logs match your filters.</div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="upload-pay-pager">
+              <label>
+                Per page
+                <select value={perPage} onChange={(e) => setPerPage(Number(e.target.value))}>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </label>
+              <span>1 of 1</span>
+            </div>
+          </section>
         </div>
+
         <div className="modal-foot">
           <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={!fileName}
-            onClick={() => onUpload(fileName)}
-          >
-            Start upload
+            Close
           </button>
         </div>
       </div>

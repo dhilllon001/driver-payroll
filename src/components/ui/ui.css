@@ -329,6 +329,7 @@
 }
 .modal-sm { max-width: 480px; }
 .modal-lg { max-width: 860px; }
+.modal-xl { max-width: 1080px; }
 .modal-head {
   display: flex;
   align-items: center;
@@ -480,5 +481,6 @@
 @media (max-width: 900px) {
   .props-grid { grid-template-columns: 1fr; }
   .modal-sm,
-  .modal-lg { max-width: 100%; }
+  .modal-lg,
+  .modal-xl { max-width: 100%; }
 }

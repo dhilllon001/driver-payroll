@@ -726,8 +726,7 @@ export function TripBoardView() {
         <UploadPayModal
           onClose={() => setShowUpload(false)}
           onUpload={(fileName) => {
-            setShowUpload(false);
-            toast(`Upload started · ${fileName}`, 'success');
+            toast(`Upload processed · ${fileName}`, 'success');
           }}
         />
       )}
