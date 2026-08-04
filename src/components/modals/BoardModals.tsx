@@ -231,80 +231,115 @@ export function UploadPayModal({
   };
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div
-        className="modal modal-xl upload-pay-modal"
+    <div className="upload-pay-backdrop" onClick={onClose}>
+      <aside
+        className="upload-pay-drawer"
         role="dialog"
         aria-modal
+        aria-label="Upload Pay"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-head">
+        <header className="upload-pay-drawer-head">
           <div>
+            <p className="upload-pay-kicker">Payroll import</p>
             <h3>Upload Pay</h3>
             <p className="upload-pay-sub">Import Excel pay adjustments and review processing history</p>
           </div>
           <Close onClose={onClose} />
-        </div>
+        </header>
 
-        <div className="modal-body upload-pay-body">
+        <div className="upload-pay-drawer-body">
           <div className="upload-pay-top">
-            <section className="upload-pay-panel">
+            <section className="upload-pay-panel upload-pay-upload-panel">
               <header className="upload-pay-panel-head">
                 <Upload size={15} strokeWidth={2.25} />
                 <h4>Upload file</h4>
               </header>
-              <label
-                className={`board-upload-zone upload-pay-drop ${dragging ? 'dragging' : ''} ${fileName ? 'has-file' : ''}`}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragging(true);
-                }}
-                onDragLeave={() => setDragging(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragging(false);
-                  pickFile(e.dataTransfer.files?.[0]);
-                }}
-              >
-                <input
-                  type="file"
-                  accept=".xls,.xlsx"
-                  className="sr-only"
-                  onChange={(e) => pickFile(e.target.files?.[0])}
-                />
-                <span className="upload-pay-drop-ico">
-                  <Upload size={22} />
-                </span>
-                <strong>
-                  {fileName || 'Drag & drop your Excel file here'}
-                </strong>
-                <span className="upload-pay-or">or</span>
-                <span className="btn btn-secondary btn-sm">Browse File</span>
-              </label>
-              <p className="upload-pay-formats">Supported formats: .xls, .xlsx</p>
-              <button
-                type="button"
-                className="btn btn-primary upload-pay-submit"
-                disabled={!fileName}
-                onClick={() => {
-                  const id = String(Date.now());
-                  setLogs((prev) => [
-                    {
-                      id,
-                      fileName,
-                      status: 'Completed',
-                      message: 'Processed successfully. 12 row(s) updated.',
-                      createdBy: 'you@charger.com',
-                      createdAt: 'Just now',
-                    },
-                    ...prev,
-                  ]);
-                  onUpload(fileName);
-                  setFileName('');
-                }}
-              >
-                Upload & process
-              </button>
+
+              {!fileName ? (
+                <label
+                  className={`upload-pay-dropzone ${dragging ? 'dragging' : ''}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragging(true);
+                  }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragging(false);
+                    pickFile(e.dataTransfer.files?.[0]);
+                  }}
+                >
+                  <input
+                    type="file"
+                    accept=".xls,.xlsx"
+                    className="sr-only"
+                    onChange={(e) => pickFile(e.target.files?.[0])}
+                  />
+                  <span className="upload-pay-drop-ico">
+                    <Upload size={22} />
+                  </span>
+                  <div className="upload-pay-drop-copy">
+                    <strong>Drag & drop Excel file</strong>
+                    <span>or click to browse from your computer</span>
+                  </div>
+                  <span className="btn btn-secondary btn-sm">Browse File</span>
+                  <p className="upload-pay-formats">Supported: .xls, .xlsx</p>
+                </label>
+              ) : (
+                <div className="upload-pay-selected">
+                  <div className="upload-pay-file-card">
+                    <span className="upload-pay-file-ico">
+                      <FileSpreadsheet size={20} />
+                    </span>
+                    <div className="upload-pay-file-meta">
+                      <strong title={fileName}>{fileName}</strong>
+                      <span>Ready to process</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-icon"
+                      aria-label="Remove file"
+                      onClick={() => setFileName('')}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="upload-pay-selected-actions">
+                    <label className="btn btn-ghost btn-sm">
+                      Replace
+                      <input
+                        type="file"
+                        accept=".xls,.xlsx"
+                        className="sr-only"
+                        onChange={(e) => pickFile(e.target.files?.[0])}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => {
+                        const id = String(Date.now());
+                        setLogs((prev) => [
+                          {
+                            id,
+                            fileName,
+                            status: 'Completed',
+                            message: 'Processed successfully. 12 row(s) updated.',
+                            createdBy: 'you@charger.com',
+                            createdAt: 'Just now',
+                          },
+                          ...prev,
+                        ]);
+                        onUpload(fileName);
+                        setFileName('');
+                      }}
+                    >
+                      Upload & process
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
 
             <section className="upload-pay-panel">
@@ -443,7 +478,7 @@ export function UploadPayModal({
                   {!filteredLogs.length && (
                     <tr>
                       <td colSpan={4}>
-                        <div className="empty-state soft">No audit logs match your filters.</div>
+                        <div className="empty-state">No audit logs match your filters.</div>
                       </td>
                     </tr>
                   )}
@@ -465,12 +500,12 @@ export function UploadPayModal({
           </section>
         </div>
 
-        <div className="modal-foot">
+        <footer className="upload-pay-drawer-foot">
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             Close
           </button>
-        </div>
-      </div>
+        </footer>
+      </aside>
     </div>
   );
 }
